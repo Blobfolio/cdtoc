@@ -87,6 +87,24 @@ impl From<&Toc> for AccurateRip {
 }
 
 impl AccurateRip {
+	#[must_use]
+	/// # Number of Audio Tracks.
+	///
+	/// ## Examples
+	///
+	/// ```
+	/// use cdtoc::Toc;
+	///
+	/// // From Toc.
+	/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
+	/// assert_eq!(toc.audio_len(), 4_usize);
+	///
+	/// // From AccurateRip.
+	/// let disc_id = toc.accuraterip_id();
+	/// assert_eq!(disc_id.audio_len(), 4_u8);
+	/// ```
+	pub const fn audio_len(&self) -> u8 { self.0[0] }
+
 	#[cfg_attr(feature = "docsrs", doc(cfg(feature = "accuraterip")))]
 	#[must_use]
 	/// # AccurateRip Checksum URL.
