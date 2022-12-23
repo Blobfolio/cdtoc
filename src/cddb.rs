@@ -43,6 +43,15 @@ pub struct Cddb(pub(crate) u32);
 impl Eq for Cddb {}
 
 impl fmt::Display for Cddb {
+	#[cfg(feature = "faster-hex")]
+	#[allow(unsafe_code)]
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		let mut buf = [b'0'; 8];
+		crate::hex_u32(self.0, &mut buf, false);
+		f.write_str(unsafe { std::str::from_utf8_unchecked(&buf) })
+	}
+
+	#[cfg(not(feature = "faster-hex"))]
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		write!(f, "{:08x}", self.0)
 	}

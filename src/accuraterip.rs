@@ -50,6 +50,26 @@ impl From<AccurateRip> for [u8; 13] {
 }
 
 impl fmt::Display for AccurateRip {
+	#[cfg(feature = "faster-hex")]
+	#[allow(unsafe_code)]
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		let mut buf = [b'-', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0'];
+
+		// Length.
+		write!(f, "{:03}", self.0[0])?;
+
+		// ID Parts.
+		faster_hex::hex_encode(&[self.0[4], self.0[3], self.0[2], self.0[1]], &mut buf[1..]).unwrap();
+		f.write_str(unsafe { std::str::from_utf8_unchecked(&buf) })?;
+
+		faster_hex::hex_encode(&[self.0[8], self.0[7], self.0[6], self.0[5]], &mut buf[1..]).unwrap();
+		f.write_str(unsafe { std::str::from_utf8_unchecked(&buf) })?;
+
+		faster_hex::hex_encode(&[self.0[12], self.0[11], self.0[10], self.0[9]], &mut buf[1..]).unwrap();
+		f.write_str(unsafe { std::str::from_utf8_unchecked(&buf) })
+	}
+
+	#[cfg(not(feature = "faster-hex"))]
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		let b = u32::from_le_bytes([self.0[1], self.0[2], self.0[3], self.0[4]]);
 		let c = u32::from_le_bytes([self.0[5], self.0[6], self.0[7], self.0[8]]);
