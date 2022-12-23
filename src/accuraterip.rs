@@ -86,6 +86,45 @@ impl From<&Toc> for AccurateRip {
 	}
 }
 
+impl AccurateRip {
+	#[cfg_attr(feature = "docsrs", doc(cfg(feature = "accuraterip")))]
+	#[must_use]
+	/// # AccurateRip Checksum URL.
+	///
+	/// This returns the URL where you can download the v1 and v2 checksums for
+	/// the disc, provided it is actually _in_ the AccurateRip database. (If it
+	/// isn't, their server will return a `404`.)
+	///
+	/// You can also get this directly via [`Toc::accuraterip_checksum_url`].
+	///
+	/// ## Examples
+	///
+	/// ```
+	/// use cdtoc::Toc;
+	///
+	/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
+	/// let ar_id = toc.accuraterip_id();
+	/// assert_eq!(
+	///     ar_id.checksum_url(),
+	///     "http://www.accuraterip.com/accuraterip/a/9/8/dBAR-004-0002189a-00087f33-1f02e004.bin",
+	/// );
+	/// ```
+	pub fn checksum_url(&self) -> String {
+		let disc_id = self.to_string();
+		[
+			"http://www.accuraterip.com/accuraterip/",
+			&disc_id[11..12],
+			"/",
+			&disc_id[10..11],
+			"/",
+			&disc_id[9..10],
+			"/dBAR-",
+			&disc_id,
+			".bin",
+		].concat()
+	}
+}
+
 
 
 impl Toc {
@@ -118,6 +157,29 @@ impl Toc {
 	/// );
 	/// ```
 	pub fn accuraterip_id(&self) -> AccurateRip { AccurateRip::from(self) }
+
+	#[cfg_attr(feature = "docsrs", doc(cfg(feature = "accuraterip")))]
+	#[must_use]
+	/// # AccurateRip Checksum URL.
+	///
+	/// This returns the URL where you can download the v1 and v2 checksums for
+	/// the disc, provided it is actually _in_ the AccurateRip database. (If it
+	/// isn't, their server will return a `404`.)
+	///
+	/// ## Examples
+	///
+	/// ```
+	/// use cdtoc::Toc;
+	///
+	/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
+	/// assert_eq!(
+	///     toc.accuraterip_checksum_url(),
+	///     "http://www.accuraterip.com/accuraterip/a/9/8/dBAR-004-0002189a-00087f33-1f02e004.bin",
+	/// );
+	/// ```
+	pub fn accuraterip_checksum_url(&self) -> String {
+		self.accuraterip_id().checksum_url()
+	}
 }
 
 
