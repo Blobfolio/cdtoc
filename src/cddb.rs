@@ -38,7 +38,7 @@ use std::{
 ///     520_282_116,
 /// );
 /// ```
-pub struct Cddb(u32);
+pub struct Cddb(pub(crate) u32);
 
 impl Eq for Cddb {}
 

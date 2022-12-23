@@ -2,7 +2,10 @@
 # CDTOC: AccurateRip
 */
 
-use crate::Toc;
+use crate::{
+	Cddb,
+	Toc,
+};
 use std::fmt;
 
 
@@ -140,6 +143,35 @@ impl AccurateRip {
 			&disc_id,
 			".bin",
 		].concat()
+	}
+
+	#[cfg_attr(feature = "docsrs", doc(cfg(all(feature = "accuraterip", feature = "cddb"))))]
+	#[must_use]
+	/// # CDDB ID.
+	///
+	/// In cases where your application requires both AccurateRip and CDDB IDs,
+	/// using this method to obtain the latter is cheaper than calling
+	/// [`Toc::cddb_id`].
+	///
+	/// ## Examples
+	///
+	/// ```
+	/// use cdtoc::Toc;
+	///
+	/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
+	/// let ar_id = toc.accuraterip_id();
+	/// assert_eq!(
+	///     ar_id.cddb_id(),
+	///     toc.cddb_id(),
+	/// );
+	/// ```
+	pub const fn cddb_id(&self) -> Cddb {
+		Cddb(u32::from_le_bytes([
+			self.0[9],
+			self.0[10],
+			self.0[11],
+			self.0[12],
+		]))
 	}
 }
 
