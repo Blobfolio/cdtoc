@@ -499,11 +499,14 @@ impl Toc {
 	/// ```
 	pub const fn leadout(&self) -> u32 { self.leadout }
 
+	#[must_use]
 	/// # Track Position.
 	///
 	/// This lets you know if a given track number for this disc would come
 	/// first, last, fall somwhere in the middle, or stand alone (i.e. track
 	/// one of one).
+	///
+	/// Returns `None` if the track number is out of range.
 	///
 	/// ## Examples
 	///
@@ -511,20 +514,18 @@ impl Toc {
 	/// use cdtoc::{Toc, TrackPosition};
 	///
 	/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
-	/// assert!(toc.track_position(0).is_err());
-	/// assert_eq!(toc.track_position(1), Ok(TrackPosition::First));
-	/// assert_eq!(toc.track_position(2), Ok(TrackPosition::Middle));
-	/// assert_eq!(toc.track_position(3), Ok(TrackPosition::Middle));
-	/// assert_eq!(toc.track_position(4), Ok(TrackPosition::Last));
-	/// assert!(toc.track_position(5).is_err());
+	/// assert!(toc.track_position(0).is_none());
+	/// assert_eq!(toc.track_position(1), Some(TrackPosition::First));
+	/// assert_eq!(toc.track_position(2), Some(TrackPosition::Middle));
+	/// assert_eq!(toc.track_position(3), Some(TrackPosition::Middle));
+	/// assert_eq!(toc.track_position(4), Some(TrackPosition::Last));
+	/// assert!(toc.track_position(5).is_none());
 	/// ```
-	///
-	/// ## Errors
-	///
-	/// This will return an error if the track number is out of range for the
-	/// table of contents.
-	pub fn track_position(&self, track: usize) -> Result<TrackPosition, TocError> {
-		TrackPosition::try_from((track, self.audio_len()))
+	pub fn track_position(&self, track: usize) -> Option<TrackPosition> {
+		match TrackPosition::from((track, self.audio_len())) {
+			TrackPosition::Invalid => None,
+			pos => Some(pos),
+		}
 	}
 }
 
@@ -584,6 +585,9 @@ impl TocKind {
 ///
 /// Variants of this type are returned by [`Toc::track_position`].
 pub enum TrackPosition {
+	/// # Invalid.
+	Invalid,
+
 	/// # The First Track.
 	First,
 
@@ -599,24 +603,29 @@ pub enum TrackPosition {
 
 macro_rules! pos_tuple {
 	($($ty:ty),+) => ($(
-		impl TryFrom<($ty, $ty)> for TrackPosition {
-			type Error = TocError;
-
-			fn try_from(src: ($ty, $ty)) -> Result<Self, Self::Error> {
-				if src.0 == 0 || src.1 < src.0 { Err(TocError::TrackPosition) }
+		impl From<($ty, $ty)> for TrackPosition {
+			fn from(src: ($ty, $ty)) -> Self {
+				if src.0 == 0 || src.1 < src.0 { Self::Invalid }
 				else if src.0 == 1 {
-					if src.1 == 1 { Ok(Self::Only) }
-					else { Ok(Self::First) }
+					if src.1 == 1 { Self::Only }
+					else { Self::First }
 				}
-				else if src.0 == src.1 { Ok(Self::Last) }
-				else { Ok(Self::Middle) }
+				else if src.0 == src.1 { Self::Last }
+				else { Self::Middle }
 			}
 		}
 	)+);
 }
+
 pos_tuple!(u8, u16, u32, u64, usize);
 
 impl TrackPosition {
+	#[must_use]
+	/// # Is Valid?
+	///
+	/// Returns `true` if the position is anything other than [`TrackPosition::Invalid`].
+	pub const fn is_valid(self) -> bool { ! matches!(self, Self::Invalid) }
+
 	#[must_use]
 	/// # Is First?
 	///
