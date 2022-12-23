@@ -15,8 +15,14 @@ pub enum TocError {
 	/// # Invalid characters.
 	CDTOCChars,
 
+	/// # Invalid Checksum File.
+	Checksums,
+
 	/// # No Audio.
 	NoAudio,
+
+	/// # No Checksums.
+	NoChecksums,
 
 	/// # Invalid sector count.
 	SectorCount(u8, usize),
@@ -35,7 +41,9 @@ impl fmt::Display for TocError {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		match self {
 			Self::CDTOCChars => f.write_str("Invalid character(s), expecting only 0-9, A-F, +, and (rarely) X."),
+			Self::Checksums => f.write_str("Unable to parse checksums."),
 			Self::NoAudio => f.write_str("At least one audio track is required."),
+			Self::NoChecksums => f.write_str("No checksums were present."),
 			Self::SectorCount(expected, found) => write!(
 				f, "Expected {} audio sectors, found {}.",
 				expected, found,

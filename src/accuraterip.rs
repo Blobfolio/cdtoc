@@ -5,8 +5,12 @@
 use crate::{
 	Cddb,
 	Toc,
+	TocError,
 };
-use std::fmt;
+use std::{
+	collections::BTreeMap,
+	fmt,
+};
 
 
 
@@ -110,6 +114,7 @@ impl From<&Toc> for AccurateRip {
 }
 
 impl AccurateRip {
+	#[cfg_attr(feature = "docsrs", doc(cfg(feature = "accuraterip")))]
 	#[must_use]
 	/// # Number of Audio Tracks.
 	///
@@ -193,6 +198,49 @@ impl AccurateRip {
 			self.0[12],
 		]))
 	}
+
+	#[cfg_attr(feature = "docsrs", doc(cfg(feature = "accuraterip")))]
+	/// # Parse Checksums.
+	///
+	/// This will parse the v1 and v2 track checksums from a raw AccurateRip
+	/// [bin file](AccurateRip::checksum_url).
+	///
+	/// The return result is a vector — indexed by track number (`n-1`) — of
+	/// `checksum => confidence` pairs.
+	///
+	/// Note: AccurateRip does not differentiate between v1 and v2 checksums;
+	/// the only way to know which is which is to find a match for a checksum
+	/// you calculated yourself.
+	///
+	/// ## Errors
+	///
+	/// This will return an error if parsing is unsuccessful, or the result is
+	/// empty.
+	pub fn parse_checksums(&self, bin: &[u8]) -> Result<Vec<BTreeMap<u32, u8>>, TocError> {
+		// We're expecting 0+ sections containing a 13-byte disc ID and a
+		// 9-byte checksum for each track.
+		let audio_len = self.audio_len() as usize;
+		let chunk_size = 13 + 9 * audio_len;
+		let mut out: Vec<BTreeMap<u32, u8>> = vec![BTreeMap::default(); audio_len];
+
+		for chunk in bin.chunks_exact(chunk_size) {
+			// Verify the chunk begins with the disc ID, and get to the meat.
+			let chunk = chunk.strip_prefix(&self.0).ok_or(TocError::Checksums)?;
+			// Update the list for each track, combining them if for some
+			// reason the same value appears twice.
+			for (k, v) in chunk.chunks_exact(9).enumerate() {
+				let crc = u32::from_le_bytes([v[1], v[2], v[3], v[4]]);
+				if crc != 0 {
+					let e = out[k].entry(crc).or_insert(0);
+					*e = e.saturating_add(v[0]);
+				}
+			}
+		}
+
+		// Consider it okay if we found at least one checksum.
+		if out.iter().any(|v| ! v.is_empty()) { Ok(out) }
+		else { Err(TocError::NoChecksums) }
+	}
 }
 
 
@@ -249,6 +297,22 @@ impl Toc {
 	/// ```
 	pub fn accuraterip_checksum_url(&self) -> String {
 		self.accuraterip_id().checksum_url()
+	}
+
+	#[cfg_attr(feature = "docsrs", doc(cfg(feature = "accuraterip")))]
+	/// # Parse Checksums.
+	///
+	/// This will parse the v1 and v2 track checksums from a raw AccurateRip
+	/// [bin file](AccurateRip::checksum_url).
+	///
+	/// See [`AccurateRip::parse_checksums`] for more information.
+	///
+	/// ## Errors
+	///
+	/// This will return an error if parsing is unsuccessful, or the result is
+	/// empty.
+	pub fn accuraterip_parse_checksums(&self, bin: &[u8]) -> Result<Vec<BTreeMap<u32, u8>>, TocError> {
+		self.accuraterip_id().parse_checksums(bin)
 	}
 }
 

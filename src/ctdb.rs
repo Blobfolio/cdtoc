@@ -4,8 +4,10 @@
 
 use crate::{
 	Toc,
+	TocError,
 	TocKind,
 };
+use std::collections::BTreeMap;
 
 
 
@@ -99,6 +101,75 @@ impl Toc {
 
 		url
 	}
+
+	#[cfg_attr(feature = "docsrs", doc(cfg(feature = "ctdb")))]
+	/// # Parse Checksums.
+	///
+	/// This will parse the track checksums from an XML CTDB [lookup](Toc::ctdb_checksum_url).
+	///
+	/// The return result is a vector — indexed by track number (`n-1`) — of
+	/// `checksum => confidence` pairs.
+	///
+	/// ## Errors
+	///
+	/// This method uses naive parsing so does not worry about strict XML
+	/// validation, but will return an error if other parsing errors are
+	/// encountered or no checksums are found.
+	pub fn ctdb_parse_checksums(&self, xml: &str) -> Result<Vec<BTreeMap<u32, u16>>, TocError> {
+		let audio_len = self.audio_len();
+		let mut out: Vec<BTreeMap<u32, u16>> = vec![BTreeMap::default(); audio_len];
+
+		for line in xml.lines() {
+			if let Some((confidence, crcs)) = parse_entry(line.trim()) {
+				let confidence: u16 = confidence.parse().map_err(|_| TocError::Checksums)?;
+				let mut id = 0;
+				for chk in crcs.split_ascii_whitespace() {
+					let crc = u32::from_str_radix(chk, 16).map_err(|_| TocError::Checksums)?;
+					if crc != 0 {
+						let e = out[id].entry(crc).or_insert(0);
+						*e = e.saturating_add(confidence);
+					}
+					id += 1;
+				}
+
+				if id != audio_len { return Err(TocError::Checksums); }
+			}
+		}
+
+		// Consider it okay if we found at least one checksum.
+		if out.iter().any(|v| ! v.is_empty()) { Ok(out) }
+		else { Err(TocError::NoChecksums) }
+	}
+}
+
+
+
+/// # Parse XML Entry.
+///
+/// This returns the value subslices corresponding to the "confidence" and
+/// "trackcrcs" attributes.
+fn parse_entry(line: &str) -> Option<(&str, &str)> {
+	if line.starts_with("<entry ") {
+		let confidence = parse_attr(line, " confidence=\"")?;
+		let crcs = parse_attr(line, " trackcrcs=\"")?;
+		Some((confidence, crcs))
+	}
+	else { None }
+}
+
+/// # Parse Entry Value.
+///
+/// This naively parses an attribute value from a tag, returning the subslice
+/// corresponding to its value if non-empty.
+///
+/// But that's okay; there shouldn't be!
+fn parse_attr<'a>(mut line: &'a str, attr: &'static str) -> Option<&'a str> {
+	let start = line.find(attr)?;
+	line = &line[start + attr.len()..];
+	let end = line.find('"')?;
+
+	if 0 < end { Some(line[..end].trim()) }
+	else { None }
 }
 
 
