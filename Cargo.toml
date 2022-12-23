@@ -1,0 +1,89 @@
+[package]
+name = "cdtoc"
+version = "0.0.1"
+authors = ["Blobfolio, LLC. <hello@blobfolio.com>"]
+edition = "2021"
+rust-version = "1.62"
+description = "Parser and tools for CDTOC metadata tags."
+license = "WTFPL"
+repository = "https://github.com/Blobfolio/cdtoc"
+readme = "README.md"
+keywords = [ "cdtoc", "accuraterip", "cddb", "ctdb", "musicbrainz" ]
+exclude = [
+	".github",
+	".gitignore",
+	".righteous-sandbox.json",
+	"doc",
+	"justfile",
+]
+
+[package.metadata.bashman]
+name = "CDTOC"
+bash-dir = "./"
+man-dir = "./"
+credits-dir = "./"
+
+[package.metadata.docs.rs]
+features = [ "docsrs", "accuraterip", "cddb", "ctdb", "musicbrainz" ]
+default-target = "x86_64-unknown-linux-gnu"
+
+[dev-dependencies]
+brunch = "0.3.*"
+
+[dependencies.base64]
+version = "0.20.*"
+optional = true
+
+[dependencies.faster-hex]
+version = "0.6.*"
+optional = true
+
+[dependencies.itoa]
+version = "1.0.*"
+optional = true
+
+[dependencies.sha1]
+version = "0.10.*"
+optional = true
+
+[features]
+default = [ "accuraterip", "cddb", "ctdb", "musicbrainz" ]
+
+# Enable AccurateRip ID calculations.
+accuraterip = [ "cddb" ]
+
+# Enable CDDB ID calculations.
+cddb = [ "itoa" ]
+
+# Enable CUETools Database ID calculations.
+ctdb = [ "base64", "faster-hex", "itoa", "sha1" ]
+
+# Enable MusicBrainz ID calculations.
+musicbrainz = [ "base64", "faster-hex", "sha1" ]
+
+# This is just a workaround for docs.rs; don't enable this if you're human!
+docsrs = []
+
+[[bench]]
+name = "accuraterip"
+required-features = [ "accuraterip" ]
+harness = false
+
+[[bench]]
+name = "cddb"
+required-features = [ "cddb" ]
+harness = false
+
+[[bench]]
+name = "ctdb"
+required-features = [ "ctdb" ]
+harness = false
+
+[[bench]]
+name = "musicbrainz"
+required-features = [ "musicbrainz" ]
+harness = false
+
+[[bench]]
+name = "toc"
+harness = false
