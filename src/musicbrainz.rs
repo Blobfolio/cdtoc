@@ -37,15 +37,13 @@ impl Toc {
 		sha.update(&buf[..4]);
 
 		// Add the audio leadout.
-		let _res = faster_hex::hex_encode(&self.audio_leadout().to_be_bytes(), &mut buf);
-		buf.make_ascii_uppercase();
+		crate::hex_u32(self.audio_leadout(), &mut buf, true);
 		sha.update(buf);
 
 		// Now the audio starts.
 		let sectors = self.audio_sectors();
-		for v in sectors {
-			let _res = faster_hex::hex_encode(&v.to_be_bytes(), &mut buf);
-			buf.make_ascii_uppercase();
+		for &v in sectors {
+			crate::hex_u32(v, &mut buf, true);
 			sha.update(buf);
 		}
 

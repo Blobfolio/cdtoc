@@ -678,6 +678,16 @@ fn base64_encode(src: &[u8]) -> String {
 	out
 }
 
+#[cfg(feature = "faster-hex")]
+#[allow(unsafe_code)]
+/// # HEX Encode u32.
+///
+/// This convenience wrapper uses faster-hex to encode a u32 to a buffer.
+fn hex_u32(src: u32, buf: &mut [u8], upper: bool) {
+	faster_hex::hex_encode(&src.to_be_bytes(), buf).unwrap();
+	if upper { buf.make_ascii_uppercase(); }
+}
+
 #[allow(clippy::cast_possible_truncation)]
 /// # Parse CDTOC Metadata.
 ///

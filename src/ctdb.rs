@@ -36,14 +36,12 @@ impl Toc {
 		// Write all but the first tracks relative to the first.
 		let [leadin, sectors @ ..] = self.audio_sectors() else { unreachable!() };
 		for v in sectors {
-			let _res = faster_hex::hex_encode(&(v - leadin).to_be_bytes(), &mut buf);
-			buf.make_ascii_uppercase();
+			crate::hex_u32(v - leadin, &mut buf, true);
 			sha.update(buf);
 		}
 
 		// Add the leadout, likewise relative.
-		let _res = faster_hex::hex_encode(&(self.audio_leadout() - leadin).to_be_bytes(), &mut buf);
-		buf.make_ascii_uppercase();
+		crate::hex_u32(self.audio_leadout() - leadin, &mut buf, true);
 		sha.update(buf);
 
 		// And padding for a total of 99 tracks.
