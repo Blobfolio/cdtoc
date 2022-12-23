@@ -499,7 +499,6 @@ impl Toc {
 	/// ```
 	pub const fn leadout(&self) -> u32 { self.leadout }
 
-	#[must_use]
 	/// # Track Position.
 	///
 	/// This lets you know if a given track number for this disc would come
@@ -512,24 +511,20 @@ impl Toc {
 	/// use cdtoc::{Toc, TrackPosition};
 	///
 	/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
-	/// assert_eq!(toc.track_position(0), None);
-	/// assert_eq!(toc.track_position(1), Some(TrackPosition::First));
-	/// assert_eq!(toc.track_position(2), Some(TrackPosition::Middle));
-	/// assert_eq!(toc.track_position(3), Some(TrackPosition::Middle));
-	/// assert_eq!(toc.track_position(4), Some(TrackPosition::Last));
-	/// assert_eq!(toc.track_position(5), None);
+	/// assert!(toc.track_position(0).is_err());
+	/// assert_eq!(toc.track_position(1), Ok(TrackPosition::First));
+	/// assert_eq!(toc.track_position(2), Ok(TrackPosition::Middle));
+	/// assert_eq!(toc.track_position(3), Ok(TrackPosition::Middle));
+	/// assert_eq!(toc.track_position(4), Ok(TrackPosition::Last));
+	/// assert!(toc.track_position(5).is_err());
 	/// ```
-	pub fn track_position(&self, track: usize) -> Option<TrackPosition> {
-		let len = self.audio_len();
-
-		// Out of range.
-		if track == 0 || len < track { None }
-		else if track == 1 {
-			if len == 1 { Some(TrackPosition::Only) }
-			else { Some(TrackPosition::First) }
-		}
-		else if track == len { Some(TrackPosition::Last) }
-		else { Some(TrackPosition::Middle) }
+	///
+	/// ## Errors
+	///
+	/// This will return an error if the track number is out of range for the
+	/// table of contents.
+	pub fn track_position(&self, track: usize) -> Result<TrackPosition, TocError> {
+		TrackPosition::try_from((track, self.audio_len()))
 	}
 }
 
@@ -601,6 +596,25 @@ pub enum TrackPosition {
 	/// # The Only Track.
 	Only,
 }
+
+macro_rules! pos_tuple {
+	($($ty:ty),+) => ($(
+		impl TryFrom<($ty, $ty)> for TrackPosition {
+			type Error = TocError;
+
+			fn try_from(src: ($ty, $ty)) -> Result<Self, Self::Error> {
+				if src.0 == 0 || src.1 < src.0 { Err(TocError::TrackPosition) }
+				else if src.0 == 1 {
+					if src.1 == 1 { Ok(Self::Only) }
+					else { Ok(Self::First) }
+				}
+				else if src.0 == src.1 { Ok(Self::Last) }
+				else { Ok(Self::Middle) }
+			}
+		}
+	)+);
+}
+pos_tuple!(u8, u16, u32, u64, usize);
 
 impl TrackPosition {
 	#[must_use]

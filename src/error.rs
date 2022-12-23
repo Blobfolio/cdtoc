@@ -29,6 +29,9 @@ pub enum TocError {
 
 	/// # Track Count.
 	TrackCount,
+
+	/// # Track Position (Out of Range).
+	TrackPosition,
 }
 
 impl fmt::Display for TocError {
@@ -43,6 +46,7 @@ impl fmt::Display for TocError {
 			Self::SectorOrder => f.write_str("Sectors are incorrectly ordered or overlap."),
 			Self::SectorSize => f.write_str("Sector sizes may not exceed four bytes (u32)."),
 			Self::TrackCount => f.write_str("The number of audio tracks must be between 1..=99."),
+			Self::TrackPosition => f.write_str("The track is out of range."),
 		}
 	}
 }
