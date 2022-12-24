@@ -38,12 +38,12 @@ impl Toc {
 		// Write all but the first tracks relative to the first.
 		let [leadin, sectors @ ..] = self.audio_sectors() else { unreachable!() };
 		for v in sectors {
-			crate::hex_u32(v - leadin, &mut buf, true);
+			crate::hex_encode_u32(v - leadin, &mut buf, true);
 			sha.update(buf);
 		}
 
 		// Add the leadout, likewise relative.
-		crate::hex_u32(self.audio_leadout() - leadin, &mut buf, true);
+		crate::hex_encode_u32(self.audio_leadout() - leadin, &mut buf, true);
 		sha.update(buf);
 
 		// And padding for a total of 99 tracks.
@@ -124,7 +124,7 @@ impl Toc {
 				let confidence: u16 = confidence.parse().map_err(|_| TocError::Checksums)?;
 				let mut id = 0;
 				for chk in crcs.split_ascii_whitespace() {
-					let crc = u32::from_str_radix(chk, 16).map_err(|_| TocError::Checksums)?;
+					let crc = super::hex_decode_u32(chk).ok_or(TocError::Checksums)?;
 					if crc != 0 {
 						let e = out[id].entry(crc).or_insert(0);
 						*e = e.saturating_add(confidence);

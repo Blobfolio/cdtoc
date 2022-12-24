@@ -110,6 +110,35 @@ use std::fmt;
 
 
 
+/// # Powers of 16.
+const BASE16: [u32; 8] = [1, 16, 256, 4096, 65_536, 1_048_576, 16_777_216, 268_435_456];
+
+/// # Not Hex Placeholder Value.
+const NIL: u8 = u8::MAX;
+
+/// # Hex Decoding Table.
+///
+/// The `faster-hex` crate uses this table too, but doesn't expost it publicly,
+/// unfortunately.
+static UNHEX: [u8; 256] = [
+	NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL,
+	NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL,
+	NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, NIL, NIL, NIL,
+	NIL, NIL, NIL, NIL, 10, 11, 12, 13, 14, 15, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL,
+	NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, 10, 11, 12, 13,
+	14, 15, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL,
+	NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL,
+	NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL,
+	NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL,
+	NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL,
+	NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL,
+	NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL,
+	NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL,
+	NIL, NIL, NIL,
+];
+
+
+
 #[derive(Debug, Clone, Eq, Hash, PartialEq)]
 /// # CDTOC.
 ///
@@ -692,9 +721,35 @@ fn base64_encode(src: &[u8]) -> String {
 /// # HEX Encode u32.
 ///
 /// This convenience wrapper uses faster-hex to encode a u32 to a buffer.
-fn hex_u32(src: u32, buf: &mut [u8], upper: bool) {
+fn hex_encode_u32(src: u32, buf: &mut [u8], upper: bool) {
 	faster_hex::hex_encode(&src.to_be_bytes(), buf).unwrap();
 	if upper { buf.make_ascii_uppercase(); }
+}
+
+#[allow(unsafe_code)]
+/// # Hex Decode u32.
+///
+/// This is a slightly more performant implementation of [`u32::from_str_radix`].
+/// (`faster-hex` doesn't really help at this tiny scale.)
+fn hex_decode_u32(src: &str) -> Option<u32> {
+	#[inline]
+	// Decode One Digit.
+	fn decode1(src: u8) -> Option<u32> {
+		let out = UNHEX[src as usize];
+		if out == NIL { None }
+		else { Some(out as u32) }
+	}
+
+	if (1..=8).contains(&src.len()) {
+		let mut out: u32 = 0;
+		for (k, byte) in BASE16.into_iter().zip(src.bytes().rev()) {
+			let digit = decode1(byte)?;
+			out += digit * k;
+		}
+
+		Some(out)
+	}
+	else { None }
 }
 
 #[allow(clippy::cast_possible_truncation)]
@@ -724,8 +779,13 @@ fn parse_cdtoc_metadata(mut src: &str) -> Result<(Vec<u32>, Option<u32>, u32), T
 	// Everything else should be a starting sector.
 	let mut sectors: Vec<u32> = split
 		.map(|n|
-			u32::from_str_radix(n.trim_start_matches(|c| c == 'x' || c == 'X'), 16)
-				.map_err(|_| TocError::SectorSize)
+			hex_decode_u32(n)
+			.or_else(||
+				n.strip_prefix('X')
+					.or_else(|| n.strip_prefix('x'))
+					.and_then(hex_decode_u32)
+			)
+				.ok_or(TocError::SectorSize)
 		)
 		.collect::<Result<Vec<u32>, TocError>>()?;
 

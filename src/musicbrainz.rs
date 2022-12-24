@@ -37,13 +37,13 @@ impl Toc {
 		sha.update(&buf[..4]);
 
 		// Add the audio leadout.
-		crate::hex_u32(self.audio_leadout(), &mut buf, true);
+		crate::hex_encode_u32(self.audio_leadout(), &mut buf, true);
 		sha.update(buf);
 
 		// Now the audio starts.
 		let sectors = self.audio_sectors();
 		for &v in sectors {
-			crate::hex_u32(v, &mut buf, true);
+			crate::hex_encode_u32(v, &mut buf, true);
 			sha.update(buf);
 		}
 

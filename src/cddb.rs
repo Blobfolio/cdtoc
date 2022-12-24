@@ -47,7 +47,7 @@ impl fmt::Display for Cddb {
 	#[allow(unsafe_code)]
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		let mut buf = [b'0'; 8];
-		crate::hex_u32(self.0, &mut buf, false);
+		crate::hex_encode_u32(self.0, &mut buf, false);
 		f.write_str(unsafe { std::str::from_utf8_unchecked(&buf) })
 	}
 
