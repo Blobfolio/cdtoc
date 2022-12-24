@@ -17,6 +17,5 @@ fn main() {
 	benches!(
 		inline:
 		Bench::new("Toc::ctdb_id").run(|| toc.ctdb_id()),
-		Bench::new("Toc::ctdb_toc").run(|| toc.ctdb_toc()),
 	);
 }

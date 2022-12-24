@@ -19,5 +19,9 @@ fn main() {
 		inline:
 		Bench::new("Toc::accuraterip_id").run(|| toc.accuraterip_id()),
 		Bench::new("AccurateRip::to_string").run(|| ar.to_string()),
+
+		Bench::spacer(),
+
+		Bench::new("AccurateRip::cddb_id").run(|| ar.cddb_id()),
 	);
 }
