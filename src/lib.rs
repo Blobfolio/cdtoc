@@ -726,12 +726,12 @@ fn hex_encode_u32(src: u32, buf: &mut [u8], upper: bool) {
 	if upper { buf.make_ascii_uppercase(); }
 }
 
-#[allow(unsafe_code)]
 /// # Hex Decode u32.
 ///
 /// This is a slightly more performant implementation of [`u32::from_str_radix`].
 /// (`faster-hex` doesn't really help at this tiny scale.)
 fn hex_decode_u32(src: &str) -> Option<u32> {
+	#[allow(clippy::cast_lossless)]
 	#[inline]
 	// Decode One Digit.
 	fn decode1(src: u8) -> Option<u32> {
