@@ -105,6 +105,12 @@ bench BENCH="":
 		--target x86_64-unknown-linux-gnu \
 		--target-dir "{{ cargo_dir }}"
 
+	cargo test \
+		--release \
+		--no-default-features \
+		--target x86_64-unknown-linux-gnu \
+		--target-dir "{{ cargo_dir }}"
+
 
 # Get/Set version.
 version: credits
