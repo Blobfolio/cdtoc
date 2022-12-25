@@ -30,6 +30,9 @@ default-target = "x86_64-unknown-linux-gnu"
 [dev-dependencies]
 brunch = "0.3.*"
 
+[dependencies]
+dactyl = "0.4.*"
+
 [dependencies.base64]
 version = "0.20.*"
 optional = true
@@ -57,6 +60,8 @@ cddb = [ "itoa" ]
 
 # Enable CUETools Database ID calculations.
 ctdb = [ "base64", "faster-hex", "itoa", "sha1" ]
+
+# Use feature "faster-hex" for slightly faster hex encoding.
 
 # Enable MusicBrainz ID calculations.
 musicbrainz = [ "base64", "faster-hex", "sha1" ]

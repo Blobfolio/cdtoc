@@ -12,6 +12,9 @@ use std::{
 #[derive(Debug, Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd)]
 /// # Error Type.
 pub enum TocError {
+	/// # CDDASample Rate.
+	CDDASampleCount,
+
 	/// # Invalid characters.
 	CDTOCChars,
 
@@ -40,6 +43,7 @@ pub enum TocError {
 impl fmt::Display for TocError {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		match self {
+			Self::CDDASampleCount => f.write_str("Invalid CDDA sample count."),
 			Self::CDTOCChars => f.write_str("Invalid character(s), expecting only 0-9, A-F, +, and (rarely) X."),
 			Self::Checksums => f.write_str("Unable to parse checksums."),
 			Self::NoAudio => f.write_str("At least one audio track is required."),
