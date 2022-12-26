@@ -57,12 +57,13 @@ impl fmt::Display for AccurateRip {
 	#[cfg(feature = "faster-hex")]
 	#[allow(unsafe_code)]
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		let mut buf = [b'-', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0'];
+		let mut buf: [u8; 9] = [b'-', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0'];
 
 		// Length.
 		write!(f, "{:03}", self.0[0])?;
 
 		// ID Parts.
+		// Safety: all bytes are ASCII.
 		faster_hex::hex_encode(&[self.0[4], self.0[3], self.0[2], self.0[1]], &mut buf[1..]).unwrap();
 		f.write_str(unsafe { std::str::from_utf8_unchecked(&buf) })?;
 

@@ -298,8 +298,8 @@ impl Duration {
 	/// Return the duration as a tuple containing the total number of seconds
 	/// and remaining frames (some fraction of a second).
 	///
-	/// Audio CDs have 75 frames per second, so the second value will always be
-	/// in the range of `0..75`.
+	/// Audio CDs have 75 frames per second, so the frame portion will always
+	/// be in the range of `0..75`.
 	///
 	/// ## Examples
 	///

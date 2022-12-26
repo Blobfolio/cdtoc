@@ -56,7 +56,7 @@ Add `cdtoc` to your `dependencies` in `Cargo.toml`, like:
 cdtoc = "0.1.*"
 ```
 
-The disc ID helpers require additional dependencies, so if you aren't using them, be sure to disable the default features (and add back any you _do_ want) to skip the overhead.
+The disc ID helpers require additional dependencies, so if you aren't using them, be sure to disable the default features (adding back any you _do_ want) to skip the overhead.
 
 ```ignore,toml
 [dependencies.cdtoc]
@@ -204,7 +204,6 @@ pub struct Toc {
 }
 
 impl fmt::Display for Toc {
-	#[allow(unsafe_code)]
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		// Start with the track count.
 		write!(f, "{:X}", self.audio.len())?;
@@ -274,10 +273,12 @@ impl Toc {
 	/// or the sectors are in the wrong order.
 	pub fn from_parts(audio: Vec<u32>, data: Option<u32>, leadout: u32)
 	-> Result<Self, TocError> {
-		if audio.is_empty() { return Err(TocError::NoAudio); }
+		// Check length.
+		let audio_len = audio.len();
+		if 0 == audio_len { return Err(TocError::NoAudio); }
+		if 99 < audio_len { return Err(TocError::TrackCount); }
 
 		// Audio is out of order?
-		let audio_len = audio.len();
 		if
 			(1 < audio_len && audio.windows(2).any(|pair| pair[1] <= pair[0])) ||
 			leadout <= audio[audio_len - 1]
@@ -638,7 +639,6 @@ fn base64_encode(src: &[u8]) -> String {
 }
 
 #[cfg(feature = "faster-hex")]
-#[allow(unsafe_code)]
 /// # HEX Encode u32.
 ///
 /// This convenience wrapper uses faster-hex to encode a u32 to a buffer.
