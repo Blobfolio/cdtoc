@@ -273,10 +273,12 @@ impl Toc {
 	/// or the sectors are in the wrong order.
 	pub fn from_parts(audio: Vec<u32>, data: Option<u32>, leadout: u32)
 	-> Result<Self, TocError> {
-		if audio.is_empty() { return Err(TocError::NoAudio); }
+		// Check length.
+		let audio_len = audio.len();
+		if 0 == audio_len { return Err(TocError::NoAudio); }
+		if 99 < audio_len { return Err(TocError::TrackCount); }
 
 		// Audio is out of order?
-		let audio_len = audio.len();
 		if
 			(1 < audio_len && audio.windows(2).any(|pair| pair[1] <= pair[0])) ||
 			leadout <= audio[audio_len - 1]
