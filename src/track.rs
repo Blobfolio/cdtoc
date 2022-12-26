@@ -150,7 +150,7 @@ impl Track {
 
 
 #[derive(Debug)]
-/// # Tracks.
+/// # Audio Tracks Iterator.
 ///
 /// This is an iterator of [`Track`] details for a given [`Toc`](crate::Toc).
 ///
@@ -212,6 +212,9 @@ impl<'a> Tracks<'a> {
 /// Variants of this type are returned by [`Track::position`].
 pub enum TrackPosition {
 	/// # Invalid.
+	///
+	/// This is used for track numbers that are out of range, including pre-gap
+	/// hidden tracks (#0).
 	Invalid,
 
 	/// # The First Track.

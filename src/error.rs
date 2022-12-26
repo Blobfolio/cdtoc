@@ -12,31 +12,58 @@ use std::{
 #[derive(Debug, Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd)]
 /// # Error Type.
 pub enum TocError {
-	/// # CDDASample Rate.
+	/// # CDDA Sample Rate.
+	///
+	/// The total number of samples for a given audio track on a CD must be
+	/// evenly divisible by `588`, the number of samples per sector.
 	CDDASampleCount,
 
 	/// # Invalid characters.
+	///
+	/// CDTOC metadata tags comprise HEX-encoded decimals separated by `+`
+	/// signs. The only other character allowed is an `X`, used to indicate a
+	/// leading data session.
 	CDTOCChars,
 
 	/// # Invalid Checksum File.
+	///
+	/// This is a catch-all error used when an AccurateRip or CTDB checksum
+	/// manifest contains some sort of logical error (i.e. preventing it being
+	/// parsed).
 	Checksums,
 
 	/// # No Audio.
+	///
+	/// At least one audio track is required for a table of contents.
 	NoAudio,
 
 	/// # No Checksums.
+	///
+	/// This error is used when an AccurateRip or CTDB checksum manifest yields
+	/// no valid checksums.
 	NoChecksums,
 
 	/// # Invalid sector count.
+	///
+	/// The stated number of audio tracks should match the number of sectors
+	/// provided (once data and leadout values have been separated).
 	SectorCount(u8, usize),
 
 	/// # Sector Ordering.
+	///
+	/// Audio CD sectors must be sequentially ordered and non-overlapping, and
+	/// the data session, if any, must come either immediately before or after
+	/// the audio set. The leadout must be larger than every other sector.
 	SectorOrder,
 
 	/// # Sector Size.
+	///
+	/// Sector values cannot exceed [`u32::MAX`].
 	SectorSize,
 
 	/// # Track Count.
+	///
+	/// Audio CDs support a maximum of 99 tracks.
 	TrackCount,
 }
 
