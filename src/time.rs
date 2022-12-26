@@ -177,8 +177,8 @@ impl Duration {
 	/// Derive the duration from the total number of CDDA  — 16-bit stereo @
 	/// 44.1 kHz — samples.
 	///
-	/// For tracks with non-CDDA bit depths, channel counts, and/or sample
-	/// rates, use [`Duration::from_samples`].
+	/// For tracks with non-CDDA bit depths, channel counts, sample rates, or
+	/// sample totals, use [`Duration::from_samples`] instead.
 	///
 	/// ## Examples
 	///
@@ -194,8 +194,8 @@ impl Duration {
 	///
 	/// ## Errors
 	///
-	/// This will return an error if the sample count is invalid, i.e. not a
-	/// multiple of `588`.
+	/// This will return an error if the sample count is not evenly divisible
+	/// by `588`, the number of samples-per-sector for a standard audio CD.
 	pub const fn from_cdda_samples(total_samples: u64) -> Result<Self, TocError> {
 		let out = total_samples.wrapping_div(SAMPLES_PER_SECTOR);
 		if total_samples % SAMPLES_PER_SECTOR == 0 { Ok(Self(out)) }
@@ -207,7 +207,7 @@ impl Duration {
 	/// # From Samples (Rescaled).
 	///
 	/// Derive the equivalent CDDA duration for a track with an arbitrary
-	/// sample rate (i.e. not 44.1 kHz).
+	/// sample rate (i.e. not 44.1 kHz) or sample count.
 	///
 	/// This operation is potentially lossy and may result in a duration that
 	/// is off by ±1 frame.
