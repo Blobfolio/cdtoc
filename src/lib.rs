@@ -238,7 +238,8 @@ impl Toc {
 	///
 	/// This will return an error if the tag value is improperly formatted, the
 	/// audio track count is outside `1..=99`, there are too many or too few
-	/// sectors, or the sectors are ordered incorrectly.
+	/// sectors, the leadin is less than `150`, or the sectors are ordered
+	/// incorrectly.
 	pub fn from_cdtoc<S>(src: S) -> Result<Self, TocError>
 	where S: AsRef<str> {
 		let (audio, data, leadout) = parse_cdtoc_metadata(src.as_ref())?;
@@ -265,18 +266,28 @@ impl Toc {
 	/// ).unwrap();
 	///
 	/// assert_eq!(toc.to_string(), "4+96+2D2B+6256+B327+D84A");
+	///
+	/// // Sanity matters; the leadin, for example, can't be less than 150.
+	/// assert!(Toc::from_parts(
+	///     vec![0, 10525],
+	///     None,
+	///     15000,
+	/// ).is_err());
 	/// ```
 	///
 	/// ## Errors
 	///
-	/// This will return an error if the audio track count is outside `1..=99`
-	/// or the sectors are in the wrong order.
+	/// This will return an error if the audio track count is outside `1..=99`,
+	/// the leadin is less than `150`, or the sectors are in the wrong order.
 	pub fn from_parts(audio: Vec<u32>, data: Option<u32>, leadout: u32)
 	-> Result<Self, TocError> {
 		// Check length.
 		let audio_len = audio.len();
 		if 0 == audio_len { return Err(TocError::NoAudio); }
 		if 99 < audio_len { return Err(TocError::TrackCount); }
+
+		// Audio leadin must be at least 150.
+		if audio[0] < 150 { return Err(TocError::LeadinSize); }
 
 		// Audio is out of order?
 		if

@@ -32,6 +32,11 @@ pub enum TocError {
 	/// parsed).
 	Checksums,
 
+	/// # Leadin Too Small.
+	///
+	/// Audio CDs require a leadin of at least `150`.
+	LeadinSize,
+
 	/// # No Audio.
 	///
 	/// At least one audio track is required for a table of contents.
@@ -73,6 +78,7 @@ impl fmt::Display for TocError {
 			Self::CDDASampleCount => f.write_str("Invalid CDDA sample count."),
 			Self::CDTOCChars => f.write_str("Invalid character(s), expecting only 0-9, A-F, +, and (rarely) X."),
 			Self::Checksums => f.write_str("Unable to parse checksums."),
+			Self::LeadinSize => f.write_str("Leadin must be at least 150."),
 			Self::NoAudio => f.write_str("At least one audio track is required."),
 			Self::NoChecksums => f.write_str("No checksums were present."),
 			Self::SectorCount(expected, found) => write!(
