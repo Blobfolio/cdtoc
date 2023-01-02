@@ -320,6 +320,9 @@ impl Toc {
 	/// quite-right CDTOC metadata tag value, such as one that accidentally
 	/// included the data session in its leading track count or ordered the
 	/// sectors of a data-audio CD sequentially.
+	///
+	/// ## Examples
+	///
 	/// ```
 	/// use cdtoc::{Toc, TocKind};
 	///
