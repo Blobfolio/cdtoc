@@ -246,6 +246,63 @@ impl Toc {
 		Self::from_parts(audio, data, leadout)
 	}
 
+	/// # From Durations.
+	///
+	/// This will attempt to create an audio-only [`Toc`] from the track
+	/// durations. (Needless to say, this will only work if all tracks are
+	/// present and in the right order!)
+	///
+	/// If you happen to know the disc's true leadin offset you can specify it,
+	/// otherwise the "industry default" value of `150` will be assumed.
+	///
+	/// To create a mixed-mode [`Toc`] from scratch, use [`Toc::from_parts`]
+	/// instead so you can specify the location of the data session.
+	///
+	/// ## Examples
+	///
+	/// ```
+	/// use cdtoc::{Toc, Duration};
+	///
+	/// let toc = Toc::from_durations(
+	///     [
+	///         Duration::from(46650_u64),
+	///         Duration::from(41702_u64),
+	///         Duration::from(30295_u64),
+	///         Duration::from(37700_u64),
+	///         Duration::from(40050_u64),
+	///         Duration::from(53985_u64),
+	///         Duration::from(37163_u64),
+	///         Duration::from(59902_u64),
+	///     ],
+	///     None,
+	/// ).unwrap();
+	/// assert_eq!(
+	///     toc.to_string(),
+	///     "8+96+B6D0+159B6+1D00D+26351+2FFC3+3D2A4+463CF+54DCD",
+	/// );
+	/// ```
+	///
+	/// ## Errors
+	///
+	/// This will return an error if the track count is outside `1..=99`, the
+	/// leadin is less than 150, or the sectors overflow `u32`.
+	pub fn from_durations<I>(src: I, leadin: Option<u32>) -> Result<Self, TocError>
+	where I: IntoIterator<Item=Duration> {
+		let mut last: u32 = leadin.unwrap_or(150);
+		let mut audio: Vec<u32> = vec![last];
+		for d in src {
+			let next = u32::try_from(d.sectors())
+				.ok()
+				.and_then(|n| last.checked_add(n))
+				.ok_or(TocError::SectorSize)?;
+			audio.push(next);
+			last = next;
+		}
+
+		let leadout = audio.remove(audio.len() - 1);
+		Self::from_parts(audio, None, leadout)
+	}
+
 	/// # From Parts.
 	///
 	/// Instantiate a new [`Toc`] by manually specifying the (starting) sectors
