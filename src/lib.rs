@@ -238,11 +238,69 @@ impl Toc {
 	///
 	/// This will return an error if the tag value is improperly formatted, the
 	/// audio track count is outside `1..=99`, there are too many or too few
-	/// sectors, or the sectors are ordered incorrectly.
+	/// sectors, the leadin is less than `150`, or the sectors are ordered
+	/// incorrectly.
 	pub fn from_cdtoc<S>(src: S) -> Result<Self, TocError>
 	where S: AsRef<str> {
 		let (audio, data, leadout) = parse_cdtoc_metadata(src.as_ref())?;
 		Self::from_parts(audio, data, leadout)
+	}
+
+	/// # From Durations.
+	///
+	/// This will attempt to create an audio-only [`Toc`] from the track
+	/// durations. (Needless to say, this will only work if all tracks are
+	/// present and in the right order!)
+	///
+	/// If you happen to know the disc's true leadin offset you can specify it,
+	/// otherwise the "industry default" value of `150` will be assumed.
+	///
+	/// To create a mixed-mode [`Toc`] from scratch, use [`Toc::from_parts`]
+	/// instead so you can specify the location of the data session.
+	///
+	/// ## Examples
+	///
+	/// ```
+	/// use cdtoc::{Toc, Duration};
+	///
+	/// let toc = Toc::from_durations(
+	///     [
+	///         Duration::from(46650_u64),
+	///         Duration::from(41702_u64),
+	///         Duration::from(30295_u64),
+	///         Duration::from(37700_u64),
+	///         Duration::from(40050_u64),
+	///         Duration::from(53985_u64),
+	///         Duration::from(37163_u64),
+	///         Duration::from(59902_u64),
+	///     ],
+	///     None,
+	/// ).unwrap();
+	/// assert_eq!(
+	///     toc.to_string(),
+	///     "8+96+B6D0+159B6+1D00D+26351+2FFC3+3D2A4+463CF+54DCD",
+	/// );
+	/// ```
+	///
+	/// ## Errors
+	///
+	/// This will return an error if the track count is outside `1..=99`, the
+	/// leadin is less than 150, or the sectors overflow `u32`.
+	pub fn from_durations<I>(src: I, leadin: Option<u32>) -> Result<Self, TocError>
+	where I: IntoIterator<Item=Duration> {
+		let mut last: u32 = leadin.unwrap_or(150);
+		let mut audio: Vec<u32> = vec![last];
+		for d in src {
+			let next = u32::try_from(d.sectors())
+				.ok()
+				.and_then(|n| last.checked_add(n))
+				.ok_or(TocError::SectorSize)?;
+			audio.push(next);
+			last = next;
+		}
+
+		let leadout = audio.remove(audio.len() - 1);
+		Self::from_parts(audio, None, leadout)
 	}
 
 	/// # From Parts.
@@ -265,18 +323,28 @@ impl Toc {
 	/// ).unwrap();
 	///
 	/// assert_eq!(toc.to_string(), "4+96+2D2B+6256+B327+D84A");
+	///
+	/// // Sanity matters; the leadin, for example, can't be less than 150.
+	/// assert!(Toc::from_parts(
+	///     vec![0, 10525],
+	///     None,
+	///     15000,
+	/// ).is_err());
 	/// ```
 	///
 	/// ## Errors
 	///
-	/// This will return an error if the audio track count is outside `1..=99`
-	/// or the sectors are in the wrong order.
+	/// This will return an error if the audio track count is outside `1..=99`,
+	/// the leadin is less than `150`, or the sectors are in the wrong order.
 	pub fn from_parts(audio: Vec<u32>, data: Option<u32>, leadout: u32)
 	-> Result<Self, TocError> {
 		// Check length.
 		let audio_len = audio.len();
 		if 0 == audio_len { return Err(TocError::NoAudio); }
 		if 99 < audio_len { return Err(TocError::TrackCount); }
+
+		// Audio leadin must be at least 150.
+		if audio[0] < 150 { return Err(TocError::LeadinSize); }
 
 		// Audio is out of order?
 		if
@@ -300,6 +368,96 @@ impl Toc {
 		Ok(Self { kind, audio, data: data.unwrap_or_default(), leadout })
 	}
 
+	/// # Set Audio Leadin.
+	///
+	/// Set the audio leadin, nudging all entries up or down accordingly (
+	/// including data and leadout).
+	///
+	/// Note: this method cannot be used for data-first mixed-mode CDs.
+	///
+	/// ## Examples
+	///
+	/// ```
+	/// use cdtoc::{Toc, TocKind};
+	///
+	/// let mut toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
+	/// assert_eq!(toc.audio_leadin(), 150);
+	///
+	/// // Bump it up to 182.
+	/// assert!(toc.set_audio_leadin(182).is_ok());
+	/// assert_eq!(toc.audio_leadin(), 182);
+	/// assert_eq!(
+	///     toc.to_string(),
+	///     "4+B6+2D4B+6276+B347+D86A",
+	/// );
+	///
+	/// // Back down to 150.
+	/// assert!(toc.set_audio_leadin(150).is_ok());
+	/// assert_eq!(toc.audio_leadin(), 150);
+	/// assert_eq!(
+	///     toc.to_string(),
+	///     "4+96+2D2B+6256+B327+D84A",
+	/// );
+	///
+	/// // For CD-Extra, the data track will get nudged too.
+	/// toc = Toc::from_cdtoc("3+96+2D2B+6256+B327+D84A").unwrap();
+	/// assert_eq!(toc.kind(), TocKind::CDExtra);
+	/// assert_eq!(toc.audio_leadin(), 150);
+	/// assert_eq!(toc.data_sector(), Some(45863));
+	///
+	/// assert!(toc.set_audio_leadin(182).is_ok());
+	/// assert_eq!(toc.audio_leadin(), 182);
+	/// assert_eq!(toc.data_sector(), Some(45895));
+	///
+	/// // And back again.
+	/// assert!(toc.set_audio_leadin(150).is_ok());
+	/// assert_eq!(toc.audio_leadin(), 150);
+	/// assert_eq!(toc.data_sector(), Some(45863));
+	/// ```
+	///
+	/// ## Errors
+	///
+	/// This will return an error if the leadin is less than `150`, the CD
+	/// format is data-first, or the nudging causes the sectors to overflow
+	/// `u32`.
+	pub fn set_audio_leadin(&mut self, leadin: u32) -> Result<(), TocError> {
+		use std::cmp::Ordering;
+
+		if leadin < 150 { Err(TocError::LeadinSize) }
+		else if matches!(self.kind, TocKind::DataFirst) {
+			Err(TocError::Format(TocKind::DataFirst))
+		}
+		else {
+			let current = self.audio_leadin();
+			match leadin.cmp(&current) {
+				// Nudge downward.
+				Ordering::Less => {
+					let diff = current - leadin;
+					for v in &mut self.audio { *v -= diff; }
+					if self.has_data() { self.data -= diff; }
+					self.leadout -= diff;
+				},
+				// Nudge upward.
+				Ordering::Greater => {
+					let diff = leadin - current;
+					for v in &mut self.audio {
+						*v = v.checked_add(diff).ok_or(TocError::SectorSize)?;
+					}
+					if self.has_data() {
+						self.data = self.data.checked_add(diff)
+							.ok_or(TocError::SectorSize)?;
+					}
+					self.leadout = self.leadout.checked_add(diff)
+						.ok_or(TocError::SectorSize)?;
+				},
+				// Noop.
+				Ordering::Equal => {},
+			}
+
+			Ok(())
+		}
+	}
+
 	/// # Set Media Kind.
 	///
 	/// This method can be used to override the table of content's derived
@@ -309,6 +467,9 @@ impl Toc {
 	/// quite-right CDTOC metadata tag value, such as one that accidentally
 	/// included the data session in its leading track count or ordered the
 	/// sectors of a data-audio CD sequentially.
+	///
+	/// ## Examples
+	///
 	/// ```
 	/// use cdtoc::{Toc, TocKind};
 	///
@@ -595,7 +756,25 @@ pub enum TocKind {
 	DataFirst,
 }
 
+impl fmt::Display for TocKind {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		f.write_str(self.as_str())
+	}
+}
+
 impl TocKind {
+	#[must_use]
+	/// # As Str.
+	///
+	/// Return the value as a string slice.
+	pub const fn as_str(self) -> &'static str {
+		match self {
+			Self::Audio => "audio-only",
+			Self::CDExtra => "CD-Extra",
+			Self::DataFirst => "data+audio",
+		}
+	}
+
 	#[must_use]
 	/// # Has Data?
 	///

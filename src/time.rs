@@ -174,11 +174,15 @@ impl Sum for Duration {
 impl Duration {
 	/// # From CDDA Samples.
 	///
-	/// Derive the duration from the total number of CDDA  — 16-bit stereo @
-	/// 44.1 kHz — samples.
+	/// Derive the duration from the total number of a track's _CDDA-quality_
+	/// samples.
 	///
-	/// For tracks with non-CDDA bit depths, channel counts, sample rates, or
-	/// sample totals, use [`Duration::from_samples`] instead.
+	/// This method assumes the count was captured at a rate of 44.1 kHz, and
+	/// requires it divide evenly into the samples-per-sector size used by
+	/// standard audio CDs (`588`).
+	///
+	/// For more flexible (and/or approximate) sample/duration conversions, use
+	/// [`Duration::from_samples`] instead.
 	///
 	/// ## Examples
 	///
