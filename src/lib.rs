@@ -368,6 +368,96 @@ impl Toc {
 		Ok(Self { kind, audio, data: data.unwrap_or_default(), leadout })
 	}
 
+	/// # Set Audio Leadin.
+	///
+	/// Set the audio leadin, nudging all entries up or down accordingly (
+	/// including data and leadout).
+	///
+	/// Note: this method cannot be used for data-first mixed-mode CDs.
+	///
+	/// ## Examples
+	///
+	/// ```
+	/// use cdtoc::{Toc, TocKind};
+	///
+	/// let mut toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
+	/// assert_eq!(toc.audio_leadin(), 150);
+	///
+	/// // Bump it up to 182.
+	/// assert!(toc.set_audio_leadin(182).is_ok());
+	/// assert_eq!(toc.audio_leadin(), 182);
+	/// assert_eq!(
+	///     toc.to_string(),
+	///     "4+B6+2D4B+6276+B347+D86A",
+	/// );
+	///
+	/// // Back down to 150.
+	/// assert!(toc.set_audio_leadin(150).is_ok());
+	/// assert_eq!(toc.audio_leadin(), 150);
+	/// assert_eq!(
+	///     toc.to_string(),
+	///     "4+96+2D2B+6256+B327+D84A",
+	/// );
+	///
+	/// // For CD-Extra, the data track will get nudged too.
+	/// toc = Toc::from_cdtoc("3+96+2D2B+6256+B327+D84A").unwrap();
+	/// assert_eq!(toc.kind(), TocKind::CDExtra);
+	/// assert_eq!(toc.audio_leadin(), 150);
+	/// assert_eq!(toc.data_sector(), Some(45863));
+	///
+	/// assert!(toc.set_audio_leadin(182).is_ok());
+	/// assert_eq!(toc.audio_leadin(), 182);
+	/// assert_eq!(toc.data_sector(), Some(45895));
+	///
+	/// // And back again.
+	/// assert!(toc.set_audio_leadin(150).is_ok());
+	/// assert_eq!(toc.audio_leadin(), 150);
+	/// assert_eq!(toc.data_sector(), Some(45863));
+	/// ```
+	///
+	/// ## Errors
+	///
+	/// This will return an error if the leadin is less than `150`, the CD
+	/// format is data-first, or the nudging causes the sectors to overflow
+	/// `u32`.
+	pub fn set_audio_leadin(&mut self, leadin: u32) -> Result<(), TocError> {
+		use std::cmp::Ordering;
+
+		if leadin < 150 { Err(TocError::LeadinSize) }
+		else if matches!(self.kind, TocKind::DataFirst) {
+			Err(TocError::Format(TocKind::DataFirst))
+		}
+		else {
+			let current = self.audio_leadin();
+			match leadin.cmp(&current) {
+				// Nudge downward.
+				Ordering::Less => {
+					let diff = current - leadin;
+					for v in &mut self.audio { *v -= diff; }
+					if self.has_data() { self.data -= diff; }
+					self.leadout -= diff;
+				},
+				// Nudge upward.
+				Ordering::Greater => {
+					let diff = leadin - current;
+					for v in &mut self.audio {
+						*v = v.checked_add(diff).ok_or(TocError::SectorSize)?;
+					}
+					if self.has_data() {
+						self.data = self.data.checked_add(diff)
+							.ok_or(TocError::SectorSize)?;
+					}
+					self.leadout = self.leadout.checked_add(diff)
+						.ok_or(TocError::SectorSize)?;
+				},
+				// Noop.
+				Ordering::Equal => {},
+			}
+
+			Ok(())
+		}
+	}
+
 	/// # Set Media Kind.
 	///
 	/// This method can be used to override the table of content's derived
@@ -666,7 +756,25 @@ pub enum TocKind {
 	DataFirst,
 }
 
+impl fmt::Display for TocKind {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		f.write_str(self.as_str())
+	}
+}
+
 impl TocKind {
+	#[must_use]
+	/// # As Str.
+	///
+	/// Return the value as a string slice.
+	pub const fn as_str(self) -> &'static str {
+		match self {
+			Self::Audio => "audio-only",
+			Self::CDExtra => "CD-Extra",
+			Self::DataFirst => "data+audio",
+		}
+	}
+
 	#[must_use]
 	/// # Has Data?
 	///

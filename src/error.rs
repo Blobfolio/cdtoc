@@ -2,6 +2,7 @@
 # CDTOC: Errors
 */
 
+use crate::TocKind;
 use std::{
 	error::Error,
 	fmt,
@@ -31,6 +32,12 @@ pub enum TocError {
 	/// manifest contains some sort of logical error (i.e. preventing it being
 	/// parsed).
 	Checksums,
+
+	/// # Invalid Format For Operation.
+	///
+	/// This is a catch-all error used when a given disc format is incompatible
+	/// with the operation, such as [`TocKind::DataFirst`] w/ [`Toc::set_audio_leadin`].
+	Format(TocKind),
 
 	/// # Leadin Too Small.
 	///
@@ -78,13 +85,11 @@ impl fmt::Display for TocError {
 			Self::CDDASampleCount => f.write_str("Invalid CDDA sample count."),
 			Self::CDTOCChars => f.write_str("Invalid character(s), expecting only 0-9, A-F, +, and (rarely) X."),
 			Self::Checksums => f.write_str("Unable to parse checksums."),
+			Self::Format(kind) => write!(f, "This operation can't be applied to {kind} discs."),
 			Self::LeadinSize => f.write_str("Leadin must be at least 150."),
 			Self::NoAudio => f.write_str("At least one audio track is required."),
 			Self::NoChecksums => f.write_str("No checksums were present."),
-			Self::SectorCount(expected, found) => write!(
-				f, "Expected {} audio sectors, found {}.",
-				expected, found,
-			),
+			Self::SectorCount(expected, found) => write!(f, "Expected {expected} audio sectors, found {found}."),
 			Self::SectorOrder => f.write_str("Sectors are incorrectly ordered or overlap."),
 			Self::SectorSize => f.write_str("Sector sizes may not exceed four bytes (u32)."),
 			Self::TrackCount => f.write_str("The number of audio tracks must be between 1..=99."),
