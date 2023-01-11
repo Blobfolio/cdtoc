@@ -805,7 +805,15 @@ impl TocKind {
 ///
 /// Encode the slice with base64 and apply a few character substitutions.
 fn base64_encode(src: &[u8]) -> String {
-	let mut out = base64::encode(src);
+	use base64::{
+		Engine,
+		prelude::BASE64_STANDARD,
+	};
+
+	let mut out = String::with_capacity(28);
+	BASE64_STANDARD.encode_string(src, &mut out);
+
+	// Safety: the string is ASCII, as are the substitutions.
 	for b in unsafe { out.as_mut_vec() } {
 		match *b {
 			b'+' => { *b = b'.'; },

@@ -34,7 +34,7 @@ brunch = "0.3.*"
 dactyl = "0.4.*"
 
 [dependencies.base64]
-version = "0.20.*"
+version = "0.21.*"
 optional = true
 
 [dependencies.faster-hex]
