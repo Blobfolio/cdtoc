@@ -731,6 +731,26 @@ impl Toc {
 	/// assert_eq!(toc.leadout(), 55_370);
 	/// ```
 	pub const fn leadout(&self) -> u32 { self.leadout }
+
+	#[must_use]
+	/// # Duration.
+	///
+	/// Return the total duration of all audio tracks.
+	///
+	/// ## Examples
+	///
+	/// ```
+	/// use cdtoc::{Duration, Toc};
+	///
+	/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
+	/// assert_eq!(
+	///     toc.duration(),
+	///     toc.audio_tracks().map(|t| t.duration()).sum(),
+	/// );
+	/// ```
+	pub fn duration(&self) -> Duration {
+		Duration::from(self.audio_leadout() - self.audio_leadin())
+	}
 }
 
 
@@ -805,7 +825,15 @@ impl TocKind {
 ///
 /// Encode the slice with base64 and apply a few character substitutions.
 fn base64_encode(src: &[u8]) -> String {
-	let mut out = base64::encode(src);
+	use base64::{
+		Engine,
+		prelude::BASE64_STANDARD,
+	};
+
+	let mut out = String::with_capacity(28);
+	BASE64_STANDARD.encode_string(src, &mut out);
+
+	// Safety: the string is ASCII, as are the substitutions.
 	for b in unsafe { out.as_mut_vec() } {
 		match *b {
 			b'+' => { *b = b'.'; },
