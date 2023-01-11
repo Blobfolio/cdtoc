@@ -2,6 +2,18 @@
 
 
 
+## [0.1.2](https://github.com/Blobfolio/cdtoc/releases/tag/v0.1.2) - 2023-01-10
+
+### New
+
+* `Toc::duration`
+
+### Changed
+
+* Bump `base64` to `0.21`
+
+
+
 ## [0.1.1](https://github.com/Blobfolio/cdtoc/releases/tag/v0.1.1) - 2023-01-01
 
 ### New

@@ -1,11 +1,11 @@
 # Project Dependencies
     Package:   cdtoc
     Version:   0.1.1
-    Generated: 2023-01-02 05:44:19 UTC
+    Generated: 2023-01-11 06:35:00 UTC
 
 | Package | Version | Author(s) | License |
 | ---- | ---- | ---- | ---- |
-| [base64](https://github.com/marshallpierce/rust-base64) | 0.20.0 | [Alice Maz](mailto:alice@alicemaz.com) and [Marshall Pierce](mailto:marshall@mpierce.org) | Apache-2.0 or MIT |
+| [base64](https://github.com/marshallpierce/rust-base64) | 0.21.0 | [Alice Maz](mailto:alice@alicemaz.com) and [Marshall Pierce](mailto:marshall@mpierce.org) | Apache-2.0 or MIT |
 | [block-buffer](https://github.com/RustCrypto/utils) | 0.10.3 | RustCrypto Developers | Apache-2.0 or MIT |
 | [cfg-if](https://github.com/alexcrichton/cfg-if) | 1.0.0 | [Alex Crichton](mailto:alex@alexcrichton.com) | Apache-2.0 or MIT |
 | [crypto-common](https://github.com/RustCrypto/traits) | 0.1.6 | RustCrypto Developers | Apache-2.0 or MIT |
