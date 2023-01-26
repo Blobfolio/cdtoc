@@ -2,6 +2,14 @@
 
 
 
+## [0.1.3](https://github.com/Blobfolio/cdtoc/releases/tag/v0.1.3) - 2023-01-26
+
+### Change
+
+* Bump brunch to `0.4`
+
+
+
 ## [0.1.2](https://github.com/Blobfolio/cdtoc/releases/tag/v0.1.2) - 2023-01-10
 
 ### New
