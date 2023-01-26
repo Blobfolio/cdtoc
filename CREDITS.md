@@ -1,7 +1,7 @@
 # Project Dependencies
     Package:   cdtoc
-    Version:   0.1.1
-    Generated: 2023-01-11 06:35:00 UTC
+    Version:   0.1.3
+    Generated: 2023-01-26 17:49:11 UTC
 
 | Package | Version | Author(s) | License |
 | ---- | ---- | ---- | ---- |
@@ -9,7 +9,7 @@
 | [block-buffer](https://github.com/RustCrypto/utils) | 0.10.3 | RustCrypto Developers | Apache-2.0 or MIT |
 | [cfg-if](https://github.com/alexcrichton/cfg-if) | 1.0.0 | [Alex Crichton](mailto:alex@alexcrichton.com) | Apache-2.0 or MIT |
 | [crypto-common](https://github.com/RustCrypto/traits) | 0.1.6 | RustCrypto Developers | Apache-2.0 or MIT |
-| [dactyl](https://github.com/Blobfolio/dactyl) | 0.4.6 | [Blobfolio, LLC.](mailto:hello@blobfolio.com) | WTFPL |
+| [dactyl](https://github.com/Blobfolio/dactyl) | 0.4.7 | [Blobfolio, LLC.](mailto:hello@blobfolio.com) | WTFPL |
 | [digest](https://github.com/RustCrypto/traits) | 0.10.6 | RustCrypto Developers | Apache-2.0 or MIT |
 | [faster-hex](https://github.com/NervosFoundation/faster-hex) | 0.6.1 | [zhangsoledad](mailto:787953403@qq.com) | MIT |
 | [generic-array](https://github.com/fizyk20/generic-array.git) | 0.14.6 | [Bartłomiej Kamiński](mailto:fizyk20@gmail.com) and [Aaron Trent](mailto:novacrazy@gmail.com) | MIT |
