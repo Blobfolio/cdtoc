@@ -117,6 +117,7 @@ pub use track::{
 #[cfg(feature = "cddb")] pub use cddb::Cddb;
 
 use std::fmt;
+use trimothy::TrimSlice;
 
 
 
@@ -146,6 +147,14 @@ static UNHEX: [u8; 256] = [
 	NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL,
 	NIL, NIL, NIL,
 ];
+
+#[cfg(any(feature = "musicbrainz", feature = "ctdb"))]
+/// # Lotsa Zeroes.
+///
+/// MusicBrainz and CTDB take a sha1 hash of 100 hex-encoded tracks, most of
+/// which, most of the time, are just zero-padding. Slicing what we need out of
+/// a prebuilt static is much faster than pushing zeroes on-the-fly.
+static ZEROES: [u8; 792] = [b'0'; 792];
 
 
 
@@ -204,6 +213,7 @@ pub struct Toc {
 }
 
 impl fmt::Display for Toc {
+	#[cfg(not(feature = "faster-hex"))]
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		// Start with the track count.
 		write!(f, "{:X}", self.audio.len())?;
@@ -217,6 +227,54 @@ impl fmt::Display for Toc {
 			TocKind::CDExtra => write!(f, "+{:X}+{:X}", self.data, self.leadout),
 			TocKind::DataFirst => write!(f, "+{:X}+X{:X}", self.leadout, self.data),
 		}
+	}
+
+	#[cfg(feature = "faster-hex")]
+	#[allow(unsafe_code, clippy::cast_possible_truncation)]
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		use trimothy::TrimSliceMatches;
+
+		let mut out = Vec::with_capacity(128);
+		let mut buf = [b'0'; 8];
+
+		// Audio track count.
+		let audio_len = self.audio.len() as u8;
+		faster_hex::hex_encode(&[audio_len], &mut buf[..2]).unwrap();
+		if 16 < audio_len { out.push(buf[0]); }
+		out.push(buf[1]);
+
+		macro_rules! push {
+			($v:expr) => (
+				faster_hex::hex_encode($v.to_be_bytes().as_slice(), &mut buf).unwrap();
+				out.push(b'+');
+				out.extend_from_slice(buf.trim_start_matches(|b| b == b'0'));
+			);
+		}
+
+		// The sectors.
+		for v in &self.audio { push!(v); }
+
+		// And finally some combination of data and leadout.
+		match self.kind {
+			TocKind::Audio => { push!(self.leadout); },
+			TocKind::CDExtra => {
+				push!(self.data);
+				push!(self.leadout);
+			},
+			TocKind::DataFirst => {
+				push!(self.leadout);
+
+				// Handle this manually since there's the weird X marker.
+				faster_hex::hex_encode(self.data.to_be_bytes().as_slice(), &mut buf).unwrap();
+				out.push(b'+');
+				out.push(b'X');
+				out.extend_from_slice(buf.trim_start_matches(|b| b == b'0'));
+			},
+		}
+
+		out.make_ascii_uppercase();
+		// Safety: this is all ASCII.
+		f.write_str(unsafe { std::str::from_utf8_unchecked(&out) })
 	}
 }
 
@@ -242,7 +300,7 @@ impl Toc {
 	/// incorrectly.
 	pub fn from_cdtoc<S>(src: S) -> Result<Self, TocError>
 	where S: AsRef<str> {
-		let (audio, data, leadout) = parse_cdtoc_metadata(src.as_ref())?;
+		let (audio, data, leadout) = parse_cdtoc_metadata(src.as_ref().as_bytes())?;
 		Self::from_parts(audio, data, leadout)
 	}
 
@@ -845,33 +903,40 @@ fn base64_encode(src: &[u8]) -> String {
 	out
 }
 
-#[cfg(feature = "faster-hex")]
-/// # HEX Encode u32.
+#[allow(clippy::cast_lossless)]
+#[inline]
+// Decode One Digit.
+fn decode1(src: u8) -> Option<u8> {
+	let out = UNHEX[src as usize];
+	if out == NIL { None }
+	else { Some(out) }
+}
+
+/// # Hex Decode u32.
 ///
-/// This convenience wrapper uses faster-hex to encode a u32 to a buffer.
-fn hex_encode_u32(src: u32, buf: &mut [u8], upper: bool) {
-	faster_hex::hex_encode(&src.to_be_bytes(), buf).unwrap();
-	if upper { buf.make_ascii_uppercase(); }
+/// This is a slightly more performant implementation of [`u8::from_str_radix`].
+/// (`faster-hex` doesn't really help at this tiny scale.)
+fn hex_decode_u8(src: &[u8]) -> Option<u8> {
+	match src.len() {
+		1 => decode1(src[0]),
+		2 => {
+			let a = decode1(src[0])?;
+			let b = decode1(src[1])?;
+			Some(16 * a + b)
+		},
+		_ => None,
+	}
 }
 
 /// # Hex Decode u32.
 ///
 /// This is a slightly more performant implementation of [`u32::from_str_radix`].
 /// (`faster-hex` doesn't really help at this tiny scale.)
-fn hex_decode_u32(src: &str) -> Option<u32> {
-	#[allow(clippy::cast_lossless)]
-	#[inline]
-	// Decode One Digit.
-	fn decode1(src: u8) -> Option<u32> {
-		let out = UNHEX[src as usize];
-		if out == NIL { None }
-		else { Some(out as u32) }
-	}
-
+fn hex_decode_u32(src: &[u8]) -> Option<u32> {
 	if (1..=8).contains(&src.len()) {
 		let mut out: u32 = 0;
-		for (k, byte) in BASE16.into_iter().zip(src.bytes().rev()) {
-			let digit = decode1(byte)?;
+		for (k, byte) in BASE16.into_iter().zip(src.iter().copied().rev()) {
+			let digit = u32::from(decode1(byte)?);
 			out += digit * k;
 		}
 
@@ -880,58 +945,70 @@ fn hex_decode_u32(src: &str) -> Option<u32> {
 	else { None }
 }
 
-#[allow(clippy::cast_possible_truncation)]
 /// # Parse CDTOC Metadata.
 ///
 /// This parses the audio track count and sector positions from a CDTOC-style
 /// metadata tag value. It will return a parsing error if the formatting is
 /// grossly wrong, but will not validate the sanity of the count/parts.
-fn parse_cdtoc_metadata(mut src: &str) -> Result<(Vec<u32>, Option<u32>, u32), TocError> {
-	// There shouldn't be anything other than HEX, + delimiters, and maybe an X
-	// on the last part.
-	src = src.trim();
-	if ! src.bytes().all(|b| matches!(b, b'0'..=b'9' | b'a'..=b'f' | b'A'..=b'F' | b'+' | b'x' | b'X')) {
-		return Err(TocError::CDTOCChars);
-	}
-
-	// Split on plus.
-	let mut split = src.split('+');
+fn parse_cdtoc_metadata(src: &[u8]) -> Result<(Vec<u32>, Option<u32>, u32), TocError> {
+	let src = src.trim();
+	let mut split = src.split(|b| b'+'.eq(b));
 
 	// The number of audio tracks comes first.
-	let audio_len = split.by_ref()
-		.next()
-		.and_then(|n| u8::from_str_radix(n, 16).ok())
-		.map(usize::from)
+	let audio_len = split.next()
+		.and_then(hex_decode_u8)
 		.ok_or(TocError::TrackCount)?;
 
-	// Everything else should be a starting sector.
-	let mut sectors: Vec<u32> = split
-		.map(|n|
-			hex_decode_u32(n)
+	// We should have starting positions for just as many tracks.
+	let sectors: Vec<u32> = split
+		.by_ref()
+		.take(usize::from(audio_len))
+		.map(hex_decode_u32)
+		.collect::<Option<Vec<u32>>>()
+		.ok_or(TocError::SectorSize)?;
+
+	// Make sure we actually do.
+	let sectors_len = sectors.len();
+	if 0 == sectors_len { return Err(TocError::NoAudio); }
+	if sectors_len != usize::from(audio_len) {
+		return Err(TocError::SectorCount(audio_len, sectors_len));
+	}
+
+	// There should be at least one more entry to mark the audio leadout.
+	let last1 = split.next()
+		.ok_or(TocError::SectorCount(audio_len, sectors_len - 1))?;
+	let last1 = hex_decode_u32(last1).ok_or(TocError::SectorSize)?;
+
+	// If there is yet another entry, we've got a mixed-mode disc.
+	if let Some(last2) = split.next() {
+		// Unlike the other values, this entry might have an x-prefix to denote
+		// a non-standard data-first position.
+		let last2 = hex_decode_u32(last2)
 			.or_else(||
-				n.strip_prefix('X')
-					.or_else(|| n.strip_prefix('x'))
+				last2.strip_prefix(b"X").or_else(|| last2.strip_prefix(b"x"))
 					.and_then(hex_decode_u32)
 			)
-				.ok_or(TocError::SectorSize)
-		)
-		.collect::<Result<Vec<u32>, TocError>>()?;
+			.ok_or(TocError::SectorSize)?;
 
-	// Pop the last part, which is either leadout or data.
-	let mut leadout = sectors.pop().ok_or(TocError::NoAudio)?;
-
-	// Audio-only.
-	let sectors_len = sectors.len();
-	if sectors_len == audio_len { Ok((sectors, None, leadout)) }
-	// Mixed-mode.
-	else if sectors_len == audio_len + 1 {
-		// Pop the next-last part, which again is either data or leadout.
-		let mut data = sectors.pop().ok_or(TocError::NoAudio)?;
-		if leadout < data { std::mem::swap(&mut leadout, &mut data); }
-		Ok((sectors, Some(data), leadout))
+		// That should be that!
+		let remaining = split.count();
+		if remaining == 0 {
+			// "last1" is data, "last2" is leadout.
+			if last1 < last2 {
+				Ok((sectors, Some(last1), last2))
+			}
+			// "last2" is data, "last1" is leadout.
+			else {
+				Ok((sectors, Some(last2), last1))
+			}
+		}
+		// Too many sectors!
+		else {
+			Err(TocError::SectorCount(audio_len, sectors_len + remaining))
+		}
 	}
-	// Incorrect sector count.
-	else { Err(TocError::SectorCount(audio_len as u8, sectors.len())) }
+	// A typical audio-only CD.
+	else { Ok((sectors, None, last1)) }
 }
 
 
@@ -977,6 +1054,16 @@ mod tests {
 		assert_eq!(
 			Toc::from_parts(sectors, None, 244077),
 			Ok(toc),
+		);
+
+		// Let's also quickly test that a long TOC works gets the audio track
+		// count right.
+		let toc2 = Toc::from_cdtoc("20+96+33BA+5B5E+6C74+7C96+91EE+A9A3+B1AC+BEFC+D2E6+E944+103AC+11426+14B58+174E2+1A9F7+1C794+1F675+21AB9+24090+277DD+2A783+2D508+2DEAA+2F348+31F20+37419+3A463+3DC2F+4064B+43337+4675B+4A7C0")
+			.expect("Long TOC failed.");
+		assert_eq!(toc2.audio_len(), 32);
+		assert_eq!(
+			toc2.to_string(),
+			"20+96+33BA+5B5E+6C74+7C96+91EE+A9A3+B1AC+BEFC+D2E6+E944+103AC+11426+14B58+174E2+1A9F7+1C794+1F675+21AB9+24090+277DD+2A783+2D508+2DEAA+2F348+31F20+37419+3A463+3DC2F+4064B+43337+4675B+4A7C0"
 		);
 	}
 
@@ -1143,5 +1230,26 @@ mod tests {
 		// And back again.
 		assert!(toc.set_kind(TocKind::CDExtra).is_ok());
 		assert_eq!(toc, extra);
+	}
+
+	#[test]
+	fn t_unhex8() {
+		for i in 0..=u8::MAX {
+			assert_eq!(hex_decode_u8(format!("{:x}", i).as_bytes()), Some(i));
+			assert_eq!(hex_decode_u8(format!("{:X}", i).as_bytes()), Some(i));
+			assert_eq!(hex_decode_u8(format!("{:02x}", i).as_bytes()), Some(i));
+			assert_eq!(hex_decode_u8(format!("{:02X}", i).as_bytes()), Some(i));
+		}
+	}
+
+	#[test]
+	#[ignore = "(very long-running)"]
+	fn t_unhexu32() {
+		for i in 0..=u32::MAX {
+			assert_eq!(hex_decode_u32(format!("{:x}", i).as_bytes()), Some(i));
+			assert_eq!(hex_decode_u32(format!("{:X}", i).as_bytes()), Some(i));
+			assert_eq!(hex_decode_u32(format!("{:08x}", i).as_bytes()), Some(i));
+			assert_eq!(hex_decode_u32(format!("{:08X}", i).as_bytes()), Some(i));
+		}
 	}
 }

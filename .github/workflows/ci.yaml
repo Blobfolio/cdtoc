@@ -57,8 +57,22 @@ jobs:
       run: |
         cargo clippy --release --target ${{ matrix.target }}
         cargo clippy --release --no-default-features --target ${{ matrix.target }}
+        cargo clippy --release --no-default-features --features faster-hex --target ${{ matrix.target }}
+        cargo clippy --release --no-default-features --features accuraterip,faster-hex --target ${{ matrix.target }}
+        cargo clippy --release --no-default-features --features cddb,faster-hex --target ${{ matrix.target }}
+        cargo clippy --release --no-default-features --features accuraterip --target ${{ matrix.target }}
+        cargo clippy --release --no-default-features --features cddb --target ${{ matrix.target }}
+        cargo clippy --release --no-default-features --features ctdb --target ${{ matrix.target }}
+        cargo clippy --release --no-default-features --features musicbrainz --target ${{ matrix.target }}
 
     - name: Tests
       run: |
         cargo test --release --target ${{ matrix.target }}
         cargo test --release --no-default-features --target ${{ matrix.target }}
+        cargo test --release --no-default-features --features faster-hex --target ${{ matrix.target }}
+        cargo test --release --no-default-features --features accuraterip,faster-hex --target ${{ matrix.target }}
+        cargo test --release --no-default-features --features cddb,faster-hex --target ${{ matrix.target }}
+        cargo test --release --no-default-features --features accuraterip --target ${{ matrix.target }}
+        cargo test --release --no-default-features --features cddb --target ${{ matrix.target }}
+        cargo test --release --no-default-features --features ctdb --target ${{ matrix.target }}
+        cargo test --release --no-default-features --features musicbrainz --target ${{ matrix.target }}

@@ -13,6 +13,7 @@ use std::collections::BTreeMap;
 
 impl Toc {
 	#[cfg_attr(feature = "docsrs", doc(cfg(feature = "ctdb")))]
+	#[allow(clippy::missing_panics_doc)]
 	#[must_use]
 	/// # CUETools Database ID.
 	///
@@ -38,16 +39,19 @@ impl Toc {
 		// Write all but the first tracks relative to the first.
 		let [leadin, sectors @ ..] = self.audio_sectors() else { unreachable!() };
 		for v in sectors {
-			crate::hex_encode_u32(v - leadin, &mut buf, true);
+			faster_hex::hex_encode((v - leadin).to_be_bytes().as_slice(), &mut buf).unwrap();
+			buf.make_ascii_uppercase();
 			sha.update(buf);
 		}
 
 		// Add the leadout, likewise relative.
-		crate::hex_encode_u32(self.audio_leadout() - leadin, &mut buf, true);
-		sha.update(buf);
+		faster_hex::hex_encode((self.audio_leadout() - leadin).to_be_bytes().as_slice(), &mut buf).unwrap();
+		buf.make_ascii_uppercase();
+		sha.update(buf.as_slice());
 
 		// And padding for a total of 99 tracks.
-		for _ in 0..99 - sectors.len() { sha.update(b"00000000"); }
+		let padding = 99 - sectors.len();
+		if padding != 0 { sha.update(&crate::ZEROES[..padding * 8]); }
 
 		// Run it through base64 and we're done!
 		super::base64_encode(&sha.finalize())
@@ -124,7 +128,7 @@ impl Toc {
 				let confidence: u16 = confidence.parse().map_err(|_| TocError::Checksums)?;
 				let mut id = 0;
 				for chk in crcs.split_ascii_whitespace() {
-					let crc = super::hex_decode_u32(chk).ok_or(TocError::Checksums)?;
+					let crc = super::hex_decode_u32(chk.as_bytes()).ok_or(TocError::Checksums)?;
 					if crc != 0 {
 						let e = out[id].entry(crc).or_insert(0);
 						*e = e.saturating_add(confidence);

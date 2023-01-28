@@ -7,7 +7,7 @@ use crate::Toc;
 
 
 impl Toc {
-	#[allow(clippy::cast_possible_truncation)]
+	#[allow(clippy::cast_possible_truncation, clippy::missing_panics_doc)]
 	#[cfg_attr(feature = "docsrs", doc(cfg(feature = "musicbrainz")))]
 	#[must_use]
 	/// # MusicBrainz ID.
@@ -32,23 +32,26 @@ impl Toc {
 		let mut buf: [u8; 8] = [b'0', b'1', b'0', b'0', b'0', b'0', b'0', b'0'];
 
 		// Start with "01" and the audio track count.
-		let _res = faster_hex::hex_encode(&[self.audio_len() as u8], &mut buf[2..4]);
+		faster_hex::hex_encode(&[self.audio_len() as u8], &mut buf[2..4]).unwrap();
 		buf[2..4].make_ascii_uppercase();
 		sha.update(&buf[..4]);
 
 		// Add the audio leadout.
-		crate::hex_encode_u32(self.audio_leadout(), &mut buf, true);
-		sha.update(buf);
+		faster_hex::hex_encode(self.audio_leadout().to_be_bytes().as_slice(), &mut buf).unwrap();
+		buf.make_ascii_uppercase();
+		sha.update(buf.as_slice());
 
 		// Now the audio starts.
 		let sectors = self.audio_sectors();
 		for &v in sectors {
-			crate::hex_encode_u32(v, &mut buf, true);
-			sha.update(buf);
+			faster_hex::hex_encode(v.to_be_bytes().as_slice(), &mut buf).unwrap();
+			buf.make_ascii_uppercase();
+			sha.update(buf.as_slice());
 		}
 
-		// And padding for a total of 99 tracks.
-		for _ in 0..99 - sectors.len() { sha.update(b"00000000"); }
+		// Pad with zeroes.
+		let padding = 99 - sectors.len();
+		if padding != 0 { sha.update(&crate::ZEROES[..padding * 8]); }
 
 		// Run it through base64 and we're done!
 		super::base64_encode(&sha.finalize())
