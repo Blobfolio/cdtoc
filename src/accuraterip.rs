@@ -57,21 +57,7 @@ impl fmt::Display for AccurateRip {
 	#[cfg(feature = "faster-hex")]
 	#[allow(unsafe_code)]
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		let mut buf: [u8; 9] = [b'-', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0'];
-
-		// Length.
-		write!(f, "{:03}", self.0[0])?;
-
-		// ID Parts.
-		// Safety: all bytes are ASCII.
-		faster_hex::hex_encode(&[self.0[4], self.0[3], self.0[2], self.0[1]], &mut buf[1..]).unwrap();
-		f.write_str(unsafe { std::str::from_utf8_unchecked(&buf) })?;
-
-		faster_hex::hex_encode(&[self.0[8], self.0[7], self.0[6], self.0[5]], &mut buf[1..]).unwrap();
-		f.write_str(unsafe { std::str::from_utf8_unchecked(&buf) })?;
-
-		faster_hex::hex_encode(&[self.0[12], self.0[11], self.0[10], self.0[9]], &mut buf[1..]).unwrap();
-		f.write_str(unsafe { std::str::from_utf8_unchecked(&buf) })
+		f.write_str(&self.pretty_print())
 	}
 
 	#[cfg(not(feature = "faster-hex"))]
@@ -241,6 +227,46 @@ impl AccurateRip {
 		// Consider it okay if we found at least one checksum.
 		if out.iter().any(|v| ! v.is_empty()) { Ok(out) }
 		else { Err(TocError::NoChecksums) }
+	}
+
+	#[cfg_attr(feature = "docsrs", doc(cfg(all(feature = "accuraterip", feature = "faster-hex"))))]
+	#[cfg(feature = "faster-hex")]
+	#[allow(unsafe_code, clippy::missing_panics_doc)]
+	#[must_use]
+	/// # Pretty Print.
+	///
+	/// Return a String representation of the disc ID, same as `[AccurateRip::to_string]`,
+	/// but a little faster.
+	///
+	/// ## Examples
+	///
+	/// ```
+	/// use cdtoc::Toc;
+	///
+	/// let toc = Toc::from_cdtoc("D+96+4FFB+7F76+BB0A+EF38+12FB3+16134+1BCC4+1EC21+24A6A+272F9+299FA+2CCA6+30EE6").unwrap();
+	/// assert_eq!(
+	///     toc.accuraterip_id().pretty_print(),
+	///     "013-0015deca-00d9b921-9a0a6e0d",
+	/// );
+	/// ```
+	pub fn pretty_print(&self) -> String {
+		let mut out: Vec<u8> = vec![
+			b'0', b'0', b'0',
+			b'-', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0',
+			b'-', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0',
+			b'-', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0',
+		];
+
+		// Length.
+		out[..3].copy_from_slice(dactyl::NiceU8::from(self.0[0]).as_bytes3());
+
+		// ID Parts.
+		faster_hex::hex_encode(&[self.0[4], self.0[3], self.0[2], self.0[1]], &mut out[4..12]).unwrap();
+		faster_hex::hex_encode(&[self.0[8], self.0[7], self.0[6], self.0[5]], &mut out[13..21]).unwrap();
+		faster_hex::hex_encode(&[self.0[12], self.0[11], self.0[10], self.0[9]], &mut out[22..]).unwrap();
+
+		// Safety: all bytes are ASCII.
+		unsafe { String::from_utf8_unchecked(out) }
 	}
 }
 
