@@ -2,9 +2,21 @@
 
 
 
+## [0.1.4](https://github.com/Blobfolio/cdtoc/releases/tag/v0.1.4) - 2023-01-28
+
+### New
+
+* `AccurateRip::pretty_print`
+
+### Changed
+
+* Various performance improvements
+
+
+
 ## [0.1.3](https://github.com/Blobfolio/cdtoc/releases/tag/v0.1.3) - 2023-01-26
 
-### Change
+### Changed
 
 * Bump brunch to `0.4`
 

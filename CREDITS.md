@@ -1,7 +1,7 @@
 # Project Dependencies
     Package:   cdtoc
-    Version:   0.1.3
-    Generated: 2023-01-26 17:49:11 UTC
+    Version:   0.1.4
+    Generated: 2023-01-28 21:21:54 UTC
 
 | Package | Version | Author(s) | License |
 | ---- | ---- | ---- | ---- |
@@ -16,4 +16,5 @@
 | [itoa](https://github.com/dtolnay/itoa) | 1.0.5 | [David Tolnay](mailto:dtolnay@gmail.com) | Apache-2.0 or MIT |
 | [num-traits](https://github.com/rust-num/num-traits) | 0.2.15 | The Rust Project Developers | Apache-2.0 or MIT |
 | [sha1](https://github.com/RustCrypto/hashes) | 0.10.5 | RustCrypto Developers | Apache-2.0 or MIT |
+| [trimothy](https://github.com/Blobfolio/trimothy) | 0.1.6 | [Blobfolio, LLC.](mailto:hello@blobfolio.com) | WTFPL |
 | [typenum](https://github.com/paholg/typenum) | 1.16.0 | [Paho Lurie-Gregg](mailto:paho@paholg.com) and [Andre Bogus](mailto:bogusandre@gmail.com) | Apache-2.0 or MIT |
