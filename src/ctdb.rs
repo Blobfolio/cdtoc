@@ -124,7 +124,7 @@ impl Toc {
 				let confidence: u16 = confidence.parse().map_err(|_| TocError::Checksums)?;
 				let mut id = 0;
 				for chk in crcs.split_ascii_whitespace() {
-					let crc = super::hex_decode_u32(chk).ok_or(TocError::Checksums)?;
+					let crc = super::hex_decode_u32(chk.as_bytes()).ok_or(TocError::Checksums)?;
 					if crc != 0 {
 						let e = out[id].entry(crc).or_insert(0);
 						*e = e.saturating_add(confidence);

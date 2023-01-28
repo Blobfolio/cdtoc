@@ -32,6 +32,7 @@ brunch = "0.4.*"
 
 [dependencies]
 dactyl = "0.4.*"
+trimothy = "0.1.*"
 
 [dependencies.base64]
 version = "0.21.*"
