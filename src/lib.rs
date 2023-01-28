@@ -205,6 +205,7 @@ pub struct Toc {
 }
 
 impl fmt::Display for Toc {
+	#[cfg(not(feature = "faster-hex"))]
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		// Start with the track count.
 		write!(f, "{:X}", self.audio.len())?;
@@ -218,6 +219,54 @@ impl fmt::Display for Toc {
 			TocKind::CDExtra => write!(f, "+{:X}+{:X}", self.data, self.leadout),
 			TocKind::DataFirst => write!(f, "+{:X}+X{:X}", self.leadout, self.data),
 		}
+	}
+
+	#[cfg(feature = "faster-hex")]
+	#[allow(unsafe_code, clippy::cast_possible_truncation)]
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		use trimothy::TrimSliceMatches;
+
+		let mut out = Vec::with_capacity(128);
+		let mut buf = [b'0'; 8];
+
+		// Audio track count.
+		let audio_len = self.audio.len() as u8;
+		faster_hex::hex_encode(&[audio_len], &mut buf[..2]).unwrap();
+		if 16 < audio_len { out.push(buf[0]); }
+		out.push(buf[1]);
+
+		macro_rules! push {
+			($v:expr) => (
+				faster_hex::hex_encode($v.to_be_bytes().as_slice(), &mut buf).unwrap();
+				out.push(b'+');
+				out.extend_from_slice(buf.trim_start_matches(|b| b == b'0'));
+			);
+		}
+
+		// The sectors.
+		for v in &self.audio { push!(v); }
+
+		// And finally some combination of data and leadout.
+		match self.kind {
+			TocKind::Audio => { push!(self.leadout); },
+			TocKind::CDExtra => {
+				push!(self.data);
+				push!(self.leadout);
+			},
+			TocKind::DataFirst => {
+				push!(self.leadout);
+
+				// Handle this manually since there's the weird X marker.
+				faster_hex::hex_encode(self.data.to_be_bytes().as_slice(), &mut buf).unwrap();
+				out.push(b'+');
+				out.push(b'X');
+				out.extend_from_slice(buf.trim_start_matches(|b| b == b'0'));
+			},
+		}
+
+		out.make_ascii_uppercase();
+		// Safety: this is all ASCII.
+		f.write_str(unsafe { std::str::from_utf8_unchecked(&out) })
 	}
 }
 
@@ -847,6 +896,7 @@ fn base64_encode(src: &[u8]) -> String {
 }
 
 #[cfg(feature = "faster-hex")]
+#[inline]
 /// # HEX Encode u32.
 ///
 /// This convenience wrapper uses faster-hex to encode a u32 to a buffer.
@@ -1006,6 +1056,16 @@ mod tests {
 		assert_eq!(
 			Toc::from_parts(sectors, None, 244077),
 			Ok(toc),
+		);
+
+		// Let's also quickly test that a long TOC works gets the audio track
+		// count right.
+		let toc2 = Toc::from_cdtoc("20+96+33BA+5B5E+6C74+7C96+91EE+A9A3+B1AC+BEFC+D2E6+E944+103AC+11426+14B58+174E2+1A9F7+1C794+1F675+21AB9+24090+277DD+2A783+2D508+2DEAA+2F348+31F20+37419+3A463+3DC2F+4064B+43337+4675B+4A7C0")
+			.expect("Long TOC failed.");
+		assert_eq!(toc2.audio_len(), 32);
+		assert_eq!(
+			toc2.to_string(),
+			"20+96+33BA+5B5E+6C74+7C96+91EE+A9A3+B1AC+BEFC+D2E6+E944+103AC+11426+14B58+174E2+1A9F7+1C794+1F675+21AB9+24090+277DD+2A783+2D508+2DEAA+2F348+31F20+37419+3A463+3DC2F+4064B+43337+4675B+4A7C0"
 		);
 	}
 
