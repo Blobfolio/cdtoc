@@ -148,6 +148,14 @@ static UNHEX: [u8; 256] = [
 	NIL, NIL, NIL,
 ];
 
+#[cfg(any(feature = "musicbrainz", feature = "ctdb"))]
+/// # Lotsa Zeroes.
+///
+/// MusicBrainz and CTDB take a sha1 hash of 100 hex-encoded tracks, most of
+/// which, most of the time, are just zero-padding. Slicing what we need out of
+/// a prebuilt static is much faster than pushing zeroes on-the-fly.
+static ZEROES: [u8; 792] = [b'0'; 792];
+
 
 
 #[derive(Debug, Clone, Eq, Hash, PartialEq)]
@@ -893,16 +901,6 @@ fn base64_encode(src: &[u8]) -> String {
 		}
 	}
 	out
-}
-
-#[cfg(feature = "faster-hex")]
-#[inline]
-/// # HEX Encode u32.
-///
-/// This convenience wrapper uses faster-hex to encode a u32 to a buffer.
-fn hex_encode_u32(src: u32, buf: &mut [u8], upper: bool) {
-	faster_hex::hex_encode(&src.to_be_bytes(), buf).unwrap();
-	if upper { buf.make_ascii_uppercase(); }
 }
 
 #[allow(clippy::cast_lossless)]
