@@ -240,7 +240,7 @@ impl fmt::Display for Toc {
 		// Audio track count.
 		let audio_len = self.audio.len() as u8;
 		faster_hex::hex_encode(&[audio_len], &mut buf[..2]).unwrap();
-		if 16 < audio_len { out.push(buf[0]); }
+		if 16 <= audio_len { out.push(buf[0]); }
 		out.push(buf[1]);
 
 		macro_rules! push {
@@ -1058,12 +1058,20 @@ mod tests {
 
 		// Let's also quickly test that a long TOC works gets the audio track
 		// count right.
-		let toc2 = Toc::from_cdtoc("20+96+33BA+5B5E+6C74+7C96+91EE+A9A3+B1AC+BEFC+D2E6+E944+103AC+11426+14B58+174E2+1A9F7+1C794+1F675+21AB9+24090+277DD+2A783+2D508+2DEAA+2F348+31F20+37419+3A463+3DC2F+4064B+43337+4675B+4A7C0")
+		let toc = Toc::from_cdtoc("20+96+33BA+5B5E+6C74+7C96+91EE+A9A3+B1AC+BEFC+D2E6+E944+103AC+11426+14B58+174E2+1A9F7+1C794+1F675+21AB9+24090+277DD+2A783+2D508+2DEAA+2F348+31F20+37419+3A463+3DC2F+4064B+43337+4675B+4A7C0")
 			.expect("Long TOC failed.");
-		assert_eq!(toc2.audio_len(), 32);
+		assert_eq!(toc.audio_len(), 32);
 		assert_eq!(
-			toc2.to_string(),
+			toc.to_string(),
 			"20+96+33BA+5B5E+6C74+7C96+91EE+A9A3+B1AC+BEFC+D2E6+E944+103AC+11426+14B58+174E2+1A9F7+1C794+1F675+21AB9+24090+277DD+2A783+2D508+2DEAA+2F348+31F20+37419+3A463+3DC2F+4064B+43337+4675B+4A7C0"
+		);
+
+		// And one more with a hexish track count.
+		let toc = Toc::from_cdtoc("10+96+2B4E+4C51+6B3C+9E08+CD43+FC99+13A55+164B8+191C9+1C0FF+1F613+21B5A+23F70+27A4A+2C20D+2FC65").unwrap();
+		assert_eq!(toc.audio_len(), 16);
+		assert_eq!(
+			toc.to_string(),
+			"10+96+2B4E+4C51+6B3C+9E08+CD43+FC99+13A55+164B8+191C9+1C0FF+1F613+21B5A+23F70+27A4A+2C20D+2FC65"
 		);
 	}
 
