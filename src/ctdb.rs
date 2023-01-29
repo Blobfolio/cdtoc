@@ -3,6 +3,7 @@
 */
 
 use crate::{
+	Shab64,
 	Toc,
 	TocError,
 	TocKind,
@@ -27,11 +28,11 @@ impl Toc {
 	///
 	/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
 	/// assert_eq!(
-	///     toc.ctdb_id(),
+	///     toc.ctdb_id().to_string(),
 	///     "VukMWWItblELRM.CEFpXxw0FlME-",
 	/// );
 	/// ```
-	pub fn ctdb_id(&self) -> String {
+	pub fn ctdb_id(&self) -> Shab64 {
 		use sha1::Digest;
 		let mut sha = sha1::Sha1::new();
 		let mut buf = [b'0'; 8];
@@ -54,7 +55,7 @@ impl Toc {
 		if padding != 0 { sha.update(&crate::ZEROES[..padding * 8]); }
 
 		// Run it through base64 and we're done!
-		super::base64_encode(&sha.finalize())
+		Shab64::from(sha)
 	}
 
 	#[cfg_attr(feature = "docsrs", doc(cfg(feature = "ctdb")))]
@@ -217,7 +218,7 @@ mod tests {
 			),
 		] {
 			let toc = Toc::from_cdtoc(t).expect("Invalid TOC");
-			assert_eq!(toc.ctdb_id(), id);
+			assert_eq!(toc.ctdb_id().to_string(), id);
 			assert_eq!(toc.ctdb_checksum_url(), lookup);
 		}
 	}

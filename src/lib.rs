@@ -105,6 +105,7 @@ mod track;
 #[cfg(feature = "cddb")] mod cddb;
 #[cfg(feature = "ctdb")] mod ctdb;
 #[cfg(feature = "musicbrainz")] mod musicbrainz;
+#[cfg(all(feature = "sha1", feature = "base64"))] mod shab64;
 
 pub use error::TocError;
 pub use time::Duration;
@@ -115,6 +116,7 @@ pub use track::{
 };
 #[cfg(feature = "accuraterip")] pub use accuraterip::AccurateRip;
 #[cfg(feature = "cddb")] pub use cddb::Cddb;
+#[cfg(all(feature = "sha1", feature = "base64"))] pub use shab64::Shab64;
 
 use std::fmt;
 use trimothy::TrimSlice;
@@ -876,32 +878,6 @@ impl TocKind {
 }
 
 
-
-#[cfg(feature = "base64")]
-#[allow(unsafe_code)]
-/// # Base64 Encode.
-///
-/// Encode the slice with base64 and apply a few character substitutions.
-fn base64_encode(src: &[u8]) -> String {
-	use base64::{
-		Engine,
-		prelude::BASE64_STANDARD,
-	};
-
-	let mut out = String::with_capacity(28);
-	BASE64_STANDARD.encode_string(src, &mut out);
-
-	// Safety: the string is ASCII, as are the substitutions.
-	for b in unsafe { out.as_mut_vec() } {
-		match *b {
-			b'+' => { *b = b'.'; },
-			b'/' => { *b = b'_'; },
-			b'=' => { *b = b'-'; },
-			_ => {},
-		}
-	}
-	out
-}
 
 #[allow(clippy::cast_lossless)]
 #[inline]
