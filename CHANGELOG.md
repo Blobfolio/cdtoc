@@ -1,6 +1,13 @@
 # Changelog
 
 
+## [0.1.5](https://github.com/Blobfolio/cdtoc/releases/tag/v0.1.5) - 2023-01-28
+
+### Fix
+
+* Incorrect `Toc::to_string` for discs with exactly 16 tracks.
+
+
 
 ## [0.1.4](https://github.com/Blobfolio/cdtoc/releases/tag/v0.1.4) - 2023-01-28
 
