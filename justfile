@@ -84,12 +84,13 @@ bench BENCH="":
 	# env RUSTUP_PERMIT_COPY_RENAME=true rustup install nightly
 
 	# Make the docs.
-	cargo +nightly doc \
+	cargo +nightly rustdoc \
 		--release \
 		--all-features \
-		--no-deps \
 		--target x86_64-unknown-linux-gnu \
-		--target-dir "{{ cargo_dir }}"
+		--target-dir "{{ cargo_dir }}" \
+		-- \
+		--cfg docsrs
 
 	# Move the docs and clean up ownership.
 	[ ! -d "{{ doc_dir }}" ] || rm -rf "{{ doc_dir }}"

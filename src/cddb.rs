@@ -10,7 +10,7 @@ use std::{
 
 
 
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "cddb")))]
+#[cfg_attr(docsrs, doc(cfg(feature = "cddb")))]
 #[derive(Debug, Clone, Copy)]
 /// # CDDB ID.
 ///
@@ -110,7 +110,7 @@ impl From<&Toc> for Cddb {
 
 
 impl Toc {
-	#[cfg_attr(feature = "docsrs", doc(cfg(feature = "cddb")))]
+	#[cfg_attr(docsrs, doc(cfg(feature = "cddb")))]
 	#[must_use]
 	/// # CDDB ID.
 	///

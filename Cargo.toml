@@ -24,7 +24,9 @@ man-dir = "./"
 credits-dir = "./"
 
 [package.metadata.docs.rs]
-features = [ "docsrs", "accuraterip", "cddb", "ctdb", "musicbrainz" ]
+rustc-args = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs"]
+features = [ "accuraterip", "cddb", "ctdb", "musicbrainz" ]
 default-target = "x86_64-unknown-linux-gnu"
 
 [dev-dependencies]
@@ -67,9 +69,6 @@ faster-hex = [ "dep:faster-hex" ]
 
 # Enable MusicBrainz ID calculations.
 musicbrainz = [ "base64", "faster-hex", "sha1" ]
-
-# This is just a workaround for docs.rs; don't enable this if you're human!
-docsrs = []
 
 [[bench]]
 name = "accuraterip"

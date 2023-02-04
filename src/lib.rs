@@ -94,7 +94,7 @@ default-features = false
 	clippy::module_name_repetitions,
 )]
 
-#![cfg_attr(feature = "docsrs", feature(doc_cfg))]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 
 
 

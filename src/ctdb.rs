@@ -13,7 +13,7 @@ use std::collections::BTreeMap;
 
 
 impl Toc {
-	#[cfg_attr(feature = "docsrs", doc(cfg(feature = "ctdb")))]
+	#[cfg_attr(docsrs, doc(cfg(feature = "ctdb")))]
 	#[allow(clippy::missing_panics_doc)]
 	#[must_use]
 	/// # CUETools Database ID.
@@ -58,7 +58,7 @@ impl Toc {
 		Shab64::from(sha)
 	}
 
-	#[cfg_attr(feature = "docsrs", doc(cfg(feature = "ctdb")))]
+	#[cfg_attr(docsrs, doc(cfg(feature = "ctdb")))]
 	#[must_use]
 	/// # CUETools Database Checksum URL.
 	///
@@ -107,7 +107,7 @@ impl Toc {
 		url
 	}
 
-	#[cfg_attr(feature = "docsrs", doc(cfg(feature = "ctdb")))]
+	#[cfg_attr(docsrs, doc(cfg(feature = "ctdb")))]
 	/// # Parse Checksums.
 	///
 	/// This will parse the track checksums from an XML CTDB [lookup](Toc::ctdb_checksum_url).

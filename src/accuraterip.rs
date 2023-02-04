@@ -14,7 +14,7 @@ use std::{
 
 
 
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "accuraterip")))]
+#[cfg_attr(docsrs, doc(cfg(feature = "accuraterip")))]
 #[derive(Debug, Clone, Copy, Eq, Hash, PartialEq)]
 /// # AccurateRip ID.
 ///
@@ -101,7 +101,6 @@ impl From<&Toc> for AccurateRip {
 }
 
 impl AccurateRip {
-	#[cfg_attr(feature = "docsrs", doc(cfg(feature = "accuraterip")))]
 	#[must_use]
 	/// # Number of Audio Tracks.
 	///
@@ -120,7 +119,6 @@ impl AccurateRip {
 	/// ```
 	pub const fn audio_len(&self) -> u8 { self.0[0] }
 
-	#[cfg_attr(feature = "docsrs", doc(cfg(feature = "accuraterip")))]
 	#[must_use]
 	/// # AccurateRip Checksum URL.
 	///
@@ -157,7 +155,6 @@ impl AccurateRip {
 		].concat()
 	}
 
-	#[cfg_attr(feature = "docsrs", doc(cfg(all(feature = "accuraterip", feature = "cddb"))))]
 	#[must_use]
 	/// # CDDB ID.
 	///
@@ -186,7 +183,6 @@ impl AccurateRip {
 		]))
 	}
 
-	#[cfg_attr(feature = "docsrs", doc(cfg(feature = "accuraterip")))]
 	/// # Parse Checksums.
 	///
 	/// This will parse the v1 and v2 track checksums from a raw AccurateRip
@@ -229,13 +225,13 @@ impl AccurateRip {
 		else { Err(TocError::NoChecksums) }
 	}
 
-	#[cfg_attr(feature = "docsrs", doc(cfg(all(feature = "accuraterip", feature = "faster-hex"))))]
 	#[cfg(feature = "faster-hex")]
+	#[cfg_attr(docsrs, doc(cfg(feature = "faster-hex")))]
 	#[allow(unsafe_code, clippy::missing_panics_doc)]
 	#[must_use]
 	/// # Pretty Print.
 	///
-	/// Return a String representation of the disc ID, same as `[AccurateRip::to_string]`,
+	/// Return a String representation of the disc ID, same as `AccurateRip::to_string`,
 	/// but a little faster.
 	///
 	/// ## Examples
@@ -273,7 +269,7 @@ impl AccurateRip {
 
 
 impl Toc {
-	#[cfg_attr(feature = "docsrs", doc(cfg(feature = "accuraterip")))]
+	#[cfg_attr(docsrs, doc(cfg(feature = "accuraterip")))]
 	#[must_use]
 	/// # AccurateRip ID.
 	///
@@ -303,7 +299,7 @@ impl Toc {
 	/// ```
 	pub fn accuraterip_id(&self) -> AccurateRip { AccurateRip::from(self) }
 
-	#[cfg_attr(feature = "docsrs", doc(cfg(feature = "accuraterip")))]
+	#[cfg_attr(docsrs, doc(cfg(feature = "accuraterip")))]
 	#[must_use]
 	/// # AccurateRip Checksum URL.
 	///
@@ -326,7 +322,7 @@ impl Toc {
 		self.accuraterip_id().checksum_url()
 	}
 
-	#[cfg_attr(feature = "docsrs", doc(cfg(feature = "accuraterip")))]
+	#[cfg_attr(docsrs, doc(cfg(feature = "accuraterip")))]
 	/// # Parse Checksums.
 	///
 	/// This will parse the v1 and v2 track checksums from a raw AccurateRip

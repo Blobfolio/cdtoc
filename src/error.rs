@@ -36,7 +36,7 @@ pub enum TocError {
 	/// # Invalid Format For Operation.
 	///
 	/// This is a catch-all error used when a given disc format is incompatible
-	/// with the operation, such as [`TocKind::DataFirst`] w/ [`Toc::set_audio_leadin`].
+	/// with the operation, such as [`TocKind::DataFirst`] w/ [`Toc::set_audio_leadin`](crate::Toc::set_audio_leadin).
 	Format(TocKind),
 
 	/// # Leadin Too Small.

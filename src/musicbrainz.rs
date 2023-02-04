@@ -11,7 +11,7 @@ use crate::{
 
 impl Toc {
 	#[allow(clippy::cast_possible_truncation, clippy::missing_panics_doc)]
-	#[cfg_attr(feature = "docsrs", doc(cfg(feature = "musicbrainz")))]
+	#[cfg_attr(docsrs, doc(cfg(feature = "musicbrainz")))]
 	#[must_use]
 	/// # MusicBrainz ID.
 	///
