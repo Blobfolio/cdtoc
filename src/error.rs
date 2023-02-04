@@ -19,6 +19,10 @@ pub enum TocError {
 	/// evenly divisible by `588`, the number of samples per sector.
 	CDDASampleCount,
 
+	#[cfg(feature = "cddb")]
+	/// # CDDB Decode.
+	CddbDecode,
+
 	/// # Invalid characters.
 	///
 	/// CDTOC metadata tags comprise HEX-encoded decimals separated by `+`
@@ -83,6 +87,7 @@ impl fmt::Display for TocError {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		match self {
 			Self::CDDASampleCount => f.write_str("Invalid CDDA sample count."),
+			#[cfg(feature = "cddb")] Self::CddbDecode => f.write_str("Invalid CDDB ID string."),
 			Self::CDTOCChars => f.write_str("Invalid character(s), expecting only 0-9, A-F, +, and (rarely) X."),
 			Self::Checksums => f.write_str("Unable to parse checksums."),
 			Self::Format(kind) => write!(f, "This operation can't be applied to {kind} discs."),
