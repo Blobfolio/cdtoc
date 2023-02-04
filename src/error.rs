@@ -13,6 +13,10 @@ use std::{
 #[derive(Debug, Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd)]
 /// # Error Type.
 pub enum TocError {
+	#[cfg(feature = "accuraterip")]
+	/// # AccurateRip Decode.
+	AccurateRipDecode,
+
 	/// # CDDA Sample Rate.
 	///
 	/// The total number of samples for a given audio track on a CD must be
@@ -86,6 +90,7 @@ pub enum TocError {
 impl fmt::Display for TocError {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		match self {
+			#[cfg(feature = "accuraterip")] Self::AccurateRipDecode => f.write_str("Invalid AccurateRip ID string."),
 			Self::CDDASampleCount => f.write_str("Invalid CDDA sample count."),
 			#[cfg(feature = "cddb")] Self::CddbDecode => f.write_str("Invalid CDDB ID string."),
 			Self::CDTOCChars => f.write_str("Invalid character(s), expecting only 0-9, A-F, +, and (rarely) X."),

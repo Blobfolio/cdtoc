@@ -7,6 +7,7 @@ use crate::{
 	Toc,
 	TocError,
 };
+use dactyl::traits::BytesToUnsigned;
 use std::{
 	collections::BTreeMap,
 	fmt,
@@ -181,6 +182,50 @@ impl AccurateRip {
 			self.0[11],
 			self.0[12],
 		]))
+	}
+
+	/// # Decode.
+	///
+	/// Convert an AccurateRip ID string back into an [`AccurateRip`] instance.
+	///
+	/// ## Examples
+	///
+	/// ```
+	/// use cdtoc::{AccurateRip, Toc};
+	///
+	/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
+	/// let ar_id = toc.accuraterip_id();
+	/// let ar_str = ar_id.to_string();
+	/// assert_eq!(ar_str, "004-0002189a-00087f33-1f02e004");
+	/// assert_eq!(AccurateRip::decode(ar_str), Ok(ar_id));
+	/// ```
+	///
+	/// ## Errors
+	///
+	/// This will return an error if decoding fails.
+	pub fn decode<S>(src: S) -> Result<Self, TocError>
+	where S: AsRef<str> {
+		let src = src.as_ref().as_bytes();
+		if src.len() == 30 && src[3] == b'-' && src[12] == b'-' && src[21] == b'-' {
+			let a = u8::btou(&src[..3]).ok_or(TocError::AccurateRipDecode)?;
+			let b = super::hex_decode_u32(&src[4..12])
+				.map(u32::to_le_bytes)
+				.ok_or(TocError::AccurateRipDecode)?;
+			let c = super::hex_decode_u32(&src[13..21])
+				.map(u32::to_le_bytes)
+				.ok_or(TocError::AccurateRipDecode)?;
+			let d = super::hex_decode_u32(&src[22..])
+				.map(u32::to_le_bytes)
+				.ok_or(TocError::AccurateRipDecode)?;
+
+			Ok(Self([
+				a,
+				b[0], b[1], b[2], b[3],
+				c[0], c[1], c[2], c[3],
+				d[0], d[1], d[2], d[3],
+			]))
+		}
+		else { Err(TocError::AccurateRipDecode) }
 	}
 
 	/// # Parse Checksums.
