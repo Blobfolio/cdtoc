@@ -6,6 +6,7 @@ use base64::{
 	Engine,
 	prelude::BASE64_STANDARD,
 };
+use crate::TocError;
 use sha1::{
 	Digest,
 	Sha1,
@@ -37,6 +38,41 @@ impl From<Sha1> for Shab64 {
 }
 
 impl Shab64 {
+	/// # Decode.
+	///
+	/// Convert a string ID back into a [`Shab64`] instance.
+	///
+	/// ## Errors
+	///
+	/// This will return an error if decoding fails.
+	pub fn decode<S>(src: S) -> Result<Self, TocError>
+	where S: Into<String> {
+		let mut src = src.into().into_bytes();
+		if src.len() == 28 && src.is_ascii() {
+			// Safety: the string is ASCII, as are the substitutions.
+			for b in &mut src {
+				match *b {
+					b'.' => { *b = b'+'; },
+					b'_' => { *b = b'/'; },
+					b'-' => { *b = b'='; },
+					_ => {},
+				}
+			}
+
+			// This should be exactly 20 bytes, but the base64 crate doesn't
+			// think so so we'll use a vec and figure it out later.
+			let mut out = Vec::with_capacity(20);
+			BASE64_STANDARD.decode_vec(src, &mut out)
+				.map_err(|_| TocError::Shab64Decode)?;
+
+			// Return if good.
+			<[u8; 20]>::try_from(out)
+				.map(Self)
+				.map_err(|_| TocError::Shab64Decode)
+		}
+		else { Err(TocError::Shab64Decode) }
+	}
+
 	#[allow(unsafe_code)]
 	#[must_use]
 	/// # Pretty Print.

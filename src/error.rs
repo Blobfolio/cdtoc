@@ -13,19 +13,11 @@ use std::{
 #[derive(Debug, Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd)]
 /// # Error Type.
 pub enum TocError {
-	#[cfg(feature = "accuraterip")]
-	/// # AccurateRip Decode.
-	AccurateRipDecode,
-
 	/// # CDDA Sample Rate.
 	///
 	/// The total number of samples for a given audio track on a CD must be
 	/// evenly divisible by `588`, the number of samples per sector.
 	CDDASampleCount,
-
-	#[cfg(feature = "cddb")]
-	/// # CDDB Decode.
-	CddbDecode,
 
 	/// # Invalid characters.
 	///
@@ -85,14 +77,24 @@ pub enum TocError {
 	///
 	/// Audio CDs support a maximum of 99 tracks.
 	TrackCount,
+
+	#[cfg(feature = "accuraterip")]
+	/// # AccurateRip Decode.
+	AccurateRipDecode,
+
+	#[cfg(feature = "cddb")]
+	/// # CDDB Decode.
+	CddbDecode,
+
+	#[cfg(all(feature = "base64", feature = "sha1"))]
+	/// # SHA1/Base64 Decode.
+	Shab64Decode,
 }
 
 impl fmt::Display for TocError {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		match self {
-			#[cfg(feature = "accuraterip")] Self::AccurateRipDecode => f.write_str("Invalid AccurateRip ID string."),
 			Self::CDDASampleCount => f.write_str("Invalid CDDA sample count."),
-			#[cfg(feature = "cddb")] Self::CddbDecode => f.write_str("Invalid CDDB ID string."),
 			Self::CDTOCChars => f.write_str("Invalid character(s), expecting only 0-9, A-F, +, and (rarely) X."),
 			Self::Checksums => f.write_str("Unable to parse checksums."),
 			Self::Format(kind) => write!(f, "This operation can't be applied to {kind} discs."),
@@ -103,6 +105,10 @@ impl fmt::Display for TocError {
 			Self::SectorOrder => f.write_str("Sectors are incorrectly ordered or overlap."),
 			Self::SectorSize => f.write_str("Sector sizes may not exceed four bytes (u32)."),
 			Self::TrackCount => f.write_str("The number of audio tracks must be between 1..=99."),
+
+			#[cfg(feature = "accuraterip")] Self::AccurateRipDecode => f.write_str("Invalid AccurateRip ID string."),
+			#[cfg(feature = "cddb")] Self::CddbDecode => f.write_str("Invalid CDDB ID string."),
+			#[cfg(all(feature = "base64", feature = "sha1"))] Self::Shab64Decode => f.write_str("Invalid sha/base64 ID string."),
 		}
 	}
 }
