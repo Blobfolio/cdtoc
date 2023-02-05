@@ -31,6 +31,7 @@ default-target = "x86_64-unknown-linux-gnu"
 
 [dev-dependencies]
 brunch = "0.4.*"
+serde_json = "1.0.*"
 
 [dependencies]
 dactyl = "0.4.*"
@@ -45,6 +46,10 @@ version = "0.6.*"
 optional = true
 
 [dependencies.itoa]
+version = "1.0.*"
+optional = true
+
+[dependencies.serde]
 version = "1.0.*"
 optional = true
 
@@ -69,6 +74,9 @@ faster-hex = [ "dep:faster-hex" ]
 
 # Enable MusicBrainz ID calculations.
 musicbrainz = [ "base64", "faster-hex", "sha1" ]
+
+# Enable de/serialization support for most types.
+serde = [ "dep:serde", "faster-hex" ]
 
 [[bench]]
 name = "accuraterip"

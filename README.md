@@ -46,6 +46,22 @@ assert_eq!(toc1.to_string(), "4+96+2D2B+6256+B327+D84A");
 
 
 
+## De/Serialization
+
+The optional `serde` crate feature can be enabled to expose de/serialization implementations for this library's types:
+
+| Type | Format | Notes |
+| ---- | ------ | ----- |
+| `AccurateRip` | `String` | |
+| `Cddb` | `String` | |
+| `Duration` | `u64` | |
+| `Shab64` | `String` | MusicBrainz and CTDB IDs. |
+| `Toc` | `String` | |
+| `Track` | `Map` | |
+| `TrackPosition` | `String` | |
+
+
+
 ## Installation
 
 Add `cdtoc` to your `dependencies` in `Cargo.toml`, like:

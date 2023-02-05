@@ -47,6 +47,22 @@ assert_eq!(toc1.to_string(), "4+96+2D2B+6256+B327+D84A");
 
 
 
+## De/Serialization
+
+The optional `serde` crate feature can be enabled to expose de/serialization implementations for this library's types:
+
+| Type | Format | Notes |
+| ---- | ------ | ----- |
+| [`AccurateRip`] | `String` | |
+| [`Cddb`] | `String` | |
+| [`Duration`] | `u64` | |
+| [`Shab64`] | `String` | MusicBrainz and CTDB IDs. |
+| [`Toc`] | `String` | |
+| [`Track`] | `Map` | |
+| [`TrackPosition`] | `String` | |
+
+
+
 ## Installation
 
 Add `cdtoc` to your `dependencies` in `Cargo.toml`, like:
@@ -105,6 +121,7 @@ mod track;
 #[cfg(feature = "cddb")] mod cddb;
 #[cfg(feature = "ctdb")] mod ctdb;
 #[cfg(feature = "musicbrainz")] mod musicbrainz;
+#[cfg(feature = "serde")] mod serde;
 #[cfg(all(feature = "sha1", feature = "base64"))] mod shab64;
 
 pub use error::TocError;
@@ -993,6 +1010,7 @@ fn parse_cdtoc_metadata(src: &[u8]) -> Result<(Vec<u32>, Option<u32>, u32), TocE
 mod tests {
 	use super::*;
 	use brunch as _;
+	use serde_json as _;
 
 	const CDTOC_AUDIO: &str = "B+96+5DEF+A0F2+F809+1529F+1ACB3+20CBC+24E14+2AF17+2F4EA+35BDD+3B96D";
 	const CDTOC_EXTRA: &str = "A+96+3757+696D+C64F+10A13+14DA2+19E88+1DBAA+213A4+2784E+2D7AF+36F11";

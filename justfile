@@ -68,6 +68,7 @@ bench BENCH="":
 	clear
 	cargo clippy \
 		--release \
+		--all-features \
 		--target x86_64-unknown-linux-gnu \
 		--target-dir "{{ cargo_dir }}"
 
@@ -122,6 +123,7 @@ bench BENCH="":
 	just _test cddb
 	just _test ctdb
 	just _test musicbrainz
+	just _test serde
 
 
 @_test FEATURES:
