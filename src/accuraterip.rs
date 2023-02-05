@@ -7,6 +7,7 @@ use crate::{
 	Toc,
 	TocError,
 };
+use dactyl::traits::BytesToUnsigned;
 use std::{
 	collections::BTreeMap,
 	fmt,
@@ -14,7 +15,7 @@ use std::{
 
 
 
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "accuraterip")))]
+#[cfg_attr(docsrs, doc(cfg(feature = "accuraterip")))]
 #[derive(Debug, Clone, Copy, Eq, Hash, PartialEq)]
 /// # AccurateRip ID.
 ///
@@ -101,7 +102,6 @@ impl From<&Toc> for AccurateRip {
 }
 
 impl AccurateRip {
-	#[cfg_attr(feature = "docsrs", doc(cfg(feature = "accuraterip")))]
 	#[must_use]
 	/// # Number of Audio Tracks.
 	///
@@ -120,7 +120,6 @@ impl AccurateRip {
 	/// ```
 	pub const fn audio_len(&self) -> u8 { self.0[0] }
 
-	#[cfg_attr(feature = "docsrs", doc(cfg(feature = "accuraterip")))]
 	#[must_use]
 	/// # AccurateRip Checksum URL.
 	///
@@ -157,7 +156,6 @@ impl AccurateRip {
 		].concat()
 	}
 
-	#[cfg_attr(feature = "docsrs", doc(cfg(all(feature = "accuraterip", feature = "cddb"))))]
 	#[must_use]
 	/// # CDDB ID.
 	///
@@ -186,7 +184,50 @@ impl AccurateRip {
 		]))
 	}
 
-	#[cfg_attr(feature = "docsrs", doc(cfg(feature = "accuraterip")))]
+	/// # Decode.
+	///
+	/// Convert an AccurateRip ID string back into an [`AccurateRip`] instance.
+	///
+	/// ## Examples
+	///
+	/// ```
+	/// use cdtoc::{AccurateRip, Toc};
+	///
+	/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
+	/// let ar_id = toc.accuraterip_id();
+	/// let ar_str = ar_id.to_string();
+	/// assert_eq!(ar_str, "004-0002189a-00087f33-1f02e004");
+	/// assert_eq!(AccurateRip::decode(ar_str), Ok(ar_id));
+	/// ```
+	///
+	/// ## Errors
+	///
+	/// This will return an error if decoding fails.
+	pub fn decode<S>(src: S) -> Result<Self, TocError>
+	where S: AsRef<str> {
+		let src = src.as_ref().as_bytes();
+		if src.len() == 30 && src[3] == b'-' && src[12] == b'-' && src[21] == b'-' {
+			let a = u8::btou(&src[..3]).ok_or(TocError::AccurateRipDecode)?;
+			let b = super::hex_decode_u32(&src[4..12])
+				.map(u32::to_le_bytes)
+				.ok_or(TocError::AccurateRipDecode)?;
+			let c = super::hex_decode_u32(&src[13..21])
+				.map(u32::to_le_bytes)
+				.ok_or(TocError::AccurateRipDecode)?;
+			let d = super::hex_decode_u32(&src[22..])
+				.map(u32::to_le_bytes)
+				.ok_or(TocError::AccurateRipDecode)?;
+
+			Ok(Self([
+				a,
+				b[0], b[1], b[2], b[3],
+				c[0], c[1], c[2], c[3],
+				d[0], d[1], d[2], d[3],
+			]))
+		}
+		else { Err(TocError::AccurateRipDecode) }
+	}
+
 	/// # Parse Checksums.
 	///
 	/// This will parse the v1 and v2 track checksums from a raw AccurateRip
@@ -229,13 +270,13 @@ impl AccurateRip {
 		else { Err(TocError::NoChecksums) }
 	}
 
-	#[cfg_attr(feature = "docsrs", doc(cfg(all(feature = "accuraterip", feature = "faster-hex"))))]
 	#[cfg(feature = "faster-hex")]
+	#[cfg_attr(docsrs, doc(cfg(feature = "faster-hex")))]
 	#[allow(unsafe_code, clippy::missing_panics_doc)]
 	#[must_use]
 	/// # Pretty Print.
 	///
-	/// Return a String representation of the disc ID, same as `[AccurateRip::to_string]`,
+	/// Return a String representation of the disc ID, same as `AccurateRip::to_string`,
 	/// but a little faster.
 	///
 	/// ## Examples
@@ -273,7 +314,7 @@ impl AccurateRip {
 
 
 impl Toc {
-	#[cfg_attr(feature = "docsrs", doc(cfg(feature = "accuraterip")))]
+	#[cfg_attr(docsrs, doc(cfg(feature = "accuraterip")))]
 	#[must_use]
 	/// # AccurateRip ID.
 	///
@@ -303,7 +344,7 @@ impl Toc {
 	/// ```
 	pub fn accuraterip_id(&self) -> AccurateRip { AccurateRip::from(self) }
 
-	#[cfg_attr(feature = "docsrs", doc(cfg(feature = "accuraterip")))]
+	#[cfg_attr(docsrs, doc(cfg(feature = "accuraterip")))]
 	#[must_use]
 	/// # AccurateRip Checksum URL.
 	///
@@ -326,7 +367,7 @@ impl Toc {
 		self.accuraterip_id().checksum_url()
 	}
 
-	#[cfg_attr(feature = "docsrs", doc(cfg(feature = "accuraterip")))]
+	#[cfg_attr(docsrs, doc(cfg(feature = "accuraterip")))]
 	/// # Parse Checksums.
 	///
 	/// This will parse the v1 and v2 track checksums from a raw AccurateRip

@@ -294,4 +294,18 @@ impl TrackPosition {
 	/// assert!(! TrackPosition::Middle.is_last());
 	/// ```
 	pub const fn is_last(self) -> bool { matches!(self, Self::Last | Self::Only) }
+
+	#[must_use]
+	/// # As Str.
+	///
+	/// Return the equivalent string slice for the variant.
+	pub const fn as_str(self) -> &'static str {
+		match self {
+			Self::Invalid => "Invalid",
+			Self::First => "First",
+			Self::Middle => "Middle",
+			Self::Last => "Last",
+			Self::Only => "Only",
+		}
+	}
 }

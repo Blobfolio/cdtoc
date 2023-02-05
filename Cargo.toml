@@ -1,6 +1,6 @@
 [package]
 name = "cdtoc"
-version = "0.1.5"
+version = "0.1.6"
 authors = ["Blobfolio, LLC. <hello@blobfolio.com>"]
 edition = "2021"
 rust-version = "1.65"
@@ -24,11 +24,14 @@ man-dir = "./"
 credits-dir = "./"
 
 [package.metadata.docs.rs]
-features = [ "docsrs", "accuraterip", "cddb", "ctdb", "musicbrainz" ]
+rustc-args = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs"]
+features = [ "accuraterip", "cddb", "ctdb", "musicbrainz" ]
 default-target = "x86_64-unknown-linux-gnu"
 
 [dev-dependencies]
 brunch = "0.4.*"
+serde_json = "1.0.*"
 
 [dependencies]
 dactyl = "0.4.*"
@@ -43,6 +46,10 @@ version = "0.6.*"
 optional = true
 
 [dependencies.itoa]
+version = "1.0.*"
+optional = true
+
+[dependencies.serde]
 version = "1.0.*"
 optional = true
 
@@ -62,13 +69,14 @@ cddb = [ "itoa" ]
 # Enable CUETools Database ID calculations.
 ctdb = [ "base64", "faster-hex", "itoa", "sha1" ]
 
-# Use feature "faster-hex" for slightly faster hex encoding.
+# Enable slightly faster hex de/encoding.
+faster-hex = [ "dep:faster-hex" ]
 
 # Enable MusicBrainz ID calculations.
 musicbrainz = [ "base64", "faster-hex", "sha1" ]
 
-# This is just a workaround for docs.rs; don't enable this if you're human!
-docsrs = []
+# Enable de/serialization support for most types.
+serde = [ "dep:serde", "faster-hex" ]
 
 [[bench]]
 name = "accuraterip"

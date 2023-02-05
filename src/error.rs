@@ -36,7 +36,7 @@ pub enum TocError {
 	/// # Invalid Format For Operation.
 	///
 	/// This is a catch-all error used when a given disc format is incompatible
-	/// with the operation, such as [`TocKind::DataFirst`] w/ [`Toc::set_audio_leadin`].
+	/// with the operation, such as [`TocKind::DataFirst`] w/ [`Toc::set_audio_leadin`](crate::Toc::set_audio_leadin).
 	Format(TocKind),
 
 	/// # Leadin Too Small.
@@ -77,6 +77,18 @@ pub enum TocError {
 	///
 	/// Audio CDs support a maximum of 99 tracks.
 	TrackCount,
+
+	#[cfg(feature = "accuraterip")]
+	/// # AccurateRip Decode.
+	AccurateRipDecode,
+
+	#[cfg(feature = "cddb")]
+	/// # CDDB Decode.
+	CddbDecode,
+
+	#[cfg(all(feature = "base64", feature = "sha1"))]
+	/// # SHA1/Base64 Decode.
+	ShaB64Decode,
 }
 
 impl fmt::Display for TocError {
@@ -93,6 +105,10 @@ impl fmt::Display for TocError {
 			Self::SectorOrder => f.write_str("Sectors are incorrectly ordered or overlap."),
 			Self::SectorSize => f.write_str("Sector sizes may not exceed four bytes (u32)."),
 			Self::TrackCount => f.write_str("The number of audio tracks must be between 1..=99."),
+
+			#[cfg(feature = "accuraterip")] Self::AccurateRipDecode => f.write_str("Invalid AccurateRip ID string."),
+			#[cfg(feature = "cddb")] Self::CddbDecode => f.write_str("Invalid CDDB ID string."),
+			#[cfg(all(feature = "base64", feature = "sha1"))] Self::ShaB64Decode => f.write_str("Invalid sha/base64 ID string."),
 		}
 	}
 }

@@ -47,6 +47,22 @@ assert_eq!(toc1.to_string(), "4+96+2D2B+6256+B327+D84A");
 
 
 
+## De/Serialization
+
+The optional `serde` crate feature can be enabled to expose de/serialization implementations for this library's types:
+
+| Type | Format | Notes |
+| ---- | ------ | ----- |
+| [`AccurateRip`] | `String` | |
+| [`Cddb`] | `String` | |
+| [`Duration`] | `u64` | |
+| [`ShaB64`] | `String` | MusicBrainz and CTDB IDs. |
+| [`Toc`] | `String` | |
+| [`Track`] | `Map` | |
+| [`TrackPosition`] | `String` | |
+
+
+
 ## Installation
 
 Add `cdtoc` to your `dependencies` in `Cargo.toml`, like:
@@ -94,7 +110,7 @@ default-features = false
 	clippy::module_name_repetitions,
 )]
 
-#![cfg_attr(feature = "docsrs", feature(doc_cfg))]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 
 
 
@@ -105,6 +121,8 @@ mod track;
 #[cfg(feature = "cddb")] mod cddb;
 #[cfg(feature = "ctdb")] mod ctdb;
 #[cfg(feature = "musicbrainz")] mod musicbrainz;
+#[cfg(feature = "serde")] mod serde;
+#[cfg(all(feature = "sha1", feature = "base64"))] mod shab64;
 
 pub use error::TocError;
 pub use time::Duration;
@@ -115,6 +133,7 @@ pub use track::{
 };
 #[cfg(feature = "accuraterip")] pub use accuraterip::AccurateRip;
 #[cfg(feature = "cddb")] pub use cddb::Cddb;
+#[cfg(all(feature = "sha1", feature = "base64"))] pub use shab64::ShaB64;
 
 use std::fmt;
 use trimothy::TrimSlice;
@@ -877,32 +896,6 @@ impl TocKind {
 
 
 
-#[cfg(feature = "base64")]
-#[allow(unsafe_code)]
-/// # Base64 Encode.
-///
-/// Encode the slice with base64 and apply a few character substitutions.
-fn base64_encode(src: &[u8]) -> String {
-	use base64::{
-		Engine,
-		prelude::BASE64_STANDARD,
-	};
-
-	let mut out = String::with_capacity(28);
-	BASE64_STANDARD.encode_string(src, &mut out);
-
-	// Safety: the string is ASCII, as are the substitutions.
-	for b in unsafe { out.as_mut_vec() } {
-		match *b {
-			b'+' => { *b = b'.'; },
-			b'/' => { *b = b'_'; },
-			b'=' => { *b = b'-'; },
-			_ => {},
-		}
-	}
-	out
-}
-
 #[allow(clippy::cast_lossless)]
 #[inline]
 // Decode One Digit.
@@ -1017,6 +1010,7 @@ fn parse_cdtoc_metadata(src: &[u8]) -> Result<(Vec<u32>, Option<u32>, u32), TocE
 mod tests {
 	use super::*;
 	use brunch as _;
+	use serde_json as _;
 
 	const CDTOC_AUDIO: &str = "B+96+5DEF+A0F2+F809+1529F+1ACB3+20CBC+24E14+2AF17+2F4EA+35BDD+3B96D";
 	const CDTOC_EXTRA: &str = "A+96+3757+696D+C64F+10A13+14DA2+19E88+1DBAA+213A4+2784E+2D7AF+36F11";

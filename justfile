@@ -68,6 +68,7 @@ bench BENCH="":
 	clear
 	cargo clippy \
 		--release \
+		--all-features \
 		--target x86_64-unknown-linux-gnu \
 		--target-dir "{{ cargo_dir }}"
 
@@ -84,12 +85,13 @@ bench BENCH="":
 	# env RUSTUP_PERMIT_COPY_RENAME=true rustup install nightly
 
 	# Make the docs.
-	cargo +nightly doc \
+	cargo +nightly rustdoc \
 		--release \
 		--all-features \
-		--no-deps \
 		--target x86_64-unknown-linux-gnu \
-		--target-dir "{{ cargo_dir }}"
+		--target-dir "{{ cargo_dir }}" \
+		-- \
+		--cfg docsrs
 
 	# Move the docs and clean up ownership.
 	[ ! -d "{{ doc_dir }}" ] || rm -rf "{{ doc_dir }}"
@@ -121,6 +123,7 @@ bench BENCH="":
 	just _test cddb
 	just _test ctdb
 	just _test musicbrainz
+	just _test serde
 
 
 @_test FEATURES:

@@ -2,13 +2,16 @@
 # CDTOC: MusicBrainz
 */
 
-use crate::Toc;
+use crate::{
+	ShaB64,
+	Toc,
+};
 
 
 
 impl Toc {
 	#[allow(clippy::cast_possible_truncation, clippy::missing_panics_doc)]
-	#[cfg_attr(feature = "docsrs", doc(cfg(feature = "musicbrainz")))]
+	#[cfg_attr(docsrs, doc(cfg(feature = "musicbrainz")))]
 	#[must_use]
 	/// # MusicBrainz ID.
 	///
@@ -22,11 +25,11 @@ impl Toc {
 	///
 	/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
 	/// assert_eq!(
-	///     toc.musicbrainz_id(),
+	///     toc.musicbrainz_id().to_string(),
 	///     "nljDXdC8B_pDwbdY1vZJvdrAZI4-",
 	/// );
 	/// ```
-	pub fn musicbrainz_id(&self) -> String {
+	pub fn musicbrainz_id(&self) -> ShaB64 {
 		use sha1::Digest;
 		let mut sha = sha1::Sha1::new();
 		let mut buf: [u8; 8] = [b'0', b'1', b'0', b'0', b'0', b'0', b'0', b'0'];
@@ -54,7 +57,7 @@ impl Toc {
 		if padding != 0 { sha.update(&crate::ZEROES[..padding * 8]); }
 
 		// Run it through base64 and we're done!
-		super::base64_encode(&sha.finalize())
+		ShaB64::from(sha)
 	}
 }
 
@@ -93,7 +96,7 @@ mod tests {
 			),
 		] {
 			let toc = Toc::from_cdtoc(t).expect("Invalid TOC");
-			assert_eq!(toc.musicbrainz_id(), c);
+			assert_eq!(toc.musicbrainz_id().to_string(), c);
 		}
 	}
 }

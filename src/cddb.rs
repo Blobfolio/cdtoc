@@ -2,7 +2,10 @@
 # CDTOC: CDDB
 */
 
-use crate::Toc;
+use crate::{
+	Toc,
+	TocError,
+};
 use std::{
 	fmt,
 	hash,
@@ -10,7 +13,7 @@ use std::{
 
 
 
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "cddb")))]
+#[cfg_attr(docsrs, doc(cfg(feature = "cddb")))]
 #[derive(Debug, Clone, Copy)]
 /// # CDDB ID.
 ///
@@ -107,10 +110,37 @@ impl From<&Toc> for Cddb {
 	}
 }
 
+impl Cddb {
+	/// # Decode.
+	///
+	/// Convert a CDDB ID string back into a [`Cddb`] instance.
+	///
+	/// ## Examples
+	///
+	/// ```
+	/// use cdtoc::{Cddb, Toc};
+	///
+	/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
+	/// let cddb_id = toc.cddb_id();
+	/// let cddb_str = cddb_id.to_string();
+	/// assert_eq!(cddb_str, "1f02e004");
+	/// assert_eq!(Cddb::decode(cddb_str), Ok(cddb_id));
+	/// ```
+	///
+	/// ## Errors
+	///
+	/// This will return an error if decoding fails.
+	pub fn decode<S>(src: S) -> Result<Self, TocError>
+	where S: AsRef<str> {
+		let src = src.as_ref().as_bytes();
+		super::hex_decode_u32(src).map(Self).ok_or(TocError::CddbDecode)
+	}
+}
+
 
 
 impl Toc {
-	#[cfg_attr(feature = "docsrs", doc(cfg(feature = "cddb")))]
+	#[cfg_attr(docsrs, doc(cfg(feature = "cddb")))]
 	#[must_use]
 	/// # CDDB ID.
 	///
