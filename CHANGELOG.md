@@ -1,6 +1,22 @@
 # Changelog
 
 
+## [0.1.6](https://github.com/Blobfolio/cdtoc/releases/tag/v0.1.6) - 2023-02-04
+
+### Changed
+
+* Improve docs.rs environment detection
+* Declare "faster-hex" feature explicitly
+
+### New
+
+* `AccurateRip::decode`
+* `Cddb::decode`
+* Return copy-friendly type for MusicBrainz and CTDB ID methods
+* Added `serde` crate feature for optional de/serialization support
+
+
+
 ## [0.1.5](https://github.com/Blobfolio/cdtoc/releases/tag/v0.1.5) - 2023-01-28
 
 ### Fix
