@@ -3,7 +3,7 @@
 */
 
 use crate::{
-	Shab64,
+	ShaB64,
 	Toc,
 };
 
@@ -29,7 +29,7 @@ impl Toc {
 	///     "nljDXdC8B_pDwbdY1vZJvdrAZI4-",
 	/// );
 	/// ```
-	pub fn musicbrainz_id(&self) -> Shab64 {
+	pub fn musicbrainz_id(&self) -> ShaB64 {
 		use sha1::Digest;
 		let mut sha = sha1::Sha1::new();
 		let mut buf: [u8; 8] = [b'0', b'1', b'0', b'0', b'0', b'0', b'0', b'0'];
@@ -57,7 +57,7 @@ impl Toc {
 		if padding != 0 { sha.update(&crate::ZEROES[..padding * 8]); }
 
 		// Run it through base64 and we're done!
-		Shab64::from(sha)
+		ShaB64::from(sha)
 	}
 }
 

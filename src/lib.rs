@@ -56,7 +56,7 @@ The optional `serde` crate feature can be enabled to expose de/serialization imp
 | [`AccurateRip`] | `String` | |
 | [`Cddb`] | `String` | |
 | [`Duration`] | `u64` | |
-| [`Shab64`] | `String` | MusicBrainz and CTDB IDs. |
+| [`ShaB64`] | `String` | MusicBrainz and CTDB IDs. |
 | [`Toc`] | `String` | |
 | [`Track`] | `Map` | |
 | [`TrackPosition`] | `String` | |
@@ -133,7 +133,7 @@ pub use track::{
 };
 #[cfg(feature = "accuraterip")] pub use accuraterip::AccurateRip;
 #[cfg(feature = "cddb")] pub use cddb::Cddb;
-#[cfg(all(feature = "sha1", feature = "base64"))] pub use shab64::Shab64;
+#[cfg(all(feature = "sha1", feature = "base64"))] pub use shab64::ShaB64;
 
 use std::fmt;
 use trimothy::TrimSlice;

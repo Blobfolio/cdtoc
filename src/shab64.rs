@@ -22,25 +22,25 @@ use std::fmt;
 /// This struct holds ID data for MusicBrainz and CTDB consisting of a binary
 /// sha1 hash encoded with an almost-but-not-quite standard base64 alphabet.
 ///
-/// String formatting is deferred until `Shab64::to_string` or
-/// [`Shab64::pretty_print`] are called, allowing for a slightly smaller and
+/// String formatting is deferred until `ShaB64::to_string` or
+/// [`ShaB64::pretty_print`] are called, allowing for a slightly smaller and
 /// `copy`-friendly footprint.
-pub struct Shab64([u8; 20]);
+pub struct ShaB64([u8; 20]);
 
-impl fmt::Display for Shab64 {
+impl fmt::Display for ShaB64 {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		f.write_str(&self.pretty_print())
 	}
 }
 
-impl From<Sha1> for Shab64 {
+impl From<Sha1> for ShaB64 {
 	fn from(src: Sha1) -> Self { Self(<[u8; 20]>::from(src.finalize())) }
 }
 
-impl Shab64 {
+impl ShaB64 {
 	/// # Decode.
 	///
-	/// Convert a string ID back into a [`Shab64`] instance.
+	/// Convert a string ID back into a [`ShaB64`] instance.
 	///
 	/// ## Errors
 	///
@@ -63,21 +63,21 @@ impl Shab64 {
 			// think so so we'll use a vec and figure it out later.
 			let mut out = Vec::with_capacity(20);
 			BASE64_STANDARD.decode_vec(src, &mut out)
-				.map_err(|_| TocError::Shab64Decode)?;
+				.map_err(|_| TocError::ShaB64Decode)?;
 
 			// Return if good.
 			<[u8; 20]>::try_from(out)
 				.map(Self)
-				.map_err(|_| TocError::Shab64Decode)
+				.map_err(|_| TocError::ShaB64Decode)
 		}
-		else { Err(TocError::Shab64Decode) }
+		else { Err(TocError::ShaB64Decode) }
 	}
 
 	#[allow(unsafe_code)]
 	#[must_use]
 	/// # Pretty Print.
 	///
-	/// Return the value has a human-readable string, exactly like `Shab64::to_string`,
+	/// Return the value has a human-readable string, exactly like `ShaB64::to_string`,
 	/// but slightly faster. The result will always be 28-characters in length.
 	pub fn pretty_print(&self) -> String {
 		let mut out = String::with_capacity(28);

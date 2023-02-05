@@ -55,7 +55,7 @@ The optional `serde` crate feature can be enabled to expose de/serialization imp
 | `AccurateRip` | `String` | |
 | `Cddb` | `String` | |
 | `Duration` | `u64` | |
-| `Shab64` | `String` | MusicBrainz and CTDB IDs. |
+| `ShaB64` | `String` | MusicBrainz and CTDB IDs. |
 | `Toc` | `String` | |
 | `Track` | `Map` | |
 | `TrackPosition` | `String` | |

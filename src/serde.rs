@@ -10,7 +10,7 @@ use crate::{
 };
 #[cfg(feature = "accuraterip")] use crate::AccurateRip;
 #[cfg(feature = "cddb")] use crate::Cddb;
-#[cfg(all(feature = "base64", feature = "sha1"))] use crate::Shab64;
+#[cfg(all(feature = "base64", feature = "sha1"))] use crate::ShaB64;
 use serde::{
 	de,
 	Deserialize,
@@ -56,12 +56,11 @@ macro_rules! serialize_with {
 #[cfg(feature = "cddb")] deserialize_str_with!(Cddb, decode);
 #[cfg(feature = "cddb")] serialize_with!(Cddb, to_string);
 
-#[cfg(all(feature = "base64", feature = "sha1"))] deserialize_str_with!(Shab64, decode);
-#[cfg(all(feature = "base64", feature = "sha1"))] serialize_with!(Shab64, pretty_print);
+#[cfg(all(feature = "base64", feature = "sha1"))] deserialize_str_with!(ShaB64, decode);
+#[cfg(all(feature = "base64", feature = "sha1"))] serialize_with!(ShaB64, pretty_print);
 
 deserialize_str_with!(Toc, from_cdtoc);
 serialize_with!(Toc, to_string);
-
 
 #[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
 impl<'de> Deserialize<'de> for Duration {
@@ -194,14 +193,14 @@ mod tests {
 	#[test]
 	fn serde_ctdb() {
 		let ctdb = Toc::from_cdtoc(TOC).expect("Invalid TOC.").ctdb_id();
-		inout!(ctdb, Shab64, "Shab64");
+		inout!(ctdb, ShaB64, "ShaB64");
 	}
 
 	#[cfg(feature = "musicbrainz")]
 	#[test]
 	fn serde_musicbrainz() {
 		let mb = Toc::from_cdtoc(TOC).expect("Invalid TOC.").musicbrainz_id();
-		inout!(mb, Shab64, "Shab64");
+		inout!(mb, ShaB64, "ShaB64");
 	}
 
 	#[test]

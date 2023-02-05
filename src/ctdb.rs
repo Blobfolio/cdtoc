@@ -3,7 +3,7 @@
 */
 
 use crate::{
-	Shab64,
+	ShaB64,
 	Toc,
 	TocError,
 	TocKind,
@@ -32,7 +32,7 @@ impl Toc {
 	///     "VukMWWItblELRM.CEFpXxw0FlME-",
 	/// );
 	/// ```
-	pub fn ctdb_id(&self) -> Shab64 {
+	pub fn ctdb_id(&self) -> ShaB64 {
 		use sha1::Digest;
 		let mut sha = sha1::Sha1::new();
 		let mut buf = [b'0'; 8];
@@ -55,7 +55,7 @@ impl Toc {
 		if padding != 0 { sha.update(&crate::ZEROES[..padding * 8]); }
 
 		// Run it through base64 and we're done!
-		Shab64::from(sha)
+		ShaB64::from(sha)
 	}
 
 	#[cfg_attr(docsrs, doc(cfg(feature = "ctdb")))]

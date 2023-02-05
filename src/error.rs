@@ -88,7 +88,7 @@ pub enum TocError {
 
 	#[cfg(all(feature = "base64", feature = "sha1"))]
 	/// # SHA1/Base64 Decode.
-	Shab64Decode,
+	ShaB64Decode,
 }
 
 impl fmt::Display for TocError {
@@ -108,7 +108,7 @@ impl fmt::Display for TocError {
 
 			#[cfg(feature = "accuraterip")] Self::AccurateRipDecode => f.write_str("Invalid AccurateRip ID string."),
 			#[cfg(feature = "cddb")] Self::CddbDecode => f.write_str("Invalid CDDB ID string."),
-			#[cfg(all(feature = "base64", feature = "sha1"))] Self::Shab64Decode => f.write_str("Invalid sha/base64 ID string."),
+			#[cfg(all(feature = "base64", feature = "sha1"))] Self::ShaB64Decode => f.write_str("Invalid sha/base64 ID string."),
 		}
 	}
 }
