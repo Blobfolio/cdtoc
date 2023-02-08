@@ -116,6 +116,15 @@ bench BENCH="":
 		--target x86_64-unknown-linux-gnu \
 		--target-dir "{{ cargo_dir }}"
 
+	echo ""
+	fyi task "Testing w/ All Features"
+	cargo test \
+		--release \
+		--all-features \
+		--no-default-features \
+		--target x86_64-unknown-linux-gnu \
+		--target-dir "{{ cargo_dir }}"
+
 	just _test faster-hex
 	just _test accuraterip,faster-hex
 	just _test cddb,faster-hex

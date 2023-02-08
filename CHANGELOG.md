@@ -1,6 +1,14 @@
 # Changelog
 
 
+## [0.1.7](https://github.com/Blobfolio/cdtoc/releases/tag/v0.1.7) - TBD
+
+### Changed
+
+* Add `visit_seq` deserializer support for `Track`
+
+
+
 ## [0.1.6](https://github.com/Blobfolio/cdtoc/releases/tag/v0.1.6) - 2023-02-04
 
 ### Changed

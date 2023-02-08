@@ -90,6 +90,19 @@ impl<'de> Deserialize<'de> for Track {
 				formatter.write_str("struct Track")
 			}
 
+			fn visit_seq<V>(self, mut seq: V) -> Result<Track, V::Error>
+            where V: de::SeqAccess<'de> {
+				let num = seq.next_element()?
+					.ok_or_else(|| de::Error::invalid_length(0, &self))?;
+				let pos = seq.next_element()?
+					.ok_or_else(|| de::Error::invalid_length(1, &self))?;
+				let from = seq.next_element()?
+					.ok_or_else(|| de::Error::invalid_length(2, &self))?;
+				let to = seq.next_element()?
+					.ok_or_else(|| de::Error::invalid_length(3, &self))?;
+				Ok(Track { num, pos, from, to })
+            }
+
 			fn visit_map<V>(self, mut map: V) -> Result<Track, V::Error>
 			where V: de::MapAccess<'de> {
 				let mut num = None;
@@ -171,7 +184,7 @@ mod tests {
 		($input:ident, $ty:ty, $nice:literal) => (
 			let s = serde_json::to_vec(&$input).expect(concat!($nice, " serialize failed."));
 			let d = serde_json::from_slice::<$ty>(&s).expect(concat!($nice, " deserialize failed."));
-			assert_eq!($input, d, concat!($nice, " serialize/deserialize does not match the original."));
+			assert_eq!($input, d, concat!($nice, " JSON serialize/deserialize does not match the original."));
 		);
 	}
 
