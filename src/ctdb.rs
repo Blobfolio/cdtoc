@@ -14,7 +14,6 @@ use std::collections::BTreeMap;
 
 impl Toc {
 	#[cfg_attr(docsrs, doc(cfg(feature = "ctdb")))]
-	#[allow(clippy::missing_panics_doc)]
 	#[must_use]
 	/// # CUETools Database ID.
 	///
@@ -40,13 +39,13 @@ impl Toc {
 		// Write all but the first tracks relative to the first.
 		let [leadin, sectors @ ..] = self.audio_sectors() else { unreachable!() };
 		for v in sectors {
-			faster_hex::hex_encode((v - leadin).to_be_bytes().as_slice(), &mut buf).unwrap();
+			faster_hex::hex_encode_fallback((v - leadin).to_be_bytes().as_slice(), &mut buf);
 			buf.make_ascii_uppercase();
 			sha.update(buf);
 		}
 
 		// Add the leadout, likewise relative.
-		faster_hex::hex_encode((self.audio_leadout() - leadin).to_be_bytes().as_slice(), &mut buf).unwrap();
+		faster_hex::hex_encode_fallback((self.audio_leadout() - leadin).to_be_bytes().as_slice(), &mut buf);
 		buf.make_ascii_uppercase();
 		sha.update(buf.as_slice());
 

@@ -50,7 +50,7 @@ impl fmt::Display for Cddb {
 	#[allow(unsafe_code)]
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		let mut buf = [b'0'; 8];
-		faster_hex::hex_encode(self.0.to_be_bytes().as_slice(), &mut buf).unwrap();
+		faster_hex::hex_encode_fallback(self.0.to_be_bytes().as_slice(), &mut buf);
 		// Safety: all bytes are ASCII.
 		f.write_str(unsafe { std::str::from_utf8_unchecked(&buf) })
 	}

@@ -272,7 +272,7 @@ impl AccurateRip {
 
 	#[cfg(feature = "faster-hex")]
 	#[cfg_attr(docsrs, doc(cfg(feature = "faster-hex")))]
-	#[allow(unsafe_code, clippy::missing_panics_doc)]
+	#[allow(unsafe_code)]
 	#[must_use]
 	/// # Pretty Print.
 	///
@@ -302,9 +302,9 @@ impl AccurateRip {
 		out[..3].copy_from_slice(dactyl::NiceU8::from(self.0[0]).as_bytes3());
 
 		// ID Parts.
-		faster_hex::hex_encode(&[self.0[4], self.0[3], self.0[2], self.0[1]], &mut out[4..12]).unwrap();
-		faster_hex::hex_encode(&[self.0[8], self.0[7], self.0[6], self.0[5]], &mut out[13..21]).unwrap();
-		faster_hex::hex_encode(&[self.0[12], self.0[11], self.0[10], self.0[9]], &mut out[22..]).unwrap();
+		faster_hex::hex_encode_fallback(&[self.0[4], self.0[3], self.0[2], self.0[1]], &mut out[4..12]);
+		faster_hex::hex_encode_fallback(&[self.0[8], self.0[7], self.0[6], self.0[5]], &mut out[13..21]);
+		faster_hex::hex_encode_fallback(&[self.0[12], self.0[11], self.0[10], self.0[9]], &mut out[22..]);
 
 		// Safety: all bytes are ASCII.
 		unsafe { String::from_utf8_unchecked(out) }

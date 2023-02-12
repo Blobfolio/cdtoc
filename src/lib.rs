@@ -258,13 +258,13 @@ impl fmt::Display for Toc {
 
 		// Audio track count.
 		let audio_len = self.audio.len() as u8;
-		faster_hex::hex_encode(&[audio_len], &mut buf[..2]).unwrap();
+		faster_hex::hex_encode_fallback(&[audio_len], &mut buf[..2]);
 		if 16 <= audio_len { out.push(buf[0]); }
 		out.push(buf[1]);
 
 		macro_rules! push {
 			($v:expr) => (
-				faster_hex::hex_encode($v.to_be_bytes().as_slice(), &mut buf).unwrap();
+				faster_hex::hex_encode_fallback($v.to_be_bytes().as_slice(), &mut buf);
 				out.push(b'+');
 				out.extend_from_slice(buf.trim_start_matches(|b| b == b'0'));
 			);
@@ -284,7 +284,7 @@ impl fmt::Display for Toc {
 				push!(self.leadout);
 
 				// Handle this manually since there's the weird X marker.
-				faster_hex::hex_encode(self.data.to_be_bytes().as_slice(), &mut buf).unwrap();
+				faster_hex::hex_encode_fallback(self.data.to_be_bytes().as_slice(), &mut buf);
 				out.push(b'+');
 				out.push(b'X');
 				out.extend_from_slice(buf.trim_start_matches(|b| b == b'0'));

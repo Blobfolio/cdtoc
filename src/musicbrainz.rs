@@ -10,7 +10,7 @@ use crate::{
 
 
 impl Toc {
-	#[allow(clippy::cast_possible_truncation, clippy::missing_panics_doc)]
+	#[allow(clippy::cast_possible_truncation)]
 	#[cfg_attr(docsrs, doc(cfg(feature = "musicbrainz")))]
 	#[must_use]
 	/// # MusicBrainz ID.
@@ -35,19 +35,19 @@ impl Toc {
 		let mut buf: [u8; 8] = [b'0', b'1', b'0', b'0', b'0', b'0', b'0', b'0'];
 
 		// Start with "01" and the audio track count.
-		faster_hex::hex_encode(&[self.audio_len() as u8], &mut buf[2..4]).unwrap();
+		faster_hex::hex_encode_fallback(&[self.audio_len() as u8], &mut buf[2..4]);
 		buf[2..4].make_ascii_uppercase();
 		sha.update(&buf[..4]);
 
 		// Add the audio leadout.
-		faster_hex::hex_encode(self.audio_leadout().to_be_bytes().as_slice(), &mut buf).unwrap();
+		faster_hex::hex_encode_fallback(self.audio_leadout().to_be_bytes().as_slice(), &mut buf);
 		buf.make_ascii_uppercase();
 		sha.update(buf.as_slice());
 
 		// Now the audio starts.
 		let sectors = self.audio_sectors();
 		for &v in sectors {
-			faster_hex::hex_encode(v.to_be_bytes().as_slice(), &mut buf).unwrap();
+			faster_hex::hex_encode_fallback(v.to_be_bytes().as_slice(), &mut buf);
 			buf.make_ascii_uppercase();
 			sha.update(buf.as_slice());
 		}
