@@ -6,7 +6,10 @@ use brunch::{
 	Bench,
 	benches,
 };
-use cdtoc::Toc;
+use cdtoc::{
+	ShaB64,
+	Toc,
+};
 
 
 
@@ -17,5 +20,8 @@ fn main() {
 	benches!(
 		inline:
 		Bench::new("Toc::musicbrainz_id").run(|| toc.musicbrainz_id()),
+		Bench::spacer(),
+		Bench::new("ShaB64::decode(nljDXdC8B_pDwbdY1vZJvdrAZI4-)")
+			.run(|| ShaB64::decode("nljDXdC8B_pDwbdY1vZJvdrAZI4-")),
 	);
 }
