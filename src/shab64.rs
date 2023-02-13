@@ -84,7 +84,7 @@ impl ShaB64 {
 		BASE64_STANDARD.encode_string(self.0.as_slice(), &mut out);
 
 		// Safety: the string is ASCII, as are the substitutions.
-		for b in unsafe { out.as_mut_vec() } {
+		for b in unsafe { out.as_bytes_mut() } {
 			match *b {
 				b'+' => { *b = b'.'; },
 				b'/' => { *b = b'_'; },

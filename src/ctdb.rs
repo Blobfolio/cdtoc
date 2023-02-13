@@ -12,8 +12,13 @@ use std::collections::BTreeMap;
 
 
 
+const CHUNK_SIZE: usize = 4;
+
+
+
 impl Toc {
 	#[cfg_attr(docsrs, doc(cfg(feature = "ctdb")))]
+	#[allow(clippy::missing_panics_doc)]
 	#[must_use]
 	/// # CUETools Database ID.
 	///
@@ -34,23 +39,54 @@ impl Toc {
 	pub fn ctdb_id(&self) -> ShaB64 {
 		use sha1::Digest;
 		let mut sha = sha1::Sha1::new();
-		let mut buf = [b'0'; 8];
+		let mut src = [b'0'; CHUNK_SIZE * 4]; // Four raw u32s.
+		let mut dst = [b'0'; CHUNK_SIZE * 8]; // Four hexed u32s.
 
-		// Write all but the first tracks relative to the first.
+		// Split the leadin from the rest of the sectors.
 		let [leadin, sectors @ ..] = self.audio_sectors() else { unreachable!() };
-		for v in sectors {
-			faster_hex::hex_encode_fallback((v - leadin).to_be_bytes().as_slice(), &mut buf);
-			buf.make_ascii_uppercase();
-			sha.update(buf);
+		let len = sectors.len();
+		let rem = len % CHUNK_SIZE;
+
+		// Process the sector positions in batches of four to leverage SSE hex
+		// optimizations.
+		for v in sectors.chunks_exact(CHUNK_SIZE) {
+			// Copy the values to the source buffer.
+			for (s_chunk, v) in src.chunks_exact_mut(4).zip(v.iter().map(|n| n - leadin)) {
+				s_chunk.copy_from_slice(v.to_be_bytes().as_slice());
+			}
+
+			// Encode and hash, en masse.
+			faster_hex::hex_encode(src.as_slice(), &mut dst).unwrap();
+			dst.make_ascii_uppercase();
+			sha.update(dst.as_slice());
 		}
 
-		// Add the leadout, likewise relative.
-		faster_hex::hex_encode_fallback((self.audio_leadout() - leadin).to_be_bytes().as_slice(), &mut buf);
-		buf.make_ascii_uppercase();
-		sha.update(buf.as_slice());
+		// Handle the remaining sectors, if any, and the leadout.
+		if rem == 0 {
+			let dst2 = &mut dst[..8];
+			faster_hex::hex_encode_fallback((self.audio_leadout() - leadin).to_be_bytes().as_slice(), dst2);
+			dst2.make_ascii_uppercase();
+			sha.update(dst2);
+		}
+		else {
+			// Copy the values to the source buffer.
+			for (s_chunk, v) in src.chunks_exact_mut(4).zip(
+				sectors[len - rem..].iter().map(|n| n - leadin)
+					.chain(std::iter::once(self.audio_leadout() - leadin))
+			) {
+				s_chunk.copy_from_slice(v.to_be_bytes().as_slice());
+			}
+
+			// Encode and hash, en masse.
+			let src_to = rem * 4 + 4;
+			let dst2 = &mut dst[..src_to * 2];
+			faster_hex::hex_encode(&src[..src_to], dst2).unwrap();
+			dst2.make_ascii_uppercase();
+			sha.update(dst2);
+		}
 
 		// And padding for a total of 99 tracks.
-		let padding = 99 - sectors.len();
+		let padding = 99 - len;
 		if padding != 0 { sha.update(&crate::ZEROES[..padding * 8]); }
 
 		// Run it through base64 and we're done!
