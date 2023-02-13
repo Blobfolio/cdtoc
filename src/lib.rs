@@ -140,9 +140,6 @@ use trimothy::TrimSlice;
 
 
 
-/// # Powers of 16.
-const BASE16: [u32; 8] = [1, 16, 256, 4096, 65_536, 1_048_576, 16_777_216, 268_435_456];
-
 /// # Not Hex Placeholder Value.
 const NIL: u8 = u8::MAX;
 
@@ -879,25 +876,21 @@ impl TocKind {
 
 
 
-#[allow(clippy::cast_lossless)]
-#[inline]
-/// # Decode One Digit.
-fn decode1(src: u8) -> Option<u8> {
-	let out = UNHEX[src as usize];
-	if out == NIL { None }
-	else { Some(out) }
-}
-
 /// # Hex Decode u8.
 ///
 /// Decode a `u8` from a hex byte slice, ignoring case and padding.
 fn hex_decode_u8(src: &[u8]) -> Option<u8> {
 	match src.len() {
-		1 => decode1(src[0]),
+		1 => {
+			let a = UNHEX[src[0] as usize];
+			if a == NIL { None }
+			else { Some(a) }
+		},
 		2 => {
-			let a = decode1(src[0])?;
-			let b = decode1(src[1])?;
-			Some(16 * a + b)
+			let a = UNHEX[src[0] as usize];
+			let b = UNHEX[src[1] as usize];
+			if a == NIL || b == NIL { None }
+			else { Some(16 * a + b) }
 		},
 		_ => None,
 	}
@@ -907,12 +900,14 @@ fn hex_decode_u8(src: &[u8]) -> Option<u8> {
 ///
 /// Decode a `u32` from a hex byte slice, ignoring case and padding.
 fn hex_decode_u32(src: &[u8]) -> Option<u32> {
-	if (1..=8).contains(&src.len()) {
-		BASE16.into_iter()
-			.zip(src.iter().rev())
-			.try_fold(0, |out, (k, byte)| {
-				let digit = u32::from(decode1(*byte)?);
-				Some(out + digit * k)
+	let len = src.len();
+	if 0 != len && len <= 8 {
+		[268_435_456, 16_777_216, 1_048_576, 65_536, 4096, 256, 16, 1][8 - len..].iter()
+			.zip(src)
+			.try_fold(0, |out, (base, byte)| {
+				let digit = UNHEX[*byte as usize];
+				if digit == NIL { None }
+				else { Some(out + u32::from(digit) * base) }
 			})
 	}
 	else { None }
@@ -1217,21 +1212,57 @@ mod tests {
 	#[test]
 	fn t_unhex8() {
 		for i in 0..=u8::MAX {
-			assert_eq!(hex_decode_u8(format!("{:x}", i).as_bytes()), Some(i));
-			assert_eq!(hex_decode_u8(format!("{:X}", i).as_bytes()), Some(i));
-			assert_eq!(hex_decode_u8(format!("{:02x}", i).as_bytes()), Some(i));
-			assert_eq!(hex_decode_u8(format!("{:02X}", i).as_bytes()), Some(i));
+			// Unpadded, lowercase.
+			let mut s = format!("{i:x}").into_bytes();
+			assert_eq!(hex_decode_u8(&s), Some(i));
+
+			// Unpadded, uppercase.
+			s.make_ascii_uppercase();
+			assert_eq!(hex_decode_u8(&s), Some(i));
+
+			if s.len() == 1 {
+				s.insert(0, b'0');
+
+				// Padded, uppercase.
+				assert_eq!(hex_decode_u8(&s), Some(i));
+
+				// Padded, lowercase.
+				s.make_ascii_lowercase();
+				assert_eq!(hex_decode_u8(&s), Some(i));
+			}
 		}
+
+		assert!(hex_decode_u8(&[]).is_none());
+		assert!(hex_decode_u8(b"aba").is_none());
+		assert!(hex_decode_u8(b"jo").is_none());
 	}
 
 	#[test]
 	fn t_unhexu32() {
 		let rng = fastrand::Rng::new();
 		for i in std::iter::repeat_with(|| rng.u32(..)).take(50_000) {
-			assert_eq!(hex_decode_u32(format!("{:x}", i).as_bytes()), Some(i));
-			assert_eq!(hex_decode_u32(format!("{:X}", i).as_bytes()), Some(i));
-			assert_eq!(hex_decode_u32(format!("{:08x}", i).as_bytes()), Some(i));
-			assert_eq!(hex_decode_u32(format!("{:08X}", i).as_bytes()), Some(i));
+			// Unpadded, lowercase.
+			let mut s = format!("{i:x}").into_bytes();
+			assert_eq!(hex_decode_u32(&s), Some(i));
+
+			// Unpadded, uppercase.
+			s.make_ascii_uppercase();
+			assert_eq!(hex_decode_u32(&s), Some(i));
+
+			if s.len() < 8 {
+				while s.len() < 8 { s.insert(0, b'0'); }
+
+				// Padded, uppercase.
+				assert_eq!(hex_decode_u32(&s), Some(i));
+
+				// Padded, lowercase.
+				s.make_ascii_lowercase();
+				assert_eq!(hex_decode_u32(&s), Some(i));
+			}
 		}
+
+		assert!(hex_decode_u32(&[]).is_none());
+		assert!(hex_decode_u32(b"ababababa").is_none());
+		assert!(hex_decode_u32(b"jo").is_none());
 	}
 }
