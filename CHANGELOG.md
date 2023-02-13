@@ -6,6 +6,8 @@
 ### Changed
 
 * Add `visit_seq` deserializer support for `Track`
+* Require `faster-hex` dependency (the corresponding crate feature was removed)
+* Improved hex decode/encode performance, particularly for CTDB/MusicBrainz IDs
 
 
 
