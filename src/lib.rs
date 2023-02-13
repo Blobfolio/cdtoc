@@ -906,17 +906,15 @@ fn hex_decode_u8(src: &[u8]) -> Option<u8> {
 
 /// # Hex Decode u32.
 ///
-/// This is a slightly more performant implementation of [`u32::from_str_radix`].
-/// (`faster-hex` doesn't really help at this tiny scale.)
+/// Decode a `u32` from a hex byte slice, ignoring case and padding.
 fn hex_decode_u32(src: &[u8]) -> Option<u32> {
 	if (1..=8).contains(&src.len()) {
-		let mut out: u32 = 0;
-		for (k, byte) in BASE16.into_iter().zip(src.iter().copied().rev()) {
-			let digit = u32::from(decode1(byte)?);
-			out += digit * k;
-		}
-
-		Some(out)
+		BASE16.into_iter()
+			.zip(src.iter().rev())
+			.try_fold(0, |out, (k, byte)| {
+				let digit = u32::from(decode1(*byte)?);
+				Some(out + digit * k)
+			})
 	}
 	else { None }
 }
