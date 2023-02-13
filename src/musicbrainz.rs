@@ -46,7 +46,7 @@ impl Toc {
 
 		// Now the audio starts.
 		let sectors = self.audio_sectors();
-		for &v in sectors {
+		for v in sectors {
 			faster_hex::hex_encode_fallback(v.to_be_bytes().as_slice(), &mut buf);
 			buf.make_ascii_uppercase();
 			sha.update(buf.as_slice());
