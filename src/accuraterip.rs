@@ -55,19 +55,9 @@ impl From<AccurateRip> for [u8; 13] {
 }
 
 impl fmt::Display for AccurateRip {
-	#[cfg(feature = "faster-hex")]
 	#[allow(unsafe_code)]
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		f.write_str(&self.pretty_print())
-	}
-
-	#[cfg(not(feature = "faster-hex"))]
-	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		let b = u32::from_le_bytes([self.0[1], self.0[2], self.0[3], self.0[4]]);
-		let c = u32::from_le_bytes([self.0[5], self.0[6], self.0[7], self.0[8]]);
-		let d = u32::from_le_bytes([self.0[9], self.0[10], self.0[11], self.0[12]]);
-
-		write!(f, "{:03}-{b:08x}-{c:08x}-{d:08x}", self.0[0])
 	}
 }
 
@@ -270,8 +260,6 @@ impl AccurateRip {
 		else { Err(TocError::NoChecksums) }
 	}
 
-	#[cfg(feature = "faster-hex")]
-	#[cfg_attr(docsrs, doc(cfg(feature = "faster-hex")))]
 	#[allow(unsafe_code)]
 	#[must_use]
 	/// # Pretty Print.

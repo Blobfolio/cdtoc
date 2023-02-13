@@ -125,9 +125,6 @@ bench BENCH="":
 		--target x86_64-unknown-linux-gnu \
 		--target-dir "{{ cargo_dir }}"
 
-	just _test faster-hex
-	just _test accuraterip,faster-hex
-	just _test cddb,faster-hex
 	just _test accuraterip
 	just _test cddb
 	just _test ctdb

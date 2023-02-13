@@ -232,23 +232,6 @@ pub struct Toc {
 }
 
 impl fmt::Display for Toc {
-	#[cfg(not(feature = "faster-hex"))]
-	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		// Start with the track count.
-		write!(f, "{:X}", self.audio.len())?;
-
-		// Then the audio sectors.
-		for v in &self.audio { write!(f, "+{v:X}")?; }
-
-		// And finally some combination of data and leadout.
-		match self.kind {
-			TocKind::Audio => write!(f, "+{:X}", self.leadout),
-			TocKind::CDExtra => write!(f, "+{:X}+{:X}", self.data, self.leadout),
-			TocKind::DataFirst => write!(f, "+{:X}+X{:X}", self.leadout, self.data),
-		}
-	}
-
-	#[cfg(feature = "faster-hex")]
 	#[allow(unsafe_code, clippy::cast_possible_truncation)]
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		use trimothy::TrimSliceMatches;
