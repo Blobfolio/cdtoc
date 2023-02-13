@@ -149,7 +149,7 @@ const NIL: u8 = u8::MAX;
 /// # Hex Decoding Table.
 ///
 /// The `faster-hex` crate uses this table too, but doesn't expost it publicly,
-/// unfortunately.
+/// we have to duplicate it.
 static UNHEX: [u8; 256] = [
 	NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL,
 	NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL,
@@ -881,17 +881,16 @@ impl TocKind {
 
 #[allow(clippy::cast_lossless)]
 #[inline]
-// Decode One Digit.
+/// # Decode One Digit.
 fn decode1(src: u8) -> Option<u8> {
 	let out = UNHEX[src as usize];
 	if out == NIL { None }
 	else { Some(out) }
 }
 
-/// # Hex Decode u32.
+/// # Hex Decode u8.
 ///
-/// This is a slightly more performant implementation of [`u8::from_str_radix`].
-/// (`faster-hex` doesn't really help at this tiny scale.)
+/// Decode a `u8` from a hex byte slice, ignoring case and padding.
 fn hex_decode_u8(src: &[u8]) -> Option<u8> {
 	match src.len() {
 		1 => decode1(src[0]),
@@ -1226,9 +1225,9 @@ mod tests {
 	}
 
 	#[test]
-	#[ignore = "(very long-running)"]
 	fn t_unhexu32() {
-		for i in 0..=u32::MAX {
+		let rng = fastrand::Rng::new();
+		for i in std::iter::repeat_with(|| rng.u32(..)).take(50_000) {
 			assert_eq!(hex_decode_u32(format!("{:x}", i).as_bytes()), Some(i));
 			assert_eq!(hex_decode_u32(format!("{:X}", i).as_bytes()), Some(i));
 			assert_eq!(hex_decode_u32(format!("{:08x}", i).as_bytes()), Some(i));
