@@ -26,7 +26,7 @@ credits-dir = "./"
 [package.metadata.docs.rs]
 rustc-args = ["--cfg", "docsrs"]
 rustdoc-args = ["--cfg", "docsrs"]
-features = [ "accuraterip", "cddb", "ctdb", "musicbrainz" ]
+features = [ "accuraterip", "cddb", "ctdb", "musicbrainz", "serde" ]
 default-target = "x86_64-unknown-linux-gnu"
 
 [dev-dependencies]
