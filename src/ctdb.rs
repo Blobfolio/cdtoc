@@ -253,8 +253,14 @@ mod tests {
 			),
 		] {
 			let toc = Toc::from_cdtoc(t).expect("Invalid TOC");
-			assert_eq!(toc.ctdb_id().to_string(), id);
+			let ctdb_id = toc.ctdb_id();
+			assert_eq!(ctdb_id.to_string(), id);
 			assert_eq!(toc.ctdb_checksum_url(), lookup);
+
+			// Test decoding three ways.
+			assert_eq!(ShaB64::decode(id), Ok(ctdb_id));
+			assert_eq!(ShaB64::try_from(id), Ok(ctdb_id));
+			assert_eq!(id.parse::<ShaB64>(), Ok(ctdb_id));
 		}
 	}
 }

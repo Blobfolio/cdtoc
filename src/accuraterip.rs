@@ -11,6 +11,7 @@ use dactyl::traits::BytesToUnsigned;
 use std::{
 	collections::BTreeMap,
 	fmt,
+	str::FromStr,
 };
 
 
@@ -89,6 +90,18 @@ impl From<&Toc> for AccurateRip {
 			d[0], d[1], d[2], d[3],
 		])
 	}
+}
+
+impl FromStr for AccurateRip {
+	type Err = TocError;
+	#[inline]
+	fn from_str(src: &str) -> Result<Self, Self::Err> { Self::decode(src) }
+}
+
+impl TryFrom<&str> for AccurateRip {
+	type Error = TocError;
+	#[inline]
+	fn try_from(src: &str) -> Result<Self, Self::Error> { Self::decode(src) }
 }
 
 impl AccurateRip {
@@ -188,6 +201,18 @@ impl AccurateRip {
 	/// let ar_str = ar_id.to_string();
 	/// assert_eq!(ar_str, "004-0002189a-00087f33-1f02e004");
 	/// assert_eq!(AccurateRip::decode(ar_str), Ok(ar_id));
+	/// ```
+	///
+	/// Alternatively, you can use its `FromStr` and `TryFrom<&str>` impls:
+	///
+	/// ```
+	/// use cdtoc::{AccurateRip, Toc};
+	///
+	/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
+	/// let ar_id = toc.accuraterip_id();
+	/// let ar_str = ar_id.to_string();
+	/// assert_eq!(AccurateRip::try_from(ar_str.as_str()), Ok(ar_id));
+	/// assert_eq!(ar_str.parse::<AccurateRip>(), Ok(ar_id));
 	/// ```
 	///
 	/// ## Errors
@@ -380,7 +405,7 @@ mod tests {
 
 	#[test]
 	fn t_accuraterip() {
-		for (t, c) in [
+		for (t, id) in [
 			(
 				"D+96+3B5D+78E3+B441+EC83+134F4+17225+1A801+1EA5C+23B5B+27CEF+2B58B+2F974+35D56+514C8",
 				"013-001802ed-00f8ee31-b611560e",
@@ -403,7 +428,13 @@ mod tests {
 			),
 		] {
 			let toc = Toc::from_cdtoc(t).expect("Invalid TOC");
-			assert_eq!(toc.accuraterip_id().to_string(), c);
+			let ar_id = toc.accuraterip_id();
+			assert_eq!(ar_id.to_string(), id);
+
+			// Test decoding three ways.
+			assert_eq!(AccurateRip::decode(id), Ok(ar_id));
+			assert_eq!(AccurateRip::try_from(id), Ok(ar_id));
+			assert_eq!(id.parse::<AccurateRip>(), Ok(ar_id));
 		}
 	}
 }

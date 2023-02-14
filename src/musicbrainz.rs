@@ -99,7 +99,7 @@ mod tests {
 
 	#[test]
 	fn t_musicbrainz() {
-		for (t, c) in [
+		for (t, id) in [
 			(
 				"18+B6+3CE3+7C6F+B2BD+E47F+1121C+15865+175E0+1AED9+1E159+20BF9+235FC+259EF+2826E+29B62+2ED67+311B1+3396B+36ACB+3916B+3BB75+3D60A+40AA6+422FE+48B68+4E4CB",
 				"eLuEIkHsua.iJpetabxqYM9SIbk-",
@@ -126,7 +126,13 @@ mod tests {
 			),
 		] {
 			let toc = Toc::from_cdtoc(t).expect("Invalid TOC");
-			assert_eq!(toc.musicbrainz_id().to_string(), c);
+			let mb_id = toc.musicbrainz_id();
+			assert_eq!(mb_id.to_string(), id);
+
+			// Test decoding three ways.
+			assert_eq!(ShaB64::decode(id), Ok(mb_id));
+			assert_eq!(ShaB64::try_from(id), Ok(mb_id));
+			assert_eq!(id.parse::<ShaB64>(), Ok(mb_id));
 		}
 	}
 }

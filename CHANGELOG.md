@@ -6,8 +6,20 @@
 ### Changed
 
 * Add `visit_seq` deserializer support for `Track`
-* Require `faster-hex` dependency (the corresponding crate feature was removed)
-* Improved hex decode/encode performance, particularly for CTDB/MusicBrainz IDs
+* Require `faster-hex` dependency (it was previously optional)
+* Improved hex decode/encode performance
+* Improved base64 decode/encode performance for CTDB/MusicBrainz IDs
+
+### New
+
+* Add "asm" crate feature, disabled by default, a passthru for [sha1/asm](https://github.com/RustCrypto/hashes/blob/master/sha1/Cargo.toml#L20)
+* Add `FromStr` and `TryFrom` aliases for `AccurateRip::decode`
+* Add `FromStr` and `TryFrom` aliases for `Cddb::decode`
+* Add `FromStr` and `TryFrom` aliases for `ShaB64::decode`
+
+### Removed
+
+* Obsolete "faster-hex" crate feature
 
 
 

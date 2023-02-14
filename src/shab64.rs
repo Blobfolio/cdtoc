@@ -7,7 +7,10 @@ use sha1::{
 	Digest,
 	Sha1,
 };
-use std::fmt;
+use std::{
+	fmt,
+	str::FromStr,
+};
 
 
 
@@ -21,6 +24,9 @@ use std::fmt;
 /// String formatting is deferred until `ShaB64::to_string` or
 /// [`ShaB64::pretty_print`] are called, allowing for a slightly smaller and
 /// `copy`-friendly footprint.
+///
+/// If you already have a stringified copy and want to get back to a `ShaB64`,
+/// you can use [`ShaB64::decode`] or its `FromStr` or `TryFrom<&str>` impls.
 pub struct ShaB64([u8; 20]);
 
 impl fmt::Display for ShaB64 {
@@ -31,6 +37,18 @@ impl fmt::Display for ShaB64 {
 
 impl From<Sha1> for ShaB64 {
 	fn from(src: Sha1) -> Self { Self(<[u8; 20]>::from(src.finalize())) }
+}
+
+impl FromStr for ShaB64 {
+	type Err = TocError;
+	#[inline]
+	fn from_str(src: &str) -> Result<Self, Self::Err> { Self::decode(src) }
+}
+
+impl TryFrom<&str> for ShaB64 {
+	type Error = TocError;
+	#[inline]
+	fn try_from(src: &str) -> Result<Self, Self::Error> { Self::decode(src) }
 }
 
 impl ShaB64 {
