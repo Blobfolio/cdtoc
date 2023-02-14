@@ -122,7 +122,7 @@ mod track;
 #[cfg(feature = "ctdb")] mod ctdb;
 #[cfg(feature = "musicbrainz")] mod musicbrainz;
 #[cfg(feature = "serde")] mod serde;
-#[cfg(all(feature = "sha1", feature = "base64"))] mod shab64;
+#[cfg(feature = "sha1")] mod shab64;
 
 pub use error::TocError;
 pub use time::Duration;
@@ -133,7 +133,7 @@ pub use track::{
 };
 #[cfg(feature = "accuraterip")] pub use accuraterip::AccurateRip;
 #[cfg(feature = "cddb")] pub use cddb::Cddb;
-#[cfg(all(feature = "sha1", feature = "base64"))] pub use shab64::ShaB64;
+#[cfg(feature = "sha1")] pub use shab64::ShaB64;
 
 use std::fmt;
 use trimothy::TrimSlice;

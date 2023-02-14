@@ -39,10 +39,6 @@ dactyl = "0.4.*"
 faster-hex = "0.6.*"
 trimothy = "0.1.*"
 
-[dependencies.base64]
-version = "0.21.*"
-optional = true
-
 [dependencies.itoa]
 version = "1.0.*"
 optional = true
@@ -65,10 +61,10 @@ accuraterip = [ "cddb" ]
 cddb = [ "itoa" ]
 
 # Enable CUETools Database ID calculations.
-ctdb = [ "base64", "itoa", "sha1" ]
+ctdb = [ "itoa", "sha1" ]
 
 # Enable MusicBrainz ID calculations.
-musicbrainz = [ "base64", "sha1" ]
+musicbrainz = [ "sha1" ]
 
 # Enable de/serialization support for most types.
 serde = [ "dep:serde" ]
