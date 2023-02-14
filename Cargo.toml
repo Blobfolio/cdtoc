@@ -57,6 +57,11 @@ default = [ "accuraterip", "cddb", "ctdb", "musicbrainz" ]
 # Enable AccurateRip ID calculations.
 accuraterip = [ "cddb" ]
 
+# Enable the sha1 crate's "asm" feature. This will speed up CTDB/MusicBrainz ID
+# crunching ~5-10%, but otherwise has no effect.
+# WARNING: this is *only* compatible with aarch64, x86, and x86_64 targets!
+asm = [ "sha1/asm" ]
+
 # Enable CDDB ID calculations.
 cddb = [ "itoa" ]
 
