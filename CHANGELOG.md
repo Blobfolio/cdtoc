@@ -1,7 +1,7 @@
 # Changelog
 
 
-## [0.1.7](https://github.com/Blobfolio/cdtoc/releases/tag/v0.1.7) - TBD
+## [0.1.7](https://github.com/Blobfolio/cdtoc/releases/tag/v0.1.7) - 2023-02-15
 
 ### Changed
 
@@ -20,6 +20,7 @@
 ### Removed
 
 * Obsolete "faster-hex" crate feature
+* Optional "base64" crate feature
 
 
 
