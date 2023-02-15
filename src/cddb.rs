@@ -9,6 +9,7 @@ use crate::{
 use std::{
 	fmt,
 	hash,
+	str::FromStr,
 };
 
 
@@ -46,19 +47,19 @@ pub struct Cddb(pub(crate) u32);
 impl Eq for Cddb {}
 
 impl fmt::Display for Cddb {
-	#[cfg(feature = "faster-hex")]
 	#[allow(unsafe_code)]
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		let mut buf = [b'0'; 8];
-		faster_hex::hex_encode(self.0.to_be_bytes().as_slice(), &mut buf).unwrap();
+		faster_hex::hex_encode_fallback(self.0.to_be_bytes().as_slice(), &mut buf);
 		// Safety: all bytes are ASCII.
-		f.write_str(unsafe { std::str::from_utf8_unchecked(&buf) })
+		f.write_str(unsafe { std::str::from_utf8_unchecked(buf.as_slice()) })
 	}
+}
 
-	#[cfg(not(feature = "faster-hex"))]
-	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		write!(f, "{:08x}", self.0)
-	}
+impl FromStr for Cddb {
+	type Err = TocError;
+	#[inline]
+	fn from_str(src: &str) -> Result<Self, Self::Err> { Self::decode(src) }
 }
 
 impl hash::Hash for Cddb {
@@ -110,6 +111,12 @@ impl From<&Toc> for Cddb {
 	}
 }
 
+impl TryFrom<&str> for Cddb {
+	type Error = TocError;
+	#[inline]
+	fn try_from(src: &str) -> Result<Self, Self::Error> { Self::decode(src) }
+}
+
 impl Cddb {
 	/// # Decode.
 	///
@@ -125,6 +132,18 @@ impl Cddb {
 	/// let cddb_str = cddb_id.to_string();
 	/// assert_eq!(cddb_str, "1f02e004");
 	/// assert_eq!(Cddb::decode(cddb_str), Ok(cddb_id));
+	/// ```
+	///
+	/// Alternatively, you can use its `FromStr` and `TryFrom<&str>` impls:
+	///
+	/// ```
+	/// use cdtoc::{Cddb, Toc};
+	///
+	/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
+	/// let cddb_id = toc.cddb_id();
+	/// let cddb_str = cddb_id.to_string();
+	/// assert_eq!(Cddb::try_from(cddb_str.as_str()), Ok(cddb_id));
+	/// assert_eq!(cddb_str.parse::<Cddb>(), Ok(cddb_id));
 	/// ```
 	///
 	/// ## Errors
@@ -178,7 +197,7 @@ mod tests {
 
 	#[test]
 	fn t_cddb() {
-		for (t, c) in [
+		for (t, id) in [
 			(
 				"D+96+3B5D+78E3+B441+EC83+134F4+17225+1A801+1EA5C+23B5B+27CEF+2B58B+2F974+35D56+514C8",
 				"b611560e",
@@ -201,7 +220,13 @@ mod tests {
 			),
 		] {
 			let toc = Toc::from_cdtoc(t).expect("Invalid TOC");
-			assert_eq!(toc.cddb_id().to_string(), c);
+			let cddb_id = toc.cddb_id();
+			assert_eq!(cddb_id.to_string(), id);
+
+			// Test decoding three ways.
+			assert_eq!(Cddb::decode(id), Ok(cddb_id));
+			assert_eq!(Cddb::try_from(id), Ok(cddb_id));
+			assert_eq!(id.parse::<Cddb>(), Ok(cddb_id));
 		}
 	}
 }

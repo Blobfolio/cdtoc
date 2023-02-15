@@ -1,6 +1,29 @@
 # Changelog
 
 
+## [0.1.7](https://github.com/Blobfolio/cdtoc/releases/tag/v0.1.7) - 2023-02-15
+
+### Changed
+
+* Add `visit_seq` deserializer support for `Track`
+* Require `faster-hex` dependency (it was previously optional)
+* Improved hex decode/encode performance
+* Improved base64 decode/encode performance for CTDB/MusicBrainz IDs
+
+### New
+
+* Add "asm" crate feature, disabled by default, a passthru for [sha1/asm](https://github.com/RustCrypto/hashes/blob/master/sha1/Cargo.toml#L20)
+* Add `FromStr` and `TryFrom` aliases for `AccurateRip::decode`
+* Add `FromStr` and `TryFrom` aliases for `Cddb::decode`
+* Add `FromStr` and `TryFrom` aliases for `ShaB64::decode`
+
+### Removed
+
+* Obsolete "faster-hex" crate feature
+* Optional "base64" crate feature
+
+
+
 ## [0.1.6](https://github.com/Blobfolio/cdtoc/releases/tag/v0.1.6) - 2023-02-04
 
 ### Changed

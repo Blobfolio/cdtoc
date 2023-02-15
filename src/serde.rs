@@ -10,7 +10,7 @@ use crate::{
 };
 #[cfg(feature = "accuraterip")] use crate::AccurateRip;
 #[cfg(feature = "cddb")] use crate::Cddb;
-#[cfg(all(feature = "base64", feature = "sha1"))] use crate::ShaB64;
+#[cfg(feature = "sha1")] use crate::ShaB64;
 use serde::{
 	de,
 	Deserialize,
@@ -30,9 +30,29 @@ macro_rules! deserialize_str_with {
 		impl<'de> Deserialize<'de> for $ty {
 			fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
 			where D: de::Deserializer<'de> {
-				<&str>::deserialize(deserializer).and_then(|s|
-					Self::$fn(s).map_err(de::Error::custom)
-				)
+				struct Visitor;
+
+				impl<'de> de::Visitor<'de> for Visitor {
+					type Value = $ty;
+
+					fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
+						f.write_str("string")
+					}
+
+					fn visit_str<S>(self, src: &str) -> Result<$ty, S>
+					where S: de::Error {
+						<$ty>::$fn(src).map_err(de::Error::custom)
+					}
+
+					fn visit_bytes<S>(self, src: &[u8]) -> Result<$ty, S>
+					where S: de::Error {
+						std::str::from_utf8(src)
+							.map_err(de::Error::custom)
+							.and_then(|s| <$ty>::$fn(s).map_err(de::Error::custom))
+					}
+				}
+
+				deserializer.deserialize_str(Visitor)
 			}
 		}
 	);
@@ -56,8 +76,8 @@ macro_rules! serialize_with {
 #[cfg(feature = "cddb")] deserialize_str_with!(Cddb, decode);
 #[cfg(feature = "cddb")] serialize_with!(Cddb, to_string);
 
-#[cfg(all(feature = "base64", feature = "sha1"))] deserialize_str_with!(ShaB64, decode);
-#[cfg(all(feature = "base64", feature = "sha1"))] serialize_with!(ShaB64, pretty_print);
+#[cfg(feature = "sha1")] deserialize_str_with!(ShaB64, decode);
+#[cfg(feature = "sha1")] serialize_with!(ShaB64, pretty_print);
 
 deserialize_str_with!(Toc, from_cdtoc);
 serialize_with!(Toc, to_string);
@@ -89,6 +109,19 @@ impl<'de> Deserialize<'de> for Track {
 			fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
 				formatter.write_str("struct Track")
 			}
+
+			fn visit_seq<V>(self, mut seq: V) -> Result<Track, V::Error>
+            where V: de::SeqAccess<'de> {
+				let num = seq.next_element()?
+					.ok_or_else(|| de::Error::invalid_length(0, &self))?;
+				let pos = seq.next_element()?
+					.ok_or_else(|| de::Error::invalid_length(1, &self))?;
+				let from = seq.next_element()?
+					.ok_or_else(|| de::Error::invalid_length(2, &self))?;
+				let to = seq.next_element()?
+					.ok_or_else(|| de::Error::invalid_length(3, &self))?;
+				Ok(Track { num, pos, from, to })
+            }
 
 			fn visit_map<V>(self, mut map: V) -> Result<Track, V::Error>
 			where V: de::MapAccess<'de> {
@@ -146,13 +179,39 @@ impl Serialize for Track {
 impl<'de> Deserialize<'de> for TrackPosition {
 	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
 	where D: de::Deserializer<'de> {
-		<&str>::deserialize(deserializer).map(|s| match s {
-			"First" => Self::First,
-			"Middle" => Self::Middle,
-			"Last" => Self::Last,
-			"Only" => Self::Only,
-			_ => Self::Invalid,
-		})
+		struct Visitor;
+
+		impl<'de> de::Visitor<'de> for Visitor {
+			type Value = TrackPosition;
+
+			fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
+				f.write_str("string")
+			}
+
+			fn visit_str<S>(self, src: &str) -> Result<TrackPosition, S>
+			where S: de::Error {
+				Ok(match src {
+					"First" => TrackPosition::First,
+					"Middle" => TrackPosition::Middle,
+					"Last" => TrackPosition::Last,
+					"Only" => TrackPosition::Only,
+					_ => TrackPosition::Invalid,
+				})
+			}
+
+			fn visit_bytes<S>(self, src: &[u8]) -> Result<TrackPosition, S>
+			where S: de::Error {
+				Ok(match src {
+					b"First" => TrackPosition::First,
+					b"Middle" => TrackPosition::Middle,
+					b"Last" => TrackPosition::Last,
+					b"Only" => TrackPosition::Only,
+					_ => TrackPosition::Invalid,
+				})
+			}
+		}
+
+		deserializer.deserialize_str(Visitor)
 	}
 }
 
@@ -171,7 +230,7 @@ mod tests {
 		($input:ident, $ty:ty, $nice:literal) => (
 			let s = serde_json::to_vec(&$input).expect(concat!($nice, " serialize failed."));
 			let d = serde_json::from_slice::<$ty>(&s).expect(concat!($nice, " deserialize failed."));
-			assert_eq!($input, d, concat!($nice, " serialize/deserialize does not match the original."));
+			assert_eq!($input, d, concat!($nice, " JSON serialize/deserialize does not match the original."));
 		);
 	}
 

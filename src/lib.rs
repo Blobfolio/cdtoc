@@ -122,7 +122,7 @@ mod track;
 #[cfg(feature = "ctdb")] mod ctdb;
 #[cfg(feature = "musicbrainz")] mod musicbrainz;
 #[cfg(feature = "serde")] mod serde;
-#[cfg(all(feature = "sha1", feature = "base64"))] mod shab64;
+#[cfg(feature = "sha1")] mod shab64;
 
 pub use error::TocError;
 pub use time::Duration;
@@ -133,15 +133,12 @@ pub use track::{
 };
 #[cfg(feature = "accuraterip")] pub use accuraterip::AccurateRip;
 #[cfg(feature = "cddb")] pub use cddb::Cddb;
-#[cfg(all(feature = "sha1", feature = "base64"))] pub use shab64::ShaB64;
+#[cfg(feature = "sha1")] pub use shab64::ShaB64;
 
 use std::fmt;
 use trimothy::TrimSlice;
 
 
-
-/// # Powers of 16.
-const BASE16: [u32; 8] = [1, 16, 256, 4096, 65_536, 1_048_576, 16_777_216, 268_435_456];
 
 /// # Not Hex Placeholder Value.
 const NIL: u8 = u8::MAX;
@@ -149,7 +146,7 @@ const NIL: u8 = u8::MAX;
 /// # Hex Decoding Table.
 ///
 /// The `faster-hex` crate uses this table too, but doesn't expost it publicly,
-/// unfortunately.
+/// we have to duplicate it.
 static UNHEX: [u8; 256] = [
 	NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL,
 	NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL,
@@ -232,23 +229,6 @@ pub struct Toc {
 }
 
 impl fmt::Display for Toc {
-	#[cfg(not(feature = "faster-hex"))]
-	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		// Start with the track count.
-		write!(f, "{:X}", self.audio.len())?;
-
-		// Then the audio sectors.
-		for v in &self.audio { write!(f, "+{v:X}")?; }
-
-		// And finally some combination of data and leadout.
-		match self.kind {
-			TocKind::Audio => write!(f, "+{:X}", self.leadout),
-			TocKind::CDExtra => write!(f, "+{:X}+{:X}", self.data, self.leadout),
-			TocKind::DataFirst => write!(f, "+{:X}+X{:X}", self.leadout, self.data),
-		}
-	}
-
-	#[cfg(feature = "faster-hex")]
 	#[allow(unsafe_code, clippy::cast_possible_truncation)]
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		use trimothy::TrimSliceMatches;
@@ -258,13 +238,13 @@ impl fmt::Display for Toc {
 
 		// Audio track count.
 		let audio_len = self.audio.len() as u8;
-		faster_hex::hex_encode(&[audio_len], &mut buf[..2]).unwrap();
+		faster_hex::hex_encode_fallback(&[audio_len], &mut buf[..2]);
 		if 16 <= audio_len { out.push(buf[0]); }
 		out.push(buf[1]);
 
 		macro_rules! push {
 			($v:expr) => (
-				faster_hex::hex_encode($v.to_be_bytes().as_slice(), &mut buf).unwrap();
+				faster_hex::hex_encode_fallback($v.to_be_bytes().as_slice(), &mut buf);
 				out.push(b'+');
 				out.extend_from_slice(buf.trim_start_matches(|b| b == b'0'));
 			);
@@ -284,7 +264,7 @@ impl fmt::Display for Toc {
 				push!(self.leadout);
 
 				// Handle this manually since there's the weird X marker.
-				faster_hex::hex_encode(self.data.to_be_bytes().as_slice(), &mut buf).unwrap();
+				faster_hex::hex_encode_fallback(self.data.to_be_bytes().as_slice(), &mut buf);
 				out.push(b'+');
 				out.push(b'X');
 				out.extend_from_slice(buf.trim_start_matches(|b| b == b'0'));
@@ -896,26 +876,21 @@ impl TocKind {
 
 
 
-#[allow(clippy::cast_lossless)]
-#[inline]
-// Decode One Digit.
-fn decode1(src: u8) -> Option<u8> {
-	let out = UNHEX[src as usize];
-	if out == NIL { None }
-	else { Some(out) }
-}
-
-/// # Hex Decode u32.
+/// # Hex Decode u8.
 ///
-/// This is a slightly more performant implementation of [`u8::from_str_radix`].
-/// (`faster-hex` doesn't really help at this tiny scale.)
+/// Decode a `u8` from a hex byte slice, ignoring case and padding.
 fn hex_decode_u8(src: &[u8]) -> Option<u8> {
 	match src.len() {
-		1 => decode1(src[0]),
+		1 => {
+			let a = UNHEX[src[0] as usize];
+			if a == NIL { None }
+			else { Some(a) }
+		},
 		2 => {
-			let a = decode1(src[0])?;
-			let b = decode1(src[1])?;
-			Some(16 * a + b)
+			let a = UNHEX[src[0] as usize];
+			let b = UNHEX[src[1] as usize];
+			if a == NIL || b == NIL { None }
+			else { Some(16 * a + b) }
 		},
 		_ => None,
 	}
@@ -923,17 +898,17 @@ fn hex_decode_u8(src: &[u8]) -> Option<u8> {
 
 /// # Hex Decode u32.
 ///
-/// This is a slightly more performant implementation of [`u32::from_str_radix`].
-/// (`faster-hex` doesn't really help at this tiny scale.)
+/// Decode a `u32` from a hex byte slice, ignoring case and padding.
 fn hex_decode_u32(src: &[u8]) -> Option<u32> {
-	if (1..=8).contains(&src.len()) {
-		let mut out: u32 = 0;
-		for (k, byte) in BASE16.into_iter().zip(src.iter().copied().rev()) {
-			let digit = u32::from(decode1(byte)?);
-			out += digit * k;
-		}
-
-		Some(out)
+	let len = src.len();
+	if 0 != len && len <= 8 {
+		[268_435_456, 16_777_216, 1_048_576, 65_536, 4096, 256, 16, 1][8 - len..].iter()
+			.zip(src)
+			.try_fold(0, |out, (base, byte)| {
+				let digit = UNHEX[*byte as usize];
+				if digit == NIL { None }
+				else { Some(out + u32::from(digit) * base) }
+			})
 	}
 	else { None }
 }
@@ -1237,21 +1212,57 @@ mod tests {
 	#[test]
 	fn t_unhex8() {
 		for i in 0..=u8::MAX {
-			assert_eq!(hex_decode_u8(format!("{:x}", i).as_bytes()), Some(i));
-			assert_eq!(hex_decode_u8(format!("{:X}", i).as_bytes()), Some(i));
-			assert_eq!(hex_decode_u8(format!("{:02x}", i).as_bytes()), Some(i));
-			assert_eq!(hex_decode_u8(format!("{:02X}", i).as_bytes()), Some(i));
+			// Unpadded, lowercase.
+			let mut s = format!("{i:x}").into_bytes();
+			assert_eq!(hex_decode_u8(&s), Some(i));
+
+			// Unpadded, uppercase.
+			s.make_ascii_uppercase();
+			assert_eq!(hex_decode_u8(&s), Some(i));
+
+			if s.len() == 1 {
+				s.insert(0, b'0');
+
+				// Padded, uppercase.
+				assert_eq!(hex_decode_u8(&s), Some(i));
+
+				// Padded, lowercase.
+				s.make_ascii_lowercase();
+				assert_eq!(hex_decode_u8(&s), Some(i));
+			}
 		}
+
+		assert!(hex_decode_u8(&[]).is_none());
+		assert!(hex_decode_u8(b"aba").is_none());
+		assert!(hex_decode_u8(b"jo").is_none());
 	}
 
 	#[test]
-	#[ignore = "(very long-running)"]
 	fn t_unhexu32() {
-		for i in 0..=u32::MAX {
-			assert_eq!(hex_decode_u32(format!("{:x}", i).as_bytes()), Some(i));
-			assert_eq!(hex_decode_u32(format!("{:X}", i).as_bytes()), Some(i));
-			assert_eq!(hex_decode_u32(format!("{:08x}", i).as_bytes()), Some(i));
-			assert_eq!(hex_decode_u32(format!("{:08X}", i).as_bytes()), Some(i));
+		let rng = fastrand::Rng::new();
+		for i in std::iter::repeat_with(|| rng.u32(..)).take(50_000) {
+			// Unpadded, lowercase.
+			let mut s = format!("{i:x}").into_bytes();
+			assert_eq!(hex_decode_u32(&s), Some(i));
+
+			// Unpadded, uppercase.
+			s.make_ascii_uppercase();
+			assert_eq!(hex_decode_u32(&s), Some(i));
+
+			if s.len() < 8 {
+				while s.len() < 8 { s.insert(0, b'0'); }
+
+				// Padded, uppercase.
+				assert_eq!(hex_decode_u32(&s), Some(i));
+
+				// Padded, lowercase.
+				s.make_ascii_lowercase();
+				assert_eq!(hex_decode_u32(&s), Some(i));
+			}
 		}
+
+		assert!(hex_decode_u32(&[]).is_none());
+		assert!(hex_decode_u32(b"ababababa").is_none());
+		assert!(hex_decode_u32(b"jo").is_none());
 	}
 }

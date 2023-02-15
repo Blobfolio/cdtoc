@@ -6,7 +6,10 @@ use brunch::{
 	Bench,
 	benches,
 };
-use cdtoc::Toc;
+use cdtoc::{
+	AccurateRip,
+	Toc,
+};
 
 
 
@@ -19,6 +22,11 @@ fn main() {
 		inline:
 		Bench::new("Toc::accuraterip_id").run(|| toc.accuraterip_id()),
 		Bench::new("AccurateRip::to_string").run(|| ar.to_string()),
+
+		Bench::spacer(),
+
+		Bench::new("AccurateRip::decode(004-0002189a-00087f33-1f02e004)")
+			.run(|| AccurateRip::decode("004-0002189a-00087f33-1f02e004")),
 
 		Bench::spacer(),
 

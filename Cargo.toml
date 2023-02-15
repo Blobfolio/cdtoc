@@ -1,6 +1,6 @@
 [package]
 name = "cdtoc"
-version = "0.1.6"
+version = "0.1.7"
 authors = ["Blobfolio, LLC. <hello@blobfolio.com>"]
 edition = "2021"
 rust-version = "1.65"
@@ -26,24 +26,18 @@ credits-dir = "./"
 [package.metadata.docs.rs]
 rustc-args = ["--cfg", "docsrs"]
 rustdoc-args = ["--cfg", "docsrs"]
-features = [ "accuraterip", "cddb", "ctdb", "musicbrainz" ]
+features = [ "accuraterip", "cddb", "ctdb", "musicbrainz", "serde" ]
 default-target = "x86_64-unknown-linux-gnu"
 
 [dev-dependencies]
 brunch = "0.4.*"
+fastrand = "1.9.*"
 serde_json = "1.0.*"
 
 [dependencies]
 dactyl = "0.4.*"
+faster-hex = "0.6.*"
 trimothy = "0.1.*"
-
-[dependencies.base64]
-version = "0.21.*"
-optional = true
-
-[dependencies.faster-hex]
-version = "0.6.*"
-optional = true
 
 [dependencies.itoa]
 version = "1.0.*"
@@ -63,20 +57,22 @@ default = [ "accuraterip", "cddb", "ctdb", "musicbrainz" ]
 # Enable AccurateRip ID calculations.
 accuraterip = [ "cddb" ]
 
+# Enable the sha1 crate's "asm" feature. This will speed up CTDB/MusicBrainz ID
+# crunching ~5-10%, but otherwise has no effect.
+# WARNING: this is *only* compatible with aarch64, x86, and x86_64 targets!
+asm = [ "sha1/asm" ]
+
 # Enable CDDB ID calculations.
 cddb = [ "itoa" ]
 
 # Enable CUETools Database ID calculations.
-ctdb = [ "base64", "faster-hex", "itoa", "sha1" ]
-
-# Enable slightly faster hex de/encoding.
-faster-hex = [ "dep:faster-hex" ]
+ctdb = [ "itoa", "sha1" ]
 
 # Enable MusicBrainz ID calculations.
-musicbrainz = [ "base64", "faster-hex", "sha1" ]
+musicbrainz = [ "sha1" ]
 
 # Enable de/serialization support for most types.
-serde = [ "dep:serde", "faster-hex" ]
+serde = [ "dep:serde" ]
 
 [[bench]]
 name = "accuraterip"

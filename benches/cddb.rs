@@ -6,7 +6,10 @@ use brunch::{
 	Bench,
 	benches,
 };
-use cdtoc::Toc;
+use cdtoc::{
+	Cddb,
+	Toc,
+};
 
 
 
@@ -19,5 +22,9 @@ fn main() {
 		inline:
 		Bench::new("Toc::cddb_id").run(|| toc.cddb_id()),
 		Bench::new("Cddb::to_string").run(|| cddb.to_string()),
+
+		Bench::spacer(),
+
+		Bench::new("Cddb::decode(1f02e004)").run(|| Cddb::decode("1f02e004")),
 	);
 }

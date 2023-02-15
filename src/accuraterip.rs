@@ -11,6 +11,7 @@ use dactyl::traits::BytesToUnsigned;
 use std::{
 	collections::BTreeMap,
 	fmt,
+	str::FromStr,
 };
 
 
@@ -55,19 +56,9 @@ impl From<AccurateRip> for [u8; 13] {
 }
 
 impl fmt::Display for AccurateRip {
-	#[cfg(feature = "faster-hex")]
 	#[allow(unsafe_code)]
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		f.write_str(&self.pretty_print())
-	}
-
-	#[cfg(not(feature = "faster-hex"))]
-	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		let b = u32::from_le_bytes([self.0[1], self.0[2], self.0[3], self.0[4]]);
-		let c = u32::from_le_bytes([self.0[5], self.0[6], self.0[7], self.0[8]]);
-		let d = u32::from_le_bytes([self.0[9], self.0[10], self.0[11], self.0[12]]);
-
-		write!(f, "{:03}-{b:08x}-{c:08x}-{d:08x}", self.0[0])
 	}
 }
 
@@ -99,6 +90,18 @@ impl From<&Toc> for AccurateRip {
 			d[0], d[1], d[2], d[3],
 		])
 	}
+}
+
+impl FromStr for AccurateRip {
+	type Err = TocError;
+	#[inline]
+	fn from_str(src: &str) -> Result<Self, Self::Err> { Self::decode(src) }
+}
+
+impl TryFrom<&str> for AccurateRip {
+	type Error = TocError;
+	#[inline]
+	fn try_from(src: &str) -> Result<Self, Self::Error> { Self::decode(src) }
 }
 
 impl AccurateRip {
@@ -200,6 +203,18 @@ impl AccurateRip {
 	/// assert_eq!(AccurateRip::decode(ar_str), Ok(ar_id));
 	/// ```
 	///
+	/// Alternatively, you can use its `FromStr` and `TryFrom<&str>` impls:
+	///
+	/// ```
+	/// use cdtoc::{AccurateRip, Toc};
+	///
+	/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
+	/// let ar_id = toc.accuraterip_id();
+	/// let ar_str = ar_id.to_string();
+	/// assert_eq!(AccurateRip::try_from(ar_str.as_str()), Ok(ar_id));
+	/// assert_eq!(ar_str.parse::<AccurateRip>(), Ok(ar_id));
+	/// ```
+	///
 	/// ## Errors
 	///
 	/// This will return an error if decoding fails.
@@ -270,9 +285,7 @@ impl AccurateRip {
 		else { Err(TocError::NoChecksums) }
 	}
 
-	#[cfg(feature = "faster-hex")]
-	#[cfg_attr(docsrs, doc(cfg(feature = "faster-hex")))]
-	#[allow(unsafe_code, clippy::missing_panics_doc)]
+	#[allow(unsafe_code)]
 	#[must_use]
 	/// # Pretty Print.
 	///
@@ -302,9 +315,9 @@ impl AccurateRip {
 		out[..3].copy_from_slice(dactyl::NiceU8::from(self.0[0]).as_bytes3());
 
 		// ID Parts.
-		faster_hex::hex_encode(&[self.0[4], self.0[3], self.0[2], self.0[1]], &mut out[4..12]).unwrap();
-		faster_hex::hex_encode(&[self.0[8], self.0[7], self.0[6], self.0[5]], &mut out[13..21]).unwrap();
-		faster_hex::hex_encode(&[self.0[12], self.0[11], self.0[10], self.0[9]], &mut out[22..]).unwrap();
+		faster_hex::hex_encode_fallback(&[self.0[4], self.0[3], self.0[2], self.0[1]], &mut out[4..12]);
+		faster_hex::hex_encode_fallback(&[self.0[8], self.0[7], self.0[6], self.0[5]], &mut out[13..21]);
+		faster_hex::hex_encode_fallback(&[self.0[12], self.0[11], self.0[10], self.0[9]], &mut out[22..]);
 
 		// Safety: all bytes are ASCII.
 		unsafe { String::from_utf8_unchecked(out) }
@@ -392,7 +405,7 @@ mod tests {
 
 	#[test]
 	fn t_accuraterip() {
-		for (t, c) in [
+		for (t, id) in [
 			(
 				"D+96+3B5D+78E3+B441+EC83+134F4+17225+1A801+1EA5C+23B5B+27CEF+2B58B+2F974+35D56+514C8",
 				"013-001802ed-00f8ee31-b611560e",
@@ -415,7 +428,13 @@ mod tests {
 			),
 		] {
 			let toc = Toc::from_cdtoc(t).expect("Invalid TOC");
-			assert_eq!(toc.accuraterip_id().to_string(), c);
+			let ar_id = toc.accuraterip_id();
+			assert_eq!(ar_id.to_string(), id);
+
+			// Test decoding three ways.
+			assert_eq!(AccurateRip::decode(id), Ok(ar_id));
+			assert_eq!(AccurateRip::try_from(id), Ok(ar_id));
+			assert_eq!(id.parse::<AccurateRip>(), Ok(ar_id));
 		}
 	}
 }
