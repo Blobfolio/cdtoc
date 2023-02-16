@@ -6,6 +6,7 @@ use crate::{
 	Toc,
 	TocError,
 };
+use dactyl::traits::HexToUnsigned;
 use std::{
 	fmt,
 	hash,
@@ -152,7 +153,7 @@ impl Cddb {
 	pub fn decode<S>(src: S) -> Result<Self, TocError>
 	where S: AsRef<str> {
 		let src = src.as_ref().as_bytes();
-		super::hex_decode_u32(src).map(Self).ok_or(TocError::CddbDecode)
+		u32::htou(src).map(Self).ok_or(TocError::CddbDecode)
 	}
 }
 

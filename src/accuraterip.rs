@@ -7,7 +7,10 @@ use crate::{
 	Toc,
 	TocError,
 };
-use dactyl::traits::BytesToUnsigned;
+use dactyl::traits::{
+	BytesToUnsigned,
+	HexToUnsigned,
+};
 use std::{
 	collections::BTreeMap,
 	fmt,
@@ -223,13 +226,13 @@ impl AccurateRip {
 		let src = src.as_ref().as_bytes();
 		if src.len() == 30 && src[3] == b'-' && src[12] == b'-' && src[21] == b'-' {
 			let a = u8::btou(&src[..3]).ok_or(TocError::AccurateRipDecode)?;
-			let b = super::hex_decode_u32(&src[4..12])
+			let b = u32::htou(&src[4..12])
 				.map(u32::to_le_bytes)
 				.ok_or(TocError::AccurateRipDecode)?;
-			let c = super::hex_decode_u32(&src[13..21])
+			let c = u32::htou(&src[13..21])
 				.map(u32::to_le_bytes)
 				.ok_or(TocError::AccurateRipDecode)?;
-			let d = super::hex_decode_u32(&src[22..])
+			let d = u32::htou(&src[22..])
 				.map(u32::to_le_bytes)
 				.ok_or(TocError::AccurateRipDecode)?;
 
