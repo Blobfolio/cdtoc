@@ -135,34 +135,11 @@ pub use track::{
 #[cfg(feature = "cddb")] pub use cddb::Cddb;
 #[cfg(feature = "sha1")] pub use shab64::ShaB64;
 
+use dactyl::traits::HexToUnsigned;
 use std::fmt;
 use trimothy::TrimSlice;
 
 
-
-/// # Not Hex Placeholder Value.
-const NIL: u8 = u8::MAX;
-
-/// # Hex Decoding Table.
-///
-/// The `faster-hex` crate uses this table too, but doesn't expost it publicly,
-/// we have to duplicate it.
-static UNHEX: [u8; 256] = [
-	NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL,
-	NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL,
-	NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, NIL, NIL, NIL,
-	NIL, NIL, NIL, NIL, 10, 11, 12, 13, 14, 15, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL,
-	NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, 10, 11, 12, 13,
-	14, 15, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL,
-	NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL,
-	NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL,
-	NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL,
-	NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL,
-	NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL,
-	NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL,
-	NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL,
-	NIL, NIL, NIL,
-];
 
 #[cfg(any(feature = "musicbrainz", feature = "ctdb"))]
 /// # Lotsa Zeroes.
@@ -876,43 +853,6 @@ impl TocKind {
 
 
 
-/// # Hex Decode u8.
-///
-/// Decode a `u8` from a hex byte slice, ignoring case and padding.
-fn hex_decode_u8(src: &[u8]) -> Option<u8> {
-	match src.len() {
-		1 => {
-			let a = UNHEX[src[0] as usize];
-			if a == NIL { None }
-			else { Some(a) }
-		},
-		2 => {
-			let a = UNHEX[src[0] as usize];
-			let b = UNHEX[src[1] as usize];
-			if a == NIL || b == NIL { None }
-			else { Some(16 * a + b) }
-		},
-		_ => None,
-	}
-}
-
-/// # Hex Decode u32.
-///
-/// Decode a `u32` from a hex byte slice, ignoring case and padding.
-fn hex_decode_u32(src: &[u8]) -> Option<u32> {
-	let len = src.len();
-	if 0 != len && len <= 8 {
-		[268_435_456, 16_777_216, 1_048_576, 65_536, 4096, 256, 16, 1][8 - len..].iter()
-			.zip(src)
-			.try_fold(0, |out, (base, byte)| {
-				let digit = UNHEX[*byte as usize];
-				if digit == NIL { None }
-				else { Some(out + u32::from(digit) * base) }
-			})
-	}
-	else { None }
-}
-
 /// # Parse CDTOC Metadata.
 ///
 /// This parses the audio track count and sector positions from a CDTOC-style
@@ -924,14 +864,14 @@ fn parse_cdtoc_metadata(src: &[u8]) -> Result<(Vec<u32>, Option<u32>, u32), TocE
 
 	// The number of audio tracks comes first.
 	let audio_len = split.next()
-		.and_then(hex_decode_u8)
+		.and_then(u8::htou)
 		.ok_or(TocError::TrackCount)?;
 
 	// We should have starting positions for just as many tracks.
 	let sectors: Vec<u32> = split
 		.by_ref()
 		.take(usize::from(audio_len))
-		.map(hex_decode_u32)
+		.map(u32::htou)
 		.collect::<Option<Vec<u32>>>()
 		.ok_or(TocError::SectorSize)?;
 
@@ -945,16 +885,16 @@ fn parse_cdtoc_metadata(src: &[u8]) -> Result<(Vec<u32>, Option<u32>, u32), TocE
 	// There should be at least one more entry to mark the audio leadout.
 	let last1 = split.next()
 		.ok_or(TocError::SectorCount(audio_len, sectors_len - 1))?;
-	let last1 = hex_decode_u32(last1).ok_or(TocError::SectorSize)?;
+	let last1 = u32::htou(last1).ok_or(TocError::SectorSize)?;
 
 	// If there is yet another entry, we've got a mixed-mode disc.
 	if let Some(last2) = split.next() {
 		// Unlike the other values, this entry might have an x-prefix to denote
 		// a non-standard data-first position.
-		let last2 = hex_decode_u32(last2)
+		let last2 = u32::htou(last2)
 			.or_else(||
 				last2.strip_prefix(b"X").or_else(|| last2.strip_prefix(b"x"))
-					.and_then(hex_decode_u32)
+					.and_then(u32::htou)
 			)
 			.ok_or(TocError::SectorSize)?;
 
@@ -1207,62 +1147,5 @@ mod tests {
 		// And back again.
 		assert!(toc.set_kind(TocKind::CDExtra).is_ok());
 		assert_eq!(toc, extra);
-	}
-
-	#[test]
-	fn t_unhex8() {
-		for i in 0..=u8::MAX {
-			// Unpadded, lowercase.
-			let mut s = format!("{i:x}").into_bytes();
-			assert_eq!(hex_decode_u8(&s), Some(i));
-
-			// Unpadded, uppercase.
-			s.make_ascii_uppercase();
-			assert_eq!(hex_decode_u8(&s), Some(i));
-
-			if s.len() == 1 {
-				s.insert(0, b'0');
-
-				// Padded, uppercase.
-				assert_eq!(hex_decode_u8(&s), Some(i));
-
-				// Padded, lowercase.
-				s.make_ascii_lowercase();
-				assert_eq!(hex_decode_u8(&s), Some(i));
-			}
-		}
-
-		assert!(hex_decode_u8(&[]).is_none());
-		assert!(hex_decode_u8(b"aba").is_none());
-		assert!(hex_decode_u8(b"jo").is_none());
-	}
-
-	#[test]
-	fn t_unhexu32() {
-		let rng = fastrand::Rng::new();
-		for i in std::iter::repeat_with(|| rng.u32(..)).take(50_000) {
-			// Unpadded, lowercase.
-			let mut s = format!("{i:x}").into_bytes();
-			assert_eq!(hex_decode_u32(&s), Some(i));
-
-			// Unpadded, uppercase.
-			s.make_ascii_uppercase();
-			assert_eq!(hex_decode_u32(&s), Some(i));
-
-			if s.len() < 8 {
-				while s.len() < 8 { s.insert(0, b'0'); }
-
-				// Padded, uppercase.
-				assert_eq!(hex_decode_u32(&s), Some(i));
-
-				// Padded, lowercase.
-				s.make_ascii_lowercase();
-				assert_eq!(hex_decode_u32(&s), Some(i));
-			}
-		}
-
-		assert!(hex_decode_u32(&[]).is_none());
-		assert!(hex_decode_u32(b"ababababa").is_none());
-		assert!(hex_decode_u32(b"jo").is_none());
 	}
 }
