@@ -42,15 +42,6 @@ bench BENCH="":
 	exit 0
 
 
-# Check Release!
-@check:
-	# First let's build the Rust bit.
-	cargo check \
-		--release \
-		--target x86_64-unknown-linux-gnu \
-		--target-dir "{{ cargo_dir }}"
-
-
 # Clean Cargo crap.
 @clean:
 	# Most things go here.
@@ -104,12 +95,21 @@ bench BENCH="":
 	clear
 	fyi task "Testing w/ Default Features"
 	cargo test \
+		--target x86_64-unknown-linux-gnu \
+		--target-dir "{{ cargo_dir }}"
+
+	cargo test \
 		--release \
 		--target x86_64-unknown-linux-gnu \
 		--target-dir "{{ cargo_dir }}"
 
 	echo ""
 	fyi task "Testing w/ No Features"
+	cargo test \
+		--no-default-features \
+		--target x86_64-unknown-linux-gnu \
+		--target-dir "{{ cargo_dir }}"
+
 	cargo test \
 		--release \
 		--no-default-features \
@@ -118,6 +118,12 @@ bench BENCH="":
 
 	echo ""
 	fyi task "Testing w/ All Features"
+	cargo test \
+		--all-features \
+		--no-default-features \
+		--target x86_64-unknown-linux-gnu \
+		--target-dir "{{ cargo_dir }}"
+
 	cargo test \
 		--release \
 		--all-features \
@@ -135,6 +141,12 @@ bench BENCH="":
 @_test FEATURES:
 	echo ""
 	fyi task "Testing w/ {{ FEATURES }}"
+	cargo test \
+		--no-default-features \
+		--features {{ FEATURES }} \
+		--target x86_64-unknown-linux-gnu \
+		--target-dir "{{ cargo_dir }}"
+
 	cargo test \
 		--release \
 		--no-default-features \
