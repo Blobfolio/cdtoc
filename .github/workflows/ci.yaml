@@ -2,9 +2,9 @@ name: Build
 
 on:
   push:
-    branches: [ master ]
+    branches: []
   pull_request:
-    branches: [ master ]
+    branches: []
 
 defaults:
   run:
@@ -51,6 +51,7 @@ jobs:
 
     - name: Build
       run: |
+        cargo build --target ${{ matrix.target }}
         cargo build --release --target ${{ matrix.target }}
 
     - name: Clippy
@@ -63,7 +64,17 @@ jobs:
         cargo clippy --release --no-default-features --features musicbrainz --target ${{ matrix.target }}
         cargo clippy --release --no-default-features --features serde --target ${{ matrix.target }}
 
-    - name: Tests
+    - name: Tests (Debug)
+      run: |
+        cargo test --features accuraterip,cddb,ctdb,musicbrainz,serde --target ${{ matrix.target }}
+        cargo test --no-default-features --target ${{ matrix.target }}
+        cargo test --no-default-features --features accuraterip --target ${{ matrix.target }}
+        cargo test --no-default-features --features cddb --target ${{ matrix.target }}
+        cargo test --no-default-features --features ctdb --target ${{ matrix.target }}
+        cargo test --no-default-features --features musicbrainz --target ${{ matrix.target }}
+        cargo test --no-default-features --features serde --target ${{ matrix.target }}
+
+    - name: Tests (Release)
       run: |
         cargo test --release --features accuraterip,cddb,ctdb,musicbrainz,serde --target ${{ matrix.target }}
         cargo test --release --no-default-features --target ${{ matrix.target }}

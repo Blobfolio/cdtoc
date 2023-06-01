@@ -1,6 +1,18 @@
 # Changelog
 
 
+## [0.2.0](https://github.com/Blobfolio/cdtoc/releases/tag/v0.2.0) - 2023-06-01
+
+### Changed
+
+* Bump MSRV `1.70`
+* Replace some `unsafe` code blocks with safe alternatives
+* Add debug/assertions for logical redundancy
+* Improve unit test coverage
+* Update dependencies
+
+
+
 ## [0.1.8](https://github.com/Blobfolio/cdtoc/releases/tag/v0.1.8) - 2023-04-20
 
 ### Changed

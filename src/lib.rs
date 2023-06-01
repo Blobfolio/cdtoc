@@ -206,7 +206,7 @@ pub struct Toc {
 }
 
 impl fmt::Display for Toc {
-	#[allow(unsafe_code, clippy::cast_possible_truncation)]
+	#[allow(clippy::cast_possible_truncation)]
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		use trimothy::TrimSliceMatches;
 
@@ -249,8 +249,9 @@ impl fmt::Display for Toc {
 		}
 
 		out.make_ascii_uppercase();
-		// Safety: this is all ASCII.
-		f.write_str(unsafe { std::str::from_utf8_unchecked(&out) })
+		std::str::from_utf8(&out)
+			.map_err(|_| fmt::Error)
+			.and_then(|s| f.write_str(s))
 	}
 }
 

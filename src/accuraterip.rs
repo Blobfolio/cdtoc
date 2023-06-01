@@ -59,7 +59,6 @@ impl From<AccurateRip> for [u8; 13] {
 }
 
 impl fmt::Display for AccurateRip {
-	#[allow(unsafe_code)]
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		f.write_str(&self.pretty_print())
 	}
@@ -323,6 +322,7 @@ impl AccurateRip {
 		faster_hex::hex_encode_fallback(&[self.0[12], self.0[11], self.0[10], self.0[9]], &mut out[22..]);
 
 		// Safety: all bytes are ASCII.
+		debug_assert!(out.is_ascii(), "Bug: AccurateRip checksum is not ASCII?!");
 		unsafe { String::from_utf8_unchecked(out) }
 	}
 }

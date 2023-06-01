@@ -117,6 +117,10 @@ impl ShaB64 {
 		out.push(b'-');
 
 		// Safety: our alphabet is ASCII.
+		debug_assert!(
+			out.len() == 28 && out.is_ascii(),
+			"Bug: Sha/base64 ID is malformed."
+		);
 		unsafe { String::from_utf8_unchecked(out) }
 	}
 }
