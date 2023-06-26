@@ -58,6 +58,52 @@ impl Track {
 	pub const fn duration(&self) -> Duration { Duration(self.sectors() as u64) }
 
 	#[must_use]
+	/// # MSF.
+	///
+	/// Return the MSF of the track in MM:SS:FF format.
+	///
+	/// ## Examples
+	///
+	/// ```
+	/// use cdtoc::Toc;
+	///
+	/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
+	/// let track = toc.audio_track(2).unwrap();
+	/// assert_eq!(track.msf(), "02:34:13");
+	/// ```
+	pub fn msf(&self) -> String {
+		let (m, s, f) = lba_to_msf(self.from);
+		format!("{m:02}:{s:02}:{f:02}")
+	}
+
+	#[must_use]
+	/// # MSF (Normalized).
+	///
+	/// Return the MSF of the track in MM:SS:FF format, _without_ the mandatory
+	/// 150-sector CD lead-in.
+	///
+	/// In other words, this value will always be two seconds less than
+	/// [`Track::msf`].
+	///
+	/// Most applications expect a normalized MSF, so this is probably the
+	/// version you'll want to use.
+	///
+	/// ## Examples
+	///
+	/// ```
+	/// use cdtoc::Toc;
+	///
+	/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
+	/// let track = toc.audio_track(2).unwrap();
+	/// assert_eq!(track.msf(), "02:34:13");
+	/// assert_eq!(track.msf_normalized(), "02:32:13");
+	/// ```
+	pub fn msf_normalized(&self) -> String {
+		let (m, s, f) = lba_to_msf(self.from - 150);
+		format!("{m:02}:{s:02}:{f:02}")
+	}
+
+	#[must_use]
 	/// # Number.
 	///
 	/// Return the track number.
@@ -331,4 +377,22 @@ impl TrackPosition {
 			Self::Only => "Only",
 		}
 	}
+}
+
+
+
+#[allow(clippy::integer_division, clippy::cast_possible_truncation)]
+/// # LBA to MSF.
+///
+/// Convert a logical block address (sectors) to minutes, seconds, and frames.
+const fn lba_to_msf(sectors: u32) -> (u32, u8, u8) {
+	// 75 sectors per second.
+	let mut s = sectors / 75;
+	let f = sectors - s * 75;
+
+	// 60 seconds per minute.
+	let m = s / 60;
+	s -= m * 60;
+
+	(m, s as u8, f as u8)
 }
