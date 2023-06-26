@@ -1,6 +1,6 @@
 [package]
 name = "cdtoc"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Blobfolio, LLC. <hello@blobfolio.com>"]
 edition = "2021"
 rust-version = "1.70"
@@ -35,8 +35,12 @@ serde_json = "1.0.*"
 
 [dependencies]
 dactyl = "0.5.0"
-faster-hex = "0.6.*"
 trimothy = "0.1.*"
+
+[dependencies.faster-hex]
+version = "0.8.*"
+default-features = false
+features = [ "std" ]
 
 [dependencies.itoa]
 version = "1.0.*"

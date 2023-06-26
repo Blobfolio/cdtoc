@@ -1,6 +1,20 @@
 # Changelog
 
 
+## [0.2.1](https://github.com/Blobfolio/cdtoc/releases/tag/v0.2.1) - 2023-06-25
+
+### New
+
+* `Track::msf`
+* `Track::msf_normalized`
+* `Track::sector_range_normalized`
+
+### Changed
+
+* Bump `faster-hex` to `0.8`
+
+
+
 ## [0.2.0](https://github.com/Blobfolio/cdtoc/releases/tag/v0.2.0) - 2023-06-01
 
 ### Changed
