@@ -145,6 +145,29 @@ impl Track {
 	/// assert_eq!(track.sector_range().len(), track.sectors() as usize);
 	/// ```
 	pub const fn sector_range(&self) -> Range<u32> { self.from..self.to }
+
+	#[must_use]
+	/// # Normalized Sector Range.
+	///
+	/// Return the range of sectors — `start..end` — occupied by this track,
+	/// _without_ the mandatory 150-sector CD lead-in.
+	///
+	/// In other words, the start and end will be 150 less than the range
+	/// reported by [`Track::sector_range`].
+	///
+	/// ## Examples
+	///
+	/// ```
+	/// use cdtoc::Toc;
+	///
+	/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
+	/// let track = toc.audio_track(1).unwrap();
+	/// assert_eq!(track.sector_range(), 150..11_563);
+	/// assert_eq!(track.sector_range_normalized(), 0..11_413);
+	/// ```
+	pub const fn sector_range_normalized(&self) -> Range<u32> {
+		self.from - 150..self.to - 150
+	}
 }
 
 
