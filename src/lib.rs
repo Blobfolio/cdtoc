@@ -705,6 +705,52 @@ impl Toc {
 	pub const fn has_data(&self) -> bool { self.kind.has_data() }
 
 	#[must_use]
+	/// # HTOA Pre-gap "Track".
+	///
+	/// Return a `Track` object representing the space between the mandatory
+	/// disc leadin (`150`) and the start of the first audio track, if any.
+	///
+	/// Such regions usually only contain a small amount of silence — extra
+	/// padding, basically — but every once in a while might be a secret bonus
+	/// song.
+	///
+	/// ## Examples
+	///
+	/// ```
+	/// use cdtoc::Toc;
+	///
+	/// // This disc has no HTOA.
+	/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
+	/// assert!(toc.htoa().is_none());
+	///
+	/// // But this one does!
+	/// let toc = Toc::from_cdtoc("15+247E+2BEC+4AF4+7368+9704+B794+E271+110D0+12B7A+145C1+16CAF+195CF+1B40F+1F04A+21380+2362D+2589D+2793D+2A760+2DA32+300E1+32B46").unwrap();
+	/// let htoa = toc.htoa().unwrap();
+	/// assert!(htoa.is_htoa()); // Should always be true.
+	///
+	/// // HTOAs have no track number.
+	/// assert_eq!(htoa.number(), 0);
+	///
+	/// // Their position is also technically invalid.
+	/// assert!(! htoa.position().is_valid());
+	///
+	/// // Their ranges are normal, though.
+	/// assert_eq!(htoa.sector_range(), 150..9342);
+	/// ```
+	pub fn htoa(&self) -> Option<Track> {
+		let leadin = self.audio_leadin();
+		if leadin == 150 || matches!(self.kind, TocKind::DataFirst) { None }
+		else {
+			Some(Track {
+				num: 0,
+				pos: TrackPosition::Invalid,
+				from: 150,
+				to: leadin,
+			})
+		}
+	}
+
+	#[must_use]
 	/// # CD Format.
 	///
 	/// This returns the [`TocKind`] corresponding to the table of contents,
