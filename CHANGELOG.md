@@ -1,6 +1,15 @@
 # Changelog
 
 
+## [0.2.2](https://github.com/Blobfolio/cdtoc/releases/tag/v0.2.2) - 2023-09-12
+
+### New
+
+* `Toc::htoa`
+* `Track::is_htoa`
+
+
+
 ## [0.2.1](https://github.com/Blobfolio/cdtoc/releases/tag/v0.2.1) - 2023-06-25
 
 ### New
