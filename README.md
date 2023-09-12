@@ -16,12 +16,6 @@ By default it can also generate disc IDs for services like [AccurateRip](http://
 
 
 
-## Work In Progress
-
-This library is a work-in-progress. If you notice any bugs, please open an [issue](https://github.com/Blobfolio/cdtoc/issues)!
-
-
-
 ## Examples
 
 ```rust

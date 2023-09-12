@@ -279,5 +279,11 @@ mod tests {
 		let toc = Toc::from_cdtoc(TOC).expect("Invalid TOC.");
 		let tracks: Vec<Track> = toc.audio_tracks().collect();
 		inout!(tracks, Vec<Track>, "Track");
+
+		// Make sure HTOA tracks work out okay.
+		let toc = Toc::from_cdtoc("15+247E+2BEC+4AF4+7368+9704+B794+E271+110D0+12B7A+145C1+16CAF+195CF+1B40F+1F04A+21380+2362D+2589D+2793D+2A760+2DA32+300E1+32B46")
+			.expect("Mummies TOC failed.");
+		let htoa = toc.htoa().expect("Mummies HTOA failed.");
+		inout!(htoa, Track, "HTOA");
 	}
 }

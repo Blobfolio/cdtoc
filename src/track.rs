@@ -58,6 +58,31 @@ impl Track {
 	pub const fn duration(&self) -> Duration { Duration(self.sectors() as u64) }
 
 	#[must_use]
+	/// # Is HTOA?
+	///
+	/// Return `true` if this is a pre-gap hidden track.
+	///
+	/// ## Examples
+	///
+	/// ```
+	/// use cdtoc::Toc;
+	///
+	/// let toc = Toc::from_cdtoc("15+247E+2BEC+4AF4+7368+9704+B794+E271+110D0+12B7A+145C1+16CAF+195CF+1B40F+1F04A+21380+2362D+2589D+2793D+2A760+2DA32+300E1+32B46").unwrap();
+	///
+	/// // This will return true for the HTOA.
+	/// let htoa = toc.htoa().unwrap();
+	/// assert!(htoa.is_htoa());
+	///
+	/// // And false for everything else.
+	/// assert!(toc.audio_tracks().all(|v| ! v.is_htoa()));
+	/// ```
+	pub const fn is_htoa(&self) -> bool {
+		self.num == 0 &&
+		self.from == 150 &&
+		matches!(self.pos, TrackPosition::Invalid)
+	}
+
+	#[must_use]
 	/// # MSF.
 	///
 	/// Return the (beginning) MSF — minutes, seconds, and frames — of the

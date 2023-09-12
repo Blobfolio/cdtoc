@@ -156,7 +156,7 @@ bench BENCH="":
 
 
 # Get/Set version.
-version: credits
+version:
 	#!/usr/bin/env bash
 
 	# Current version.
@@ -175,6 +175,9 @@ version: credits
 
 	# Set the release version!
 	just _version "{{ justfile_directory() }}" "$_ver2"
+
+	# Update the credits.
+	just credits
 
 
 # Set version for real.
