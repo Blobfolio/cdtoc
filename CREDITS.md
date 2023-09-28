@@ -1,7 +1,7 @@
 # Project Dependencies
     Package:   cdtoc
-    Version:   0.2.2
-    Generated: 2023-09-12 16:13:26 UTC
+    Version:   0.2.3
+    Generated: 2023-09-28 06:05:20 UTC
 
 | Package | Version | Author(s) | License |
 | ---- | ---- | ---- | ---- |
@@ -14,6 +14,6 @@
 | [generic-array](https://github.com/fizyk20/generic-array.git) | 0.14.7 | [Bartłomiej Kamiński](mailto:fizyk20@gmail.com) and [Aaron Trent](mailto:novacrazy@gmail.com) | MIT |
 | [itoa](https://github.com/dtolnay/itoa) | 1.0.9 | [David Tolnay](mailto:dtolnay@gmail.com) | Apache-2.0 or MIT |
 | [num-traits](https://github.com/rust-num/num-traits) | 0.2.16 | The Rust Project Developers | Apache-2.0 or MIT |
-| [sha1](https://github.com/RustCrypto/hashes) | 0.10.5 | RustCrypto Developers | Apache-2.0 or MIT |
+| [sha1](https://github.com/RustCrypto/hashes) | 0.10.6 | RustCrypto Developers | Apache-2.0 or MIT |
 | [trimothy](https://github.com/Blobfolio/trimothy) | 0.1.8 | [Blobfolio, LLC.](mailto:hello@blobfolio.com) | WTFPL |
-| [typenum](https://github.com/paholg/typenum) | 1.16.0 | [Paho Lurie-Gregg](mailto:paho@paholg.com) and [Andre Bogus](mailto:bogusandre@gmail.com) | Apache-2.0 or MIT |
+| [typenum](https://github.com/paholg/typenum) | 1.17.0 | [Paho Lurie-Gregg](mailto:paho@paholg.com) and [Andre Bogus](mailto:bogusandre@gmail.com) | Apache-2.0 or MIT |
