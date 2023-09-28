@@ -582,6 +582,23 @@ impl Toc {
 	pub fn audio_leadin(&self) -> u32 { self.audio[0] }
 
 	#[must_use]
+	/// # Normalized Audio Leadin.
+	///
+	/// This is the same as [`Toc::audio_leadin`], but _without_ the mandatory
+	/// 150-sector CD lead-in.
+	///
+	/// ## Examples
+	///
+	/// ```
+	/// use cdtoc::Toc;
+	///
+	/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
+	/// assert_eq!(toc.audio_leadin(), 150);
+	/// assert_eq!(toc.audio_leadin_normalized(), 0);
+	/// ```
+	pub fn audio_leadin_normalized(&self) -> u32 { self.audio[0] - 150 }
+
+	#[must_use]
 	/// # Audio Leadout.
 	///
 	/// Return the leadout for the audio session. This is usually the same as
@@ -601,6 +618,25 @@ impl Toc {
 			self.data.saturating_sub(11_400)
 		}
 		else { self.leadout }
+	}
+
+	#[must_use]
+	/// # Normalized Audio Leadout.
+	///
+	/// This is the same as [`Toc::audio_leadout`], but _without_ the mandatory
+	/// 150-sector CD lead-in.
+	///
+	/// ## Examples
+	///
+	/// ```
+	/// use cdtoc::Toc;
+	///
+	/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
+	/// assert_eq!(toc.audio_leadout(), 55370);
+	/// assert_eq!(toc.audio_leadout_normalized(), 55220);
+	/// ```
+	pub const fn audio_leadout_normalized(&self) -> u32 {
+		self.audio_leadout() - 150
 	}
 
 	#[must_use]
@@ -683,6 +719,31 @@ impl Toc {
 	/// ```
 	pub const fn data_sector(&self) -> Option<u32> {
 		if self.kind.has_data() { Some(self.data) }
+		else { None }
+	}
+
+	#[must_use]
+	/// # Normalized Data Sector.
+	///
+	/// This is the same as [`Toc::data_sector`], but _without_ the mandatory
+	/// 150-sector CD lead-in.
+	///
+	/// ## Examples
+	///
+	/// ```
+	/// use cdtoc::Toc;
+	///
+	/// // No data here.
+	/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
+	/// assert_eq!(toc.data_sector(), None);
+	///
+	/// // This CD-Extra has data, though!
+	/// let toc = Toc::from_cdtoc("3+96+2D2B+6256+B327+D84A").unwrap();
+	/// assert_eq!(toc.data_sector(), Some(45_863));
+	/// assert_eq!(toc.data_sector_normalized(), Some(45_713));
+	/// ```
+	pub const fn data_sector_normalized(&self) -> Option<u32> {
+		if self.kind.has_data() { Some(self.data.saturating_sub(150)) }
 		else { None }
 	}
 
@@ -792,6 +853,26 @@ impl Toc {
 	}
 
 	#[must_use]
+	/// # Normalized Absolute Leadin.
+	///
+	/// This is the same as [`Toc::leadin`], but _without_ the mandatory
+	/// 150-sector CD lead-in.
+	///
+	/// ## Examples
+	///
+	/// ```
+	/// use cdtoc::Toc;
+	///
+	/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
+	/// assert_eq!(toc.leadin(), 150);
+	/// assert_eq!(toc.leadin_normalized(), 0);
+	/// ```
+	pub fn leadin_normalized(&self) -> u32 {
+		if matches!(self.kind, TocKind::DataFirst) { self.data.saturating_sub(150) }
+		else { self.audio[0] - 150 }
+	}
+
+	#[must_use]
 	/// # Absolute Leadout.
 	///
 	/// Return the disc leadout, regardless of whether it marks the end of the
@@ -806,6 +887,23 @@ impl Toc {
 	/// assert_eq!(toc.leadout(), 55_370);
 	/// ```
 	pub const fn leadout(&self) -> u32 { self.leadout }
+
+	#[must_use]
+	/// # Normalized Absolute Leadout.
+	///
+	/// This is the same as [`Toc::leadout`], but _without_ the mandatory
+	/// 150-sector CD lead-in.
+	///
+	/// ## Examples
+	///
+	/// ```
+	/// use cdtoc::Toc;
+	///
+	/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
+	/// assert_eq!(toc.leadout(), 55_370);
+	/// assert_eq!(toc.leadout_normalized(), 55_220);
+	/// ```
+	pub const fn leadout_normalized(&self) -> u32 { self.leadout - 150 }
 
 	#[must_use]
 	/// # Duration.
