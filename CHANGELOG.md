@@ -1,6 +1,18 @@
 # Changelog
 
 
+## [0.2.3](https://github.com/Blobfolio/cdtoc/releases/tag/v0.2.3) - 2023-09-27
+
+### New
+
+* `Toc::audio_leadin_normalized`
+* `Toc::audio_leadout_normalized`
+* `Toc::data_sector_normalized`
+* `Toc::leadin_normalized`
+* `Toc::leadout_normalized`
+
+
+
 ## [0.2.2](https://github.com/Blobfolio/cdtoc/releases/tag/v0.2.2) - 2023-09-12
 
 ### New
