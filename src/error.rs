@@ -82,6 +82,14 @@ pub enum TocError {
 	/// # AccurateRip Decode.
 	AccurateRipDecode,
 
+	#[cfg(feature = "accuraterip")]
+	/// # Drive Offset Decode.
+	DriveOffsetDecode,
+
+	#[cfg(feature = "accuraterip")]
+	/// # No Drive Offsets.
+	NoDriveOffsets,
+
 	#[cfg(feature = "cddb")]
 	/// # CDDB Decode.
 	CddbDecode,
@@ -107,6 +115,9 @@ impl fmt::Display for TocError {
 			Self::TrackCount => f.write_str("The number of audio tracks must be between 1..=99."),
 
 			#[cfg(feature = "accuraterip")] Self::AccurateRipDecode => f.write_str("Invalid AccurateRip ID string."),
+			#[cfg(feature = "accuraterip")] Self::DriveOffsetDecode => f.write_str("Unable to parse drive offsets."),
+			#[cfg(feature = "accuraterip")] Self::NoDriveOffsets => f.write_str("No drive offsets were found."),
+
 			#[cfg(feature = "cddb")] Self::CddbDecode => f.write_str("Invalid CDDB ID string."),
 			#[cfg(feature = "sha1")] Self::ShaB64Decode => f.write_str("Invalid sha/base64 ID string."),
 		}
