@@ -14,8 +14,27 @@ use dactyl::traits::{
 use std::{
 	collections::BTreeMap,
 	fmt,
+	ops::Range,
 	str::FromStr,
 };
+
+
+
+/// # Drive Offset: Max Vendor Length.
+///
+/// Vendors are not required, but cannot exceed 8 bytes.
+const DRIVE_OFFSET_VENDOR_MAX: usize = 8;
+
+/// # Drive Offset: Max Model Length.
+///
+/// Models are required, and cannot exceed 16 bytes.
+const DRIVE_OFFSET_MODEL_MAX: usize = 16;
+
+/// # Drive Offset: Offset Range.
+///
+/// Offsets won't work if they exceed the ignorable range baked into
+/// AccurateRip's checksum algorithm.
+const DRIVE_OFFSET_OFFSET_RNG: Range<i16> = -2940..2941;
 
 
 
@@ -104,6 +123,17 @@ impl TryFrom<&str> for AccurateRip {
 	type Error = TocError;
 	#[inline]
 	fn try_from(src: &str) -> Result<Self, Self::Error> { Self::decode(src) }
+}
+
+impl AccurateRip {
+	/// # Drive Offset Data URL.
+	///
+	/// The binary-encoded list of known AccurateRip drive offsets can be
+	/// downloaded from this fixed URL.
+	///
+	/// The method [`AccurateRip::parse_drive_offsets`] can be used to parse
+	/// the raw data into a Rustful structure.
+	pub const DRIVE_OFFSET_URL: &str = "http://www.accuraterip.com/accuraterip/DriveOffsets.bin";
 }
 
 impl AccurateRip {
@@ -248,7 +278,7 @@ impl AccurateRip {
 	/// # Parse Checksums.
 	///
 	/// This will parse the v1 and v2 track checksums from a raw AccurateRip
-	/// [bin file](AccurateRip::checksum_url).
+	/// checksum [bin file](AccurateRip::checksum_url).
 	///
 	/// The return result is a vector — indexed by track number (`n-1`) — of
 	/// `checksum => confidence` pairs.
@@ -285,6 +315,76 @@ impl AccurateRip {
 		// Consider it okay if we found at least one checksum.
 		if out.iter().any(|v| ! v.is_empty()) { Ok(out) }
 		else { Err(TocError::NoChecksums) }
+	}
+
+	/// # Parse Drive Offsets.
+	///
+	/// This will parse the vendor, model, and sample read offset information
+	/// from the raw AccurateRip offset list ([bin file](AccurateRip::DRIVE_OFFSET_URL)).
+	///
+	/// The parsed offsets will be grouped by `(vendor, model)`. Some entries
+	/// will not have a vendor, but entries without models are silently
+	/// ignored.
+	///
+	/// ## Errors
+	///
+	/// This will return an error if parsing is unsuccessful, or the result is
+	/// empty.
+	pub fn parse_drive_offsets(raw: &[u8])
+	-> Result<BTreeMap<(&str, &str), i16>, TocError> {
+		const BLOCK_SIZE: usize = 69;
+		const fn trim_vm(c: char) -> bool { c.is_ascii_whitespace() || c.is_ascii_control() }
+
+		// There should be thousands of blocks, but we _need_ at least one!
+		if raw.len() < BLOCK_SIZE { return Err(TocError::NoDriveOffsets); }
+
+		// Entries come in blocks of 69 bytes. The first two bytes hold the
+		// little-endian offset; the next 32 hold the vendor/model; the rest
+		// we can ignore!
+		let mut out = BTreeMap::default();
+		for chunk in raw.chunks_exact(69) {
+			// The offset is easy!
+			let offset = i16::from_le_bytes([chunk[0], chunk[1]]);
+
+			// The vendor/model come glued together with an inconsistent
+			// delimiter, so we have to work a bit to pull them apart.
+			let vm = std::str::from_utf8(&chunk[2..34])
+				.ok()
+				.filter(|vm| vm.is_ascii())
+				.ok_or(TocError::DriveOffsetDecode)?;
+
+			let (vendor, model) =
+				// If the vendor is missing, the string should begin "- ".
+				if let Some(model) = vm.strip_prefix("- ") {
+					("", model.trim_matches(trim_vm))
+				}
+				// Otherwise there should be a " - " separating the two, even
+				// in cases where the model is missing.
+				else {
+					let mut split = vm.splitn(2, " - ");
+					let vendor = split.next().ok_or(TocError::DriveOffsetDecode)?;
+					let model = split.next().unwrap_or("");
+					(vendor.trim_matches(trim_vm), model.trim_matches(trim_vm))
+				};
+
+			// Skip empty models.
+			if model.is_empty() {}
+			// Add the entry so long as the fields fit.
+			else if
+				DRIVE_OFFSET_OFFSET_RNG.contains(&offset) &&
+				vendor.len() <= DRIVE_OFFSET_VENDOR_MAX &&
+				model.len() <= DRIVE_OFFSET_MODEL_MAX &&
+				vendor.is_ascii() && model.is_ascii()
+			{
+				out.insert((vendor, model), offset);
+			}
+			// Otherwise the data's bad.
+			else { return Err(TocError::DriveOffsetDecode); }
+		}
+
+		// Return the results, unless they're empty.
+		if out.is_empty() { Err(TocError::NoDriveOffsets) }
+		else { Ok(out) }
 	}
 
 	#[allow(unsafe_code)]
@@ -387,7 +487,7 @@ impl Toc {
 	/// # Parse Checksums.
 	///
 	/// This will parse the v1 and v2 track checksums from a raw AccurateRip
-	/// [bin file](AccurateRip::checksum_url).
+	/// checksum [bin file](AccurateRip::checksum_url).
 	///
 	/// See [`AccurateRip::parse_checksums`] for more information.
 	///
@@ -405,6 +505,9 @@ impl Toc {
 #[cfg(test)]
 mod tests {
 	use super::*;
+
+	/// # Test Drive Offset Bin.
+	const OFFSET_BIN: &[u8] = &[155, 2, 80, 73, 79, 78, 69, 69, 82, 32, 32, 45, 32, 66, 68, 45, 82, 87, 32, 32, 32, 66, 68, 82, 45, 88, 49, 50, 0, 0, 0, 0, 0, 0, 0, 75, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 155, 2, 80, 73, 79, 78, 69, 69, 82, 32, 32, 45, 32, 66, 68, 45, 82, 87, 32, 32, 32, 66, 68, 82, 45, 88, 49, 50, 85, 0, 0, 0, 0, 0, 0, 201, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 155, 2, 80, 73, 79, 78, 69, 69, 82, 32, 32, 45, 32, 66, 68, 45, 82, 87, 32, 32, 32, 66, 68, 82, 45, 88, 49, 51, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 155, 2, 80, 73, 79, 78, 69, 69, 82, 32, 32, 45, 32, 66, 68, 45, 82, 87, 32, 32, 32, 66, 68, 82, 45, 88, 49, 51, 85, 0, 0, 0, 0, 0, 0, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
 	#[test]
 	fn t_accuraterip() {
@@ -439,5 +542,19 @@ mod tests {
 			assert_eq!(AccurateRip::try_from(id), Ok(ar_id));
 			assert_eq!(id.parse::<AccurateRip>(), Ok(ar_id));
 		}
+	}
+
+	#[test]
+	fn t_drive_offsets() {
+		let parsed = AccurateRip::parse_drive_offsets(OFFSET_BIN)
+			.expect("Drive offset parsing failed.");
+
+		// Should never be empty.
+		assert!(! parsed.is_empty());
+
+		// Search for a known offset in the list to make sure it parsed.
+		let offset = parsed.get(&("PIONEER", "BD-RW   BDR-X13U"))
+			.expect("Unable to find BDR-X13U offset.");
+		assert_eq!(*offset, 667);
 	}
 }

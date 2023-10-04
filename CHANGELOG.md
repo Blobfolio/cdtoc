@@ -1,6 +1,15 @@
 # Changelog
 
 
+## [0.3.0](https://github.com/Blobfolio/cdtoc/releases/tag/v0.3.0) - 2023-10-03
+
+### New
+
+* `AccurateRip::DRIVE_OFFSET_URL`
+* `AccurateRip::parse_drive_offsets`
+
+
+
 ## [0.2.3](https://github.com/Blobfolio/cdtoc/releases/tag/v0.2.3) - 2023-09-27
 
 ### New
