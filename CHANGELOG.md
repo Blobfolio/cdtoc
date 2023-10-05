@@ -3,7 +3,7 @@
 
 ## [0.3.1](https://github.com/Blobfolio/cdtoc/releases/tag/v0.3.1) - 2023-10-05
 
-## Changed
+### Changed
 
 * Minor code lints and cleanup
 * Bump `trimothy` to `0.2`
