@@ -1,6 +1,14 @@
 # Changelog
 
 
+## [0.3.2](https://github.com/Blobfolio/cdtoc/releases/tag/v0.3.2) - 2023-10-15
+
+### Changed
+
+* Bump `dactyl` to `0.6`
+
+
+
 ## [0.3.1](https://github.com/Blobfolio/cdtoc/releases/tag/v0.3.1) - 2023-10-05
 
 ### Changed

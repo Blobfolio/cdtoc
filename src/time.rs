@@ -5,7 +5,10 @@
 use crate::TocError;
 use dactyl::{
 	NiceElapsed,
-	traits::NiceInflection,
+	traits::{
+		IntDivFloat,
+		NiceInflection,
+	},
 };
 use std::{
 	fmt,
@@ -206,7 +209,7 @@ impl Duration {
 		else { Err(TocError::CDDASampleCount) }
 	}
 
-	#[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+	#[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss, clippy::integer_division)]
 	#[must_use]
 	/// # From Samples (Rescaled).
 	///
@@ -233,10 +236,10 @@ impl Duration {
 		if sample_rate == 0 || total_samples == 0 { Self::default() }
 		else {
 			let sample_rate = u64::from(sample_rate);
-			let (s, rem) = dactyl::div_mod(total_samples, sample_rate);
+			let (s, rem) = (total_samples / sample_rate, total_samples % sample_rate);
 			if rem == 0 { Self(s * SECTORS_PER_SECOND) }
 			else {
-				let f = dactyl::int_div_float(rem * 75, sample_rate)
+				let f = (rem * 75).div_float(sample_rate)
 					.map_or(0, |f| f.trunc() as u64);
 				Self(s * SECTORS_PER_SECOND + f)
 			}
