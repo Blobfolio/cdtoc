@@ -133,7 +133,7 @@ impl AccurateRip {
 	///
 	/// The method [`AccurateRip::parse_drive_offsets`] can be used to parse
 	/// the raw data into a Rustful structure.
-	pub const DRIVE_OFFSET_URL: &str = "http://www.accuraterip.com/accuraterip/DriveOffsets.bin";
+	pub const DRIVE_OFFSET_URL: &'static str = "http://www.accuraterip.com/accuraterip/DriveOffsets.bin";
 }
 
 impl AccurateRip {

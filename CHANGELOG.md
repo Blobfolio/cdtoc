@@ -1,6 +1,14 @@
 # Changelog
 
 
+## [0.3.3](https://github.com/Blobfolio/cdtoc/releases/tag/v0.3.3) - 2023-11-16
+
+### Changed
+
+* Add explicit lifetime (to fix #115010)
+
+
+
 ## [0.3.2](https://github.com/Blobfolio/cdtoc/releases/tag/v0.3.2) - 2023-10-15
 
 ### Changed

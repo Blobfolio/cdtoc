@@ -1,7 +1,7 @@
 # Project Dependencies
     Package:   cdtoc
-    Version:   0.3.2
-    Generated: 2023-10-16 01:35:13 UTC
+    Version:   0.3.3
+    Generated: 2023-11-16 19:40:45 UTC
 
 | Package | Version | Author(s) | License |
 | ---- | ---- | ---- | ---- |
