@@ -5,7 +5,7 @@
 
 ### Changed
 
-* Add explicit lifetime (to fix #115010)
+* Add explicit lifetime (to fix [#115010](https://github.com/rust-lang/rust/issues/115010))
 
 
 
