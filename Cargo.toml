@@ -1,6 +1,6 @@
 [package]
 name = "cdtoc"
-version = "0.3.3"
+version = "0.3.4"
 authors = ["Blobfolio, LLC. <hello@blobfolio.com>"]
 edition = "2021"
 rust-version = "1.70"
@@ -38,7 +38,7 @@ dactyl = "0.6.0"
 trimothy = "0.2.*"
 
 [dependencies.faster-hex]
-version = "0.8.*"
+version = "0.9.*"
 default-features = false
 features = [ "std" ]
 
