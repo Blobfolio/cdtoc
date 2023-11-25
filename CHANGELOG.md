@@ -1,6 +1,14 @@
 # Changelog
 
 
+## [0.3.4](https://github.com/Blobfolio/cdtoc/releases/tag/v0.3.4) - 2023-11-24
+
+### Changed
+
+* Bump `faster-hex` to `0.9`
+
+
+
 ## [0.3.3](https://github.com/Blobfolio/cdtoc/releases/tag/v0.3.3) - 2023-11-16
 
 ### Changed
