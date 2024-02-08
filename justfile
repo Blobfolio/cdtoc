@@ -31,12 +31,10 @@ bench BENCH="":
 	if [ -z "{{ BENCH }}" ]; then
 		cargo bench \
 			--benches \
-			--target x86_64-unknown-linux-gnu \
 			--target-dir "{{ cargo_dir }}"
 	else
 		cargo bench \
 			--bench "{{ BENCH }}" \
-			--target x86_64-unknown-linux-gnu \
 			--target-dir "{{ cargo_dir }}"
 	fi
 	exit 0
@@ -60,7 +58,6 @@ bench BENCH="":
 	cargo clippy \
 		--release \
 		--all-features \
-		--target x86_64-unknown-linux-gnu \
 		--target-dir "{{ cargo_dir }}"
 
 
@@ -79,14 +76,13 @@ bench BENCH="":
 	cargo +nightly rustdoc \
 		--release \
 		--all-features \
-		--target x86_64-unknown-linux-gnu \
 		--target-dir "{{ cargo_dir }}" \
 		-- \
 		--cfg docsrs
 
 	# Move the docs and clean up ownership.
 	[ ! -d "{{ doc_dir }}" ] || rm -rf "{{ doc_dir }}"
-	mv "{{ cargo_dir }}/x86_64-unknown-linux-gnu/doc" "{{ justfile_directory() }}"
+	mv "{{ cargo_dir }}/doc" "{{ justfile_directory() }}"
 	just _fix-chown "{{ doc_dir }}"
 
 
@@ -95,25 +91,21 @@ bench BENCH="":
 	clear
 	fyi task "Testing w/ Default Features"
 	cargo test \
-		--target x86_64-unknown-linux-gnu \
 		--target-dir "{{ cargo_dir }}"
 
 	cargo test \
 		--release \
-		--target x86_64-unknown-linux-gnu \
 		--target-dir "{{ cargo_dir }}"
 
 	echo ""
 	fyi task "Testing w/ No Features"
 	cargo test \
 		--no-default-features \
-		--target x86_64-unknown-linux-gnu \
 		--target-dir "{{ cargo_dir }}"
 
 	cargo test \
 		--release \
 		--no-default-features \
-		--target x86_64-unknown-linux-gnu \
 		--target-dir "{{ cargo_dir }}"
 
 	echo ""
@@ -121,14 +113,12 @@ bench BENCH="":
 	cargo test \
 		--all-features \
 		--no-default-features \
-		--target x86_64-unknown-linux-gnu \
 		--target-dir "{{ cargo_dir }}"
 
 	cargo test \
 		--release \
 		--all-features \
 		--no-default-features \
-		--target x86_64-unknown-linux-gnu \
 		--target-dir "{{ cargo_dir }}"
 
 	just _test accuraterip
@@ -144,14 +134,12 @@ bench BENCH="":
 	cargo test \
 		--no-default-features \
 		--features {{ FEATURES }} \
-		--target x86_64-unknown-linux-gnu \
 		--target-dir "{{ cargo_dir }}"
 
 	cargo test \
 		--release \
 		--no-default-features \
 		--features {{ FEATURES }} \
-		--target x86_64-unknown-linux-gnu \
 		--target-dir "{{ cargo_dir }}"
 
 
