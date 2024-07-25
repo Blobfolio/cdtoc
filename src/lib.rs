@@ -131,7 +131,6 @@ pub use track::{
 
 use dactyl::traits::HexToUnsigned;
 use std::fmt;
-use trimothy::TrimSlice;
 
 
 
@@ -998,7 +997,7 @@ impl TocKind {
 /// metadata tag value. It will return a parsing error if the formatting is
 /// grossly wrong, but will not validate the sanity of the count/parts.
 fn parse_cdtoc_metadata(src: &[u8]) -> Result<(Vec<u32>, Option<u32>, u32), TocError> {
-	let src = src.trim();
+	let src = src.trim_ascii();
 	let mut split = src.split(|b| b'+'.eq(b));
 
 	// The number of audio tracks comes first.
