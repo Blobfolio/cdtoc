@@ -2,6 +2,16 @@
 
 
 
+## [0.4.0](https://github.com/Blobfolio/cdtoc/releases/tag/v0.4.0) - 2024-07-29
+
+### Changed
+
+* Use new std `<[u8]>::trim_ascii`
+* Bump MSRV `1.80`
+* Bump `trimothy` to `0.3`
+
+
+
 ## [0.3.5](https://github.com/Blobfolio/cdtoc/releases/tag/v0.3.5) - 2024-02-08
 
 ### Changed
