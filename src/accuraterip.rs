@@ -84,7 +84,7 @@ impl fmt::Display for AccurateRip {
 }
 
 impl From<&Toc> for AccurateRip {
-	#[allow(clippy::cast_possible_truncation)]
+	#[expect(clippy::cast_possible_truncation, reason = "False positive.")]
 	fn from(src: &Toc) -> Self {
 		let mut b: u32 = 0;
 		let mut c: u32 = 0;
@@ -332,7 +332,15 @@ impl AccurateRip {
 	/// empty.
 	pub fn parse_drive_offsets(raw: &[u8])
 	-> Result<BTreeMap<(&str, &str), i16>, TocError> {
+		/// # Block Size.
+		///
+		/// The size of each raw entry, in bytes.
 		const BLOCK_SIZE: usize = 69;
+
+		/// # Trim Callback.
+		///
+		/// This is used to trim both ASCII whitespace and control characters,
+		/// as the raw data isn't afraid to null-pad its entries.
 		const fn trim_vm(c: char) -> bool { c.is_ascii_whitespace() || c.is_ascii_control() }
 
 		// There should be thousands of blocks, but we _need_ at least one!
@@ -342,7 +350,7 @@ impl AccurateRip {
 		// little-endian offset; the next 32 hold the vendor/model; the rest
 		// we can ignore!
 		let mut out = BTreeMap::default();
-		for chunk in raw.chunks_exact(69) {
+		for chunk in raw.chunks_exact(BLOCK_SIZE) {
 			// The offset is easy!
 			let offset = i16::from_le_bytes([chunk[0], chunk[1]]);
 
@@ -387,7 +395,7 @@ impl AccurateRip {
 		else { Ok(out) }
 	}
 
-	#[allow(unsafe_code)]
+	#[expect(unsafe_code, reason = "For performance.")]
 	#[must_use]
 	/// # Pretty Print.
 	///
@@ -421,8 +429,9 @@ impl AccurateRip {
 		faster_hex::hex_encode_fallback(&[self.0[8], self.0[7], self.0[6], self.0[5]], &mut out[13..21]);
 		faster_hex::hex_encode_fallback(&[self.0[12], self.0[11], self.0[10], self.0[9]], &mut out[22..]);
 
-		// Safety: all bytes are ASCII.
 		debug_assert!(out.is_ascii(), "Bug: AccurateRip checksum is not ASCII?!");
+
+		// Safety: all bytes are ASCII.
 		unsafe { String::from_utf8_unchecked(out) }
 	}
 }

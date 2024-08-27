@@ -91,7 +91,7 @@ impl ShaB64 {
 		else { Err(TocError::ShaB64Decode) }
 	}
 
-	#[allow(unsafe_code)]
+	#[expect(unsafe_code, reason = "For performance.")]
 	#[must_use]
 	/// # Pretty Print.
 	///
@@ -116,11 +116,12 @@ impl ShaB64 {
 		// And add one byte for padding.
 		out.push(b'-');
 
-		// Safety: our alphabet is ASCII.
 		debug_assert!(
 			out.len() == 28 && out.is_ascii(),
 			"Bug: Sha/base64 ID is malformed."
 		);
+
+		// Safety: our alphabet is ASCII.
 		unsafe { String::from_utf8_unchecked(out) }
 	}
 }

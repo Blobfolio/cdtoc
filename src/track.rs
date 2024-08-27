@@ -15,9 +15,16 @@ use std::ops::Range;
 ///
 /// It is the return value of [`Toc::audio_track`](crate::Toc::audio_track).
 pub struct Track {
+	/// # Track Number.
 	pub(super) num: u8,
+
+	/// # Track Position.
 	pub(super) pos: TrackPosition,
+
+	/// # Sector Range: Start.
 	pub(super) from: u32,
+
+	/// # Sector Range: End (Exclusive).
 	pub(super) to: u32,
 }
 
@@ -245,15 +252,23 @@ impl Track {
 ///
 /// It is the return value of [`Toc::audio_tracks`](crate::Toc::audio_tracks).
 pub struct Tracks<'a> {
+	/// # All Tracks.
 	tracks: &'a [u32],
+
+	/// # Leadout.
 	leadout: u32,
+
+	/// # Current Index.
+	///
+	/// Each call to `Tracks.next()` will attempt to yield `tracks[pos]`. The
+	/// value is incremented afterward to prepare for the next `next` call.
 	pos: usize,
 }
 
 impl Iterator for Tracks<'_> {
 	type Item = Track;
 
-	#[allow(clippy::cast_possible_truncation)]
+	#[expect(clippy::cast_possible_truncation, reason = "False positive.")]
 	fn next(&mut self) -> Option<Self::Item> {
 		let len = self.tracks.len();
 		if len <= self.pos { return None; }
@@ -401,7 +416,7 @@ impl TrackPosition {
 
 
 
-#[allow(clippy::cast_possible_truncation)]
+#[expect(clippy::cast_possible_truncation, reason = "False positive.")]
 /// # LBA to MSF.
 ///
 /// Convert a logical block address (sectors) to minutes, seconds, and frames.

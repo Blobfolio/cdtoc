@@ -63,46 +63,68 @@ Add `cdtoc` to your `dependencies` in `Cargo.toml`, like:
 
 ```ignore,toml
 [dependencies]
-cdtoc = "0.4.*"
+cdtoc = "0.5.*"
 ```
 
 The disc ID helpers require additional dependencies, so if you aren't using them, be sure to disable the default features (adding back any you _do_ want) to skip the overhead.
 
 ```ignore,toml
 [dependencies.cdtoc]
-version = "0.4.*"
+version = "0.5.*"
 default-features = false
 ```
 */
 
-#![deny(unsafe_code)]
+#![deny(
+	clippy::allow_attributes_without_reason,
+	clippy::correctness,
+	unreachable_pub,
+	unsafe_code,
+)]
 
 #![warn(
-	clippy::filetype_is_file,
-	clippy::integer_division,
-	clippy::needless_borrow,
+	clippy::complexity,
 	clippy::nursery,
 	clippy::pedantic,
 	clippy::perf,
-	clippy::suboptimal_flops,
+	clippy::style,
+
+	clippy::allow_attributes,
+	clippy::clone_on_ref_ptr,
+	clippy::create_dir,
+	clippy::filetype_is_file,
+	clippy::format_push_string,
+	clippy::get_unwrap,
+	clippy::impl_trait_in_params,
+	clippy::lossy_float_literal,
+	clippy::missing_assert_message,
+	clippy::missing_docs_in_private_items,
+	clippy::needless_raw_strings,
+	clippy::panic_in_result_fn,
+	clippy::pub_without_shorthand,
+	clippy::rest_pat_in_fully_bound_structs,
+	clippy::semicolon_inside_block,
+	clippy::str_to_string,
+	clippy::string_to_string,
+	clippy::todo,
+	clippy::undocumented_unsafe_blocks,
 	clippy::unneeded_field_pattern,
+	clippy::unseparated_literal_suffix,
+	clippy::unwrap_in_result,
+
 	macro_use_extern_crate,
 	missing_copy_implementations,
-	missing_debug_implementations,
 	missing_docs,
 	non_ascii_idents,
 	trivial_casts,
 	trivial_numeric_casts,
-	unreachable_pub,
 	unused_crate_dependencies,
 	unused_extern_crates,
 	unused_import_braces,
 )]
 
-#![allow(
-	clippy::doc_markdown,
-	clippy::module_name_repetitions,
-)]
+#![expect(clippy::doc_markdown, reason = "This gets annoying with names like MusicBrainz.")]
+#![expect(clippy::module_name_repetitions, reason = "Repetition is preferred.")]
 
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
@@ -192,14 +214,21 @@ static ZEROES: [u8; 792] = [b'0'; 792];
 /// assert_eq!(toc1.to_string(), "4+96+2D2B+6256+B327+D84A");
 /// ```
 pub struct Toc {
+	/// # Disc Type.
 	kind: TocKind,
+
+	/// # Start Sectors for Each Audio Track.
 	audio: Vec<u32>,
+
+	/// # Start Sector for Data Track (if any).
 	data: u32,
+
+	/// # Leadout Sector.
 	leadout: u32,
 }
 
 impl fmt::Display for Toc {
-	#[allow(clippy::cast_possible_truncation)]
+	#[expect(clippy::cast_possible_truncation, reason = "False positive.")]
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		use trimothy::TrimSliceMatches;
 
@@ -212,6 +241,7 @@ impl fmt::Display for Toc {
 		if 16 <= audio_len { out.push(buf[0]); }
 		out.push(buf[1]);
 
+		/// # Helper: Add Track to Buffer.
 		macro_rules! push {
 			($v:expr) => (
 				faster_hex::hex_encode_fallback($v.to_be_bytes().as_slice(), &mut buf);
@@ -666,7 +696,7 @@ impl Toc {
 	/// ```
 	pub fn audio_sectors(&self) -> &[u32] { &self.audio }
 
-	#[allow(clippy::cast_possible_truncation)]
+	#[expect(clippy::cast_possible_truncation, reason = "False positive.")]
 	#[must_use]
 	/// # Audio Track.
 	///
@@ -1079,27 +1109,27 @@ mod tests {
 			41202,
 			63497,
 			86687,
-			109747,
-			134332,
-			151060,
-			175895,
-			193770,
-			220125,
+			109_747,
+			134_332,
+			151_060,
+			175_895,
+			193_770,
+			220_125,
 		];
 		assert_eq!(toc.audio_len(), 11);
 		assert_eq!(toc.audio_sectors(), &sectors);
 		assert_eq!(toc.data_sector(), None);
-		assert_eq!(toc.has_data(), false);
+		assert!(!toc.has_data());
 		assert_eq!(toc.kind(), TocKind::Audio);
 		assert_eq!(toc.audio_leadin(), 150);
-		assert_eq!(toc.audio_leadout(), 244077);
+		assert_eq!(toc.audio_leadout(), 244_077);
 		assert_eq!(toc.leadin(), 150);
-		assert_eq!(toc.leadout(), 244077);
+		assert_eq!(toc.leadout(), 244_077);
 		assert_eq!(toc.to_string(), CDTOC_AUDIO);
 
 		// This should match when built with the equivalent parts.
 		assert_eq!(
-			Toc::from_parts(sectors, None, 244077),
+			Toc::from_parts(sectors, None, 244_077),
 			Ok(toc),
 		);
 
@@ -1133,25 +1163,25 @@ mod tests {
 			50767,
 			68115,
 			85410,
-			106120,
-			121770,
-			136100,
-			161870,
+			106_120,
+			121_770,
+			136_100,
+			161_870,
 		];
 		assert_eq!(toc.audio_len(), 10);
 		assert_eq!(toc.audio_sectors(), &sectors);
-		assert_eq!(toc.data_sector(), Some(186287));
-		assert_eq!(toc.has_data(), true);
+		assert_eq!(toc.data_sector(), Some(186_287));
+		assert!(toc.has_data());
 		assert_eq!(toc.kind(), TocKind::CDExtra);
 		assert_eq!(toc.audio_leadin(), 150);
-		assert_eq!(toc.audio_leadout(), 174887);
+		assert_eq!(toc.audio_leadout(), 174_887);
 		assert_eq!(toc.leadin(), 150);
-		assert_eq!(toc.leadout(), 225041);
+		assert_eq!(toc.leadout(), 225_041);
 		assert_eq!(toc.to_string(), CDTOC_EXTRA);
 
 		// This should match when built with the equivalent parts.
 		assert_eq!(
-			Toc::from_parts(sectors, Some(186287), 225041),
+			Toc::from_parts(sectors, Some(186_287), 225_041),
 			Ok(toc),
 		);
 	}
@@ -1167,26 +1197,26 @@ mod tests {
 			50767,
 			68115,
 			85410,
-			106120,
-			121770,
-			136100,
-			161870,
-			186287,
+			106_120,
+			121_770,
+			136_100,
+			161_870,
+			186_287,
 		];
 		assert_eq!(toc.audio_len(), 10);
 		assert_eq!(toc.audio_sectors(), &sectors);
 		assert_eq!(toc.data_sector(), Some(150));
-		assert_eq!(toc.has_data(), true);
+		assert!(toc.has_data());
 		assert_eq!(toc.kind(), TocKind::DataFirst);
 		assert_eq!(toc.audio_leadin(), 14167);
-		assert_eq!(toc.audio_leadout(), 225041);
+		assert_eq!(toc.audio_leadout(), 225_041);
 		assert_eq!(toc.leadin(), 150);
-		assert_eq!(toc.leadout(), 225041);
+		assert_eq!(toc.leadout(), 225_041);
 		assert_eq!(toc.to_string(), CDTOC_DATA_AUDIO);
 
 		// This should match when built with the equivalent parts.
 		assert_eq!(
-			Toc::from_parts(sectors, Some(150), 225041),
+			Toc::from_parts(sectors, Some(150), 225_041),
 			Ok(toc),
 		);
 	}
@@ -1205,6 +1235,7 @@ mod tests {
 	}
 
 	#[test]
+	#[expect(clippy::cognitive_complexity, reason = "It is what it is.")]
 	/// # Test Kind Conversions.
 	fn t_rekind() {
 		// Start with audio.
@@ -1222,20 +1253,20 @@ mod tests {
 				41202,
 				63497,
 				86687,
-				109747,
-				134332,
-				151060,
-				175895,
-				193770,
+				109_747,
+				134_332,
+				151_060,
+				175_895,
+				193_770,
 			]
 		);
-		assert_eq!(toc.data_sector(), Some(220125));
-		assert_eq!(toc.has_data(), true);
+		assert_eq!(toc.data_sector(), Some(220_125));
+		assert!(toc.has_data());
 		assert_eq!(toc.kind(), TocKind::CDExtra);
 		assert_eq!(toc.audio_leadin(), 150);
-		assert_eq!(toc.audio_leadout(), 208725);
+		assert_eq!(toc.audio_leadout(), 208_725);
 		assert_eq!(toc.leadin(), 150);
-		assert_eq!(toc.leadout(), 244077);
+		assert_eq!(toc.leadout(), 244_077);
 
 		// Back again.
 		assert!(toc.set_kind(TocKind::Audio).is_ok());
@@ -1251,21 +1282,21 @@ mod tests {
 				41202,
 				63497,
 				86687,
-				109747,
-				134332,
-				151060,
-				175895,
-				193770,
-				220125,
+				109_747,
+				134_332,
+				151_060,
+				175_895,
+				193_770,
+				220_125,
 			]
 		);
 		assert_eq!(toc.data_sector(), Some(150));
-		assert_eq!(toc.has_data(), true);
+		assert!(toc.has_data());
 		assert_eq!(toc.kind(), TocKind::DataFirst);
 		assert_eq!(toc.audio_leadin(), 24047);
-		assert_eq!(toc.audio_leadout(), 244077);
+		assert_eq!(toc.audio_leadout(), 244_077);
 		assert_eq!(toc.leadin(), 150);
-		assert_eq!(toc.leadout(), 244077);
+		assert_eq!(toc.leadout(), 244_077);
 
 		// Back again.
 		assert!(toc.set_kind(TocKind::Audio).is_ok());

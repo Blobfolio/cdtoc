@@ -29,7 +29,10 @@ use std::{
 
 
 
+/// # Samples Per Sector.
 const SAMPLES_PER_SECTOR: u64 = 588;
+
+/// # Sectors Per Second.
 const SECTORS_PER_SECOND: u64 = 75;
 
 
@@ -109,7 +112,7 @@ where u64: From<T> {
 impl Eq for Duration {}
 
 impl fmt::Display for Duration {
-	#[allow(clippy::many_single_char_names)]
+	#[expect(clippy::many_single_char_names, reason = "Consistency is preferred.")]
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		let (d, h, m, s, frames) = self.dhmsf();
 		if d == 0 {
@@ -209,7 +212,11 @@ impl Duration {
 		else { Err(TocError::CDDASampleCount) }
 	}
 
-	#[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss, clippy::integer_division)]
+	#[expect(
+		clippy::cast_possible_truncation,
+		clippy::cast_sign_loss,
+		reason = "False positive.",
+	)]
 	#[must_use]
 	/// # From Samples (Rescaled).
 	///
@@ -236,7 +243,7 @@ impl Duration {
 		if sample_rate == 0 || total_samples == 0 { Self::default() }
 		else {
 			let sample_rate = u64::from(sample_rate);
-			let (s, rem) = (total_samples / sample_rate, total_samples % sample_rate);
+			let (s, rem) = (total_samples.wrapping_div(sample_rate), total_samples % sample_rate);
 			if rem == 0 { Self(s * SECTORS_PER_SECOND) }
 			else {
 				let f = (rem * 75).div_float(sample_rate)
@@ -248,7 +255,8 @@ impl Duration {
 }
 
 impl Duration {
-	#[allow(clippy::many_single_char_names, clippy::cast_possible_truncation)]
+	#[expect(clippy::cast_possible_truncation, reason = "False positive.")]
+	#[expect(clippy::many_single_char_names, reason = "Consistency is preferred.")]
 	#[must_use]
 	/// # Days, Hours, Minutes, Seconds, Frames.
 	///
@@ -343,7 +351,7 @@ impl Duration {
 	/// ```
 	pub const fn sectors(self) -> u64 { self.0 }
 
-	#[allow(clippy::cast_precision_loss)]
+	#[expect(clippy::cast_precision_loss, reason = "False positive.")]
 	#[must_use]
 	/// # To `f64` (Lossy).
 	///
@@ -409,7 +417,7 @@ impl Duration {
 			)
 	}
 
-	#[allow(clippy::many_single_char_names)]
+	#[expect(clippy::many_single_char_names, reason = "Consistency is preferred.")]
 	#[must_use]
 	/// # To String Pretty.
 	///
