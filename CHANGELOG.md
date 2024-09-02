@@ -2,6 +2,15 @@
 
 
 
+## [0.5.0](https://github.com/Blobfolio/cdtoc/releases/tag/v0.5.0) - TBD
+
+### Changed
+
+* Bump MSRV to `1.81`
+* Improved documentation
+
+
+
 ## [0.4.0](https://github.com/Blobfolio/cdtoc/releases/tag/v0.4.0) - 2024-07-29
 
 ### Changed
