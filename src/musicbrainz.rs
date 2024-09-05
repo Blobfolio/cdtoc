@@ -9,13 +9,18 @@ use crate::{
 
 
 
+/// # Stereo Sample Chunk Size.
+///
+/// Each CDDA sample has a 16-bit left and 16-bit right value; combined they're
+/// four bytes.
 const CHUNK_SIZE: usize = 4;
 
 
 
 impl Toc {
-	#[allow(clippy::cast_possible_truncation, clippy::missing_panics_doc)]
 	#[cfg_attr(docsrs, doc(cfg(feature = "musicbrainz")))]
+	#[expect(clippy::cast_possible_truncation, reason = "False positive.")]
+	#[expect(clippy::missing_panics_doc, reason = "False positive.")]
 	#[must_use]
 	/// # MusicBrainz ID.
 	///

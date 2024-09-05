@@ -13,13 +13,17 @@ use std::collections::BTreeMap;
 
 
 
+/// # Stereo Sample Chunk Size.
+///
+/// Each CDDA sample has a 16-bit left and 16-bit right value; combined they're
+/// four bytes.
 const CHUNK_SIZE: usize = 4;
 
 
 
 impl Toc {
 	#[cfg_attr(docsrs, doc(cfg(feature = "ctdb")))]
-	#[allow(clippy::missing_panics_doc)]
+	#[expect(clippy::missing_panics_doc, reason = "Panic is unreachable.")]
 	#[must_use]
 	/// # CUETools Database ID.
 	///
@@ -114,7 +118,7 @@ impl Toc {
 	/// );
 	/// ```
 	pub fn ctdb_checksum_url(&self) -> String {
-		let mut url = "http://db.cuetools.net/lookup2.php?version=3&ctdb=1&fuzzy=1&toc=".to_string();
+		let mut url = "http://db.cuetools.net/lookup2.php?version=3&ctdb=1&fuzzy=1&toc=".to_owned();
 		let mut buf = itoa::Buffer::new();
 
 		// Leading data?

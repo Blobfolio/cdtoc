@@ -24,6 +24,7 @@ use std::fmt;
 
 
 
+/// # Helper: Deserialize as String.
 macro_rules! deserialize_str_with {
 	($ty:ty, $fn:ident) => (
 		#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
@@ -58,6 +59,7 @@ macro_rules! deserialize_str_with {
 	);
 }
 
+/// # Helper: Serialize as String.
 macro_rules! serialize_with {
 	($ty:ty, $fn:ident) => (
 		#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
@@ -100,7 +102,10 @@ impl Serialize for Duration {
 impl<'de> Deserialize<'de> for Track {
 	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
 	where D: de::Deserializer<'de> {
+		/// # Fields of Interest.
 		const FIELDS: &[&str] = &["num", "pos", "from", "to"];
+
+		/// # Visitor Instance.
 		struct TrackVisitor;
 
 		impl<'de> de::Visitor<'de> for TrackVisitor {
@@ -130,6 +135,7 @@ impl<'de> Deserialize<'de> for Track {
 				let mut from = None;
 				let mut to = None;
 
+				/// # Helper: Accept or Reject Value.
 				macro_rules! set {
 					($var:ident, $name:literal) => (
 						if $var.is_none() { $var.replace(map.next_value()?); }
@@ -179,6 +185,7 @@ impl Serialize for Track {
 impl<'de> Deserialize<'de> for TrackPosition {
 	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
 	where D: de::Deserializer<'de> {
+		/// # Visitor Instance.
 		struct Visitor;
 
 		impl<'de> de::Visitor<'de> for Visitor {

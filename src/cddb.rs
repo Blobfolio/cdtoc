@@ -77,7 +77,7 @@ impl From<Cddb> for u32 {
 }
 
 impl From<&Toc> for Cddb {
-	#[allow(clippy::cast_possible_truncation)]
+	#[expect(clippy::cast_possible_truncation, reason = "False positive.")]
 	fn from(src: &Toc) -> Self {
 		let mut len = src.audio_len();
 		let mut a: u32 = 0;
