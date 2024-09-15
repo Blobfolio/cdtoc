@@ -38,7 +38,7 @@ dactyl = "0.7.*"
 trimothy = "0.3.*"
 
 [dependencies.faster-hex]
-version = "0.9.*"
+version = "0.10.*"
 default-features = false
 features = [ "std" ]
 
