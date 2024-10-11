@@ -2,6 +2,14 @@
 
 
 
+## [0.5.1](https://github.com/Blobfolio/cdtoc/releases/tag/v0.5.1) - 2024-10-10
+
+### Changed
+
+* Bump `faster-hex` to `0.10`
+
+
+
 ## [0.5.0](https://github.com/Blobfolio/cdtoc/releases/tag/v0.5.0) - 2024-09-05
 
 ### Changed
