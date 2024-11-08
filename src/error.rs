@@ -101,26 +101,26 @@ pub enum TocError {
 
 impl fmt::Display for TocError {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		match self {
-			Self::CDDASampleCount => f.write_str("Invalid CDDA sample count."),
-			Self::CDTOCChars => f.write_str("Invalid character(s), expecting only 0-9, A-F, +, and (rarely) X."),
-			Self::Checksums => f.write_str("Unable to parse checksums."),
-			Self::Format(kind) => write!(f, "This operation can't be applied to {kind} discs."),
-			Self::LeadinSize => f.write_str("Leadin must be at least 150."),
-			Self::NoAudio => f.write_str("At least one audio track is required."),
-			Self::NoChecksums => f.write_str("No checksums were present."),
-			Self::SectorCount(expected, found) => write!(f, "Expected {expected} audio sectors, found {found}."),
-			Self::SectorOrder => f.write_str("Sectors are incorrectly ordered or overlap."),
-			Self::SectorSize => f.write_str("Sector sizes may not exceed four bytes (u32)."),
-			Self::TrackCount => f.write_str("The number of audio tracks must be between 1..=99."),
+		f.write_str(match self {
+			Self::CDDASampleCount => "Invalid CDDA sample count.",
+			Self::CDTOCChars => "Invalid character(s), expecting only 0-9, A-F, +, and (rarely) X.",
+			Self::Checksums => "Unable to parse checksums.",
+			Self::Format(kind) => return write!(f, "This operation can't be applied to {kind} discs."),
+			Self::LeadinSize => "Leadin must be at least 150.",
+			Self::NoAudio => "At least one audio track is required.",
+			Self::NoChecksums => "No checksums were present.",
+			Self::SectorCount(expected, found) => return write!(f, "Expected {expected} audio sectors, found {found}."),
+			Self::SectorOrder => "Sectors are incorrectly ordered or overlap.",
+			Self::SectorSize => "Sector sizes may not exceed four bytes (u32).",
+			Self::TrackCount => "The number of audio tracks must be between 1..=99.",
 
-			#[cfg(feature = "accuraterip")] Self::AccurateRipDecode => f.write_str("Invalid AccurateRip ID string."),
-			#[cfg(feature = "accuraterip")] Self::DriveOffsetDecode => f.write_str("Unable to parse drive offsets."),
-			#[cfg(feature = "accuraterip")] Self::NoDriveOffsets => f.write_str("No drive offsets were found."),
+			#[cfg(feature = "accuraterip")] Self::AccurateRipDecode => "Invalid AccurateRip ID string.",
+			#[cfg(feature = "accuraterip")] Self::DriveOffsetDecode => "Unable to parse drive offsets.",
+			#[cfg(feature = "accuraterip")] Self::NoDriveOffsets => "No drive offsets were found.",
 
-			#[cfg(feature = "cddb")] Self::CddbDecode => f.write_str("Invalid CDDB ID string."),
-			#[cfg(feature = "sha1")] Self::ShaB64Decode => f.write_str("Invalid sha/base64 ID string."),
-		}
+			#[cfg(feature = "cddb")] Self::CddbDecode => "Invalid CDDB ID string.",
+			#[cfg(feature = "sha1")] Self::ShaB64Decode => "Invalid sha/base64 ID string.",
+		})
 	}
 }
 

@@ -284,6 +284,7 @@ impl Iterator for Tracks<'_> {
 		Some(Track { num, pos, from, to })
 	}
 
+	#[inline]
 	fn size_hint(&self) -> (usize, Option<usize>) {
 		let len = self.len();
 		(len, Some(len))
@@ -291,9 +292,8 @@ impl Iterator for Tracks<'_> {
 }
 
 impl ExactSizeIterator for Tracks<'_> {
-	fn len(&self) -> usize {
-		self.tracks.len().saturating_sub(self.pos)
-	}
+	#[inline]
+	fn len(&self) -> usize { self.tracks.len().saturating_sub(self.pos) }
 }
 
 impl<'a> Tracks<'a> {

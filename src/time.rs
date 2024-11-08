@@ -82,17 +82,20 @@ pub struct Duration(pub(crate) u64);
 impl<T> Add<T> for Duration
 where u64: From<T> {
 	type Output = Self;
+	#[inline]
 	fn add(self, other: T) -> Self { Self(self.0 + u64::from(other)) }
 }
 
 impl<T> AddAssign<T> for Duration
 where u64: From<T> {
+	#[inline]
 	fn add_assign(&mut self, other: T) { self.0 += u64::from(other); }
 }
 
 impl<T> Div<T> for Duration
 where u64: From<T> {
 	type Output = Self;
+	#[inline]
 	fn div(self, other: T) -> Self {
 		let other = u64::from(other);
 		if other == 0 { Self(0) }
@@ -102,6 +105,7 @@ where u64: From<T> {
 
 impl<T> DivAssign<T> for Duration
 where u64: From<T> {
+	#[inline]
 	fn div_assign(&mut self, other: T) {
 		let other = u64::from(other);
 		if other == 0 { self.0 = 0; }
@@ -113,6 +117,7 @@ impl Eq for Duration {}
 
 impl fmt::Display for Duration {
 	#[expect(clippy::many_single_char_names, reason = "Consistency is preferred.")]
+	#[inline]
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		let (d, h, m, s, frames) = self.dhmsf();
 		if d == 0 {
@@ -125,56 +130,65 @@ impl fmt::Display for Duration {
 }
 
 impl From<u32> for Duration {
+	#[inline]
 	fn from(src: u32) -> Self { Self(src.into()) }
 }
 
 impl From<u64> for Duration {
+	#[inline]
 	fn from(src: u64) -> Self { Self(src) }
 }
 
 impl From<usize> for Duration {
+	#[inline]
 	fn from(src: usize) -> Self { Self(src as u64) }
 }
 
 impl From<Duration> for u64 {
+	#[inline]
 	fn from(src: Duration) -> Self { src.0 }
 }
 
 impl hash::Hash for Duration {
+	#[inline]
 	fn hash<H: hash::Hasher>(&self, state: &mut H) { state.write_u64(self.0); }
 }
 
 impl PartialEq for Duration {
+	#[inline]
 	fn eq(&self, other: &Self) -> bool { self.0 == other.0 }
 }
 
 impl<T> Mul<T> for Duration
 where u64: From<T> {
 	type Output = Self;
+	#[inline]
 	fn mul(self, other: T) -> Self { Self(self.0 * u64::from(other)) }
 }
 
 impl<T> MulAssign<T> for Duration
 where u64: From<T> {
+	#[inline]
 	fn mul_assign(&mut self, other: T) { self.0 *= u64::from(other); }
 }
 
 impl<T> Sub<T> for Duration
 where u64: From<T> {
 	type Output = Self;
+	#[inline]
 	fn sub(self, other: T) -> Self { Self(self.0.saturating_sub(u64::from(other))) }
 }
 
 impl<T> SubAssign<T> for Duration
 where u64: From<T> {
+	#[inline]
 	fn sub_assign(&mut self, other: T) { self.0 = self.0.saturating_sub(u64::from(other)); }
 }
 
 impl Sum for Duration {
+	#[inline]
 	fn sum<I>(iter: I) -> Self
-	where I: Iterator<Item = Self> {
-		iter.fold(Self::default(), |a, b| a + b)
-	}
+	where I: Iterator<Item = Self> { iter.fold(Self::default(), |a, b| a + b) }
 }
 
 impl Duration {

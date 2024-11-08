@@ -64,10 +64,12 @@ impl FromStr for Cddb {
 }
 
 impl hash::Hash for Cddb {
+	#[inline]
 	fn hash<H: hash::Hasher>(&self, state: &mut H) { state.write_u32(self.0); }
 }
 
 impl PartialEq for Cddb {
+	#[inline]
 	fn eq(&self, other: &Self) -> bool { self.0 == other.0 }
 }
 

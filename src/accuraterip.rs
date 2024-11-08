@@ -70,14 +70,17 @@ const DRIVE_OFFSET_OFFSET_RNG: Range<i16> = -2940..2941;
 pub struct AccurateRip([u8; 13]);
 
 impl AsRef<[u8]> for AccurateRip {
+	#[inline]
 	fn as_ref(&self) -> &[u8] { &self.0 }
 }
 
 impl From<AccurateRip> for [u8; 13] {
+	#[inline]
 	fn from(src: AccurateRip) -> Self { src.0 }
 }
 
 impl fmt::Display for AccurateRip {
+	#[inline]
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		f.write_str(&self.pretty_print())
 	}
