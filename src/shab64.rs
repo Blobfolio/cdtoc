@@ -30,12 +30,14 @@ use std::{
 pub struct ShaB64([u8; 20]);
 
 impl fmt::Display for ShaB64 {
+	#[inline]
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		f.write_str(&self.pretty_print())
+		f.pad(&self.pretty_print())
 	}
 }
 
 impl From<Sha1> for ShaB64 {
+	#[inline]
 	fn from(src: Sha1) -> Self { Self(<[u8; 20]>::from(src.finalize())) }
 }
 

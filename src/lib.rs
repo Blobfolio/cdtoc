@@ -979,9 +979,8 @@ pub enum TocKind {
 }
 
 impl fmt::Display for TocKind {
-	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		f.write_str(self.as_str())
-	}
+	#[inline]
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { f.pad(self.as_str()) }
 }
 
 impl TocKind {

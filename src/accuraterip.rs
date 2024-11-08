@@ -70,16 +70,19 @@ const DRIVE_OFFSET_OFFSET_RNG: Range<i16> = -2940..2941;
 pub struct AccurateRip([u8; 13]);
 
 impl AsRef<[u8]> for AccurateRip {
+	#[inline]
 	fn as_ref(&self) -> &[u8] { &self.0 }
 }
 
 impl From<AccurateRip> for [u8; 13] {
+	#[inline]
 	fn from(src: AccurateRip) -> Self { src.0 }
 }
 
 impl fmt::Display for AccurateRip {
+	#[inline]
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		f.write_str(&self.pretty_print())
+		f.pad(&self.pretty_print())
 	}
 }
 
@@ -412,6 +415,10 @@ impl AccurateRip {
 	///     toc.accuraterip_id().pretty_print(),
 	///     "013-0015deca-00d9b921-9a0a6e0d",
 	/// );
+	/// assert_eq!(
+	///     toc.accuraterip_id().to_string(),
+	///     "013-0015deca-00d9b921-9a0a6e0d",
+	/// );
 	/// ```
 	pub fn pretty_print(&self) -> String {
 		let mut out: Vec<u8> = vec![
@@ -545,6 +552,7 @@ mod tests {
 			let toc = Toc::from_cdtoc(t).expect("Invalid TOC");
 			let ar_id = toc.accuraterip_id();
 			assert_eq!(ar_id.to_string(), id);
+			assert_eq!(ar_id.pretty_print(), id);
 
 			// Test decoding three ways.
 			assert_eq!(AccurateRip::decode(id), Ok(ar_id));

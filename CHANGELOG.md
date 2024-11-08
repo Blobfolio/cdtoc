@@ -2,6 +2,16 @@
 
 
 
+## [0.5.2](https://github.com/Blobfolio/cdtoc/releases/tag/v0.5.2) - 2024-11-07
+
+### Changed
+
+* Add (more) inline hints
+* Add `Formatter` width/fill/align/etc. support for `AccurateRip`, `Cddb`, `ShaB64`
+* Improve docs, test coverage
+
+
+
 ## [0.5.1](https://github.com/Blobfolio/cdtoc/releases/tag/v0.5.1) - 2024-10-10
 
 ### Changed

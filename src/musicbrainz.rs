@@ -37,6 +37,10 @@ impl Toc {
 	///     toc.musicbrainz_id().to_string(),
 	///     "nljDXdC8B_pDwbdY1vZJvdrAZI4-",
 	/// );
+	/// assert_eq!(
+	///     toc.musicbrainz_id().pretty_print(),
+	///     "nljDXdC8B_pDwbdY1vZJvdrAZI4-",
+	/// );
 	/// ```
 	pub fn musicbrainz_id(&self) -> ShaB64 {
 		use sha1::Digest;
@@ -133,6 +137,7 @@ mod tests {
 			let toc = Toc::from_cdtoc(t).expect("Invalid TOC");
 			let mb_id = toc.musicbrainz_id();
 			assert_eq!(mb_id.to_string(), id);
+			assert_eq!(mb_id.pretty_print(), id);
 
 			// Test decoding three ways.
 			assert_eq!(ShaB64::decode(id), Ok(mb_id));

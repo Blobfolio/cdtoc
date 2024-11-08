@@ -64,6 +64,7 @@ macro_rules! serialize_with {
 	($ty:ty, $fn:ident) => (
 		#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
 		impl Serialize for $ty {
+			#[inline]
 			fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
 			where S: ser::Serializer { self.$fn().serialize(serializer) }
 		}
@@ -86,6 +87,7 @@ serialize_with!(Toc, to_string);
 
 #[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
 impl<'de> Deserialize<'de> for Duration {
+	#[inline]
 	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
 	where D: de::Deserializer<'de> {
 		u64::deserialize(deserializer).map(Self::from)
@@ -94,6 +96,7 @@ impl<'de> Deserialize<'de> for Duration {
 
 #[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
 impl Serialize for Duration {
+	#[inline]
 	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
 	where S: ser::Serializer { self.0.serialize(serializer) }
 }

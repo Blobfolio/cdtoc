@@ -53,7 +53,7 @@ impl fmt::Display for Cddb {
 		faster_hex::hex_encode_fallback(self.0.to_be_bytes().as_slice(), &mut buf);
 		std::str::from_utf8(buf.as_slice())
 			.map_err(|_| fmt::Error)
-			.and_then(|s| f.write_str(s))
+			.and_then(|s| f.pad(s))
 	}
 }
 
@@ -64,10 +64,12 @@ impl FromStr for Cddb {
 }
 
 impl hash::Hash for Cddb {
+	#[inline]
 	fn hash<H: hash::Hasher>(&self, state: &mut H) { state.write_u32(self.0); }
 }
 
 impl PartialEq for Cddb {
+	#[inline]
 	fn eq(&self, other: &Self) -> bool { self.0 == other.0 }
 }
 

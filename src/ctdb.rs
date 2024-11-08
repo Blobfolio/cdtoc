@@ -260,6 +260,7 @@ mod tests {
 			let toc = Toc::from_cdtoc(t).expect("Invalid TOC");
 			let ctdb_id = toc.ctdb_id();
 			assert_eq!(ctdb_id.to_string(), id);
+			assert_eq!(ctdb_id.pretty_print(), id);
 			assert_eq!(toc.ctdb_checksum_url(), lookup);
 
 			// Test decoding three ways.
