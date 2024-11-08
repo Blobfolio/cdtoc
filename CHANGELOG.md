@@ -8,7 +8,7 @@
 
 * Add (more) inline hints
 * Add `Formatter` width/fill/align/etc. support for `AccurateRip`, `Cddb`, `ShaB64`
-* Improved documentation
+* Improve docs, test coverage
 
 
 
