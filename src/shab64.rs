@@ -32,7 +32,7 @@ pub struct ShaB64([u8; 20]);
 impl fmt::Display for ShaB64 {
 	#[inline]
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		f.write_str(&self.pretty_print())
+		f.pad(&self.pretty_print())
 	}
 }
 

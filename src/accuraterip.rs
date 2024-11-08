@@ -82,7 +82,7 @@ impl From<AccurateRip> for [u8; 13] {
 impl fmt::Display for AccurateRip {
 	#[inline]
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		f.write_str(&self.pretty_print())
+		f.pad(&self.pretty_print())
 	}
 }
 
