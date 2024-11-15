@@ -246,7 +246,7 @@ impl fmt::Display for Toc {
 			($v:expr) => (
 				faster_hex::hex_encode_fallback($v.to_be_bytes().as_slice(), &mut buf);
 				out.push(b'+');
-				out.extend_from_slice(buf.trim_start_matches(|b| b == b'0'));
+				out.extend_from_slice(buf.trim_start_matches(b'0'));
 			);
 		}
 
@@ -267,7 +267,7 @@ impl fmt::Display for Toc {
 				faster_hex::hex_encode_fallback(self.data.to_be_bytes().as_slice(), &mut buf);
 				out.push(b'+');
 				out.push(b'X');
-				out.extend_from_slice(buf.trim_start_matches(|b| b == b'0'));
+				out.extend_from_slice(buf.trim_start_matches(b'0'));
 			},
 		}
 
