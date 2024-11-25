@@ -80,9 +80,11 @@ impl From<AccurateRip> for [u8; 13] {
 }
 
 impl fmt::Display for AccurateRip {
-	#[inline]
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		f.pad(&self.pretty_print())
+		let disc_id = self.encode();
+		std::str::from_utf8(disc_id.as_slice())
+			.map_err(|_| fmt::Error)
+			.and_then(|s| f.pad(s))
 	}
 }
 
@@ -158,6 +160,7 @@ impl AccurateRip {
 	/// ```
 	pub const fn audio_len(&self) -> u8 { self.0[0] }
 
+	#[expect(unsafe_code, reason = "For performance.")]
 	#[must_use]
 	/// # AccurateRip Checksum URL.
 	///
@@ -180,18 +183,22 @@ impl AccurateRip {
 	/// );
 	/// ```
 	pub fn checksum_url(&self) -> String {
-		let disc_id = self.to_string();
-		[
-			"http://www.accuraterip.com/accuraterip/",
-			&disc_id[11..12],
-			"/",
-			&disc_id[10..11],
-			"/",
-			&disc_id[9..10],
-			"/dBAR-",
-			&disc_id,
-			".bin",
-		].concat()
+		// First things first, build the disc ID.
+		let disc_id = self.encode();
+		debug_assert!(disc_id.is_ascii(), "Bug: AccurateRip ID is not ASCII?!");
+
+		let mut out = String::with_capacity(84);
+		out.push_str("http://www.accuraterip.com/accuraterip/");
+		out.push(char::from(disc_id[11]));
+		out.push('/');
+		out.push(char::from(disc_id[10]));
+		out.push('/');
+		out.push(char::from(disc_id[9]));
+		out.push_str("/dBAR-");
+		// Safety: all bytes are ASCII.
+		out.push_str(unsafe { std::str::from_utf8_unchecked(disc_id.as_slice()) });
+		out.push_str(".bin");
+		out
 	}
 
 	#[must_use]
@@ -436,10 +443,36 @@ impl AccurateRip {
 		faster_hex::hex_encode_fallback(&[self.0[8], self.0[7], self.0[6], self.0[5]], &mut out[13..21]);
 		faster_hex::hex_encode_fallback(&[self.0[12], self.0[11], self.0[10], self.0[9]], &mut out[22..]);
 
-		debug_assert!(out.is_ascii(), "Bug: AccurateRip checksum is not ASCII?!");
+		debug_assert!(out.is_ascii(), "Bug: AccurateRip ID is not ASCII?!");
 
 		// Safety: all bytes are ASCII.
 		unsafe { String::from_utf8_unchecked(out) }
+	}
+}
+
+impl AccurateRip {
+	#[inline]
+	/// # Encode to Buffer.
+	///
+	/// Format the AccurateRip ID for display, returning the bytes as a
+	/// fixed-length array.
+	fn encode(&self) -> [u8; 30] {
+		let mut disc_id: [u8; 30] = [
+			b'0', b'0', b'0',
+			b'-', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0',
+			b'-', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0',
+			b'-', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0',
+		];
+
+		// Length.
+		disc_id[..3].copy_from_slice(dactyl::NiceU8::from(self.0[0]).as_bytes3());
+
+		// ID Parts.
+		faster_hex::hex_encode_fallback(&[self.0[4], self.0[3], self.0[2], self.0[1]], &mut disc_id[4..12]);
+		faster_hex::hex_encode_fallback(&[self.0[8], self.0[7], self.0[6], self.0[5]], &mut disc_id[13..21]);
+		faster_hex::hex_encode_fallback(&[self.0[12], self.0[11], self.0[10], self.0[9]], &mut disc_id[22..]);
+
+		disc_id
 	}
 }
 
