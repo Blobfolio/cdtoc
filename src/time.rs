@@ -459,14 +459,18 @@ impl Duration {
 	pub fn to_string_pretty(self) -> String {
 		let (d, h, m, s, f) = self.dhmsf();
 		let mut parts: Vec<String> = Vec::new();
-		if d != 0 { parts.push(d.nice_inflect("day", "days")); }
+
+		// Days work the same way as the other parts, but have a different
+		// integer type.
+		if d != 0 { parts.push(d.nice_inflect("day", "days").to_string()); }
+
 		for (num, single, plural) in [
 			(h, "hour", "hours"),
 			(m, "minute", "minutes"),
 			(s, "second", "seconds"),
 			(f, "frame", "frames"),
 		] {
-			if num != 0 { parts.push(num.nice_inflect(single, plural)); }
+			if num != 0 { parts.push(num.nice_inflect(single, plural).to_string()); }
 		}
 
 		match parts.len() {
