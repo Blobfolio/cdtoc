@@ -191,7 +191,7 @@ impl<'de> Deserialize<'de> for TrackPosition {
 		/// # Visitor Instance.
 		struct Visitor;
 
-		impl<'de> de::Visitor<'de> for Visitor {
+		impl de::Visitor<'_> for Visitor {
 			type Value = TrackPosition;
 
 			fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
