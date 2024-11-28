@@ -2,6 +2,18 @@
 
 
 
+## [0.5.3](https://github.com/Blobfolio/cdtoc/releases/tag/v0.5.3) - 2024-11-28
+
+### Changed
+
+* Bump `brunch` to `0.7` (dev)
+* Bump `dactyl` to `0.8`
+* Bump `trimothy` to `0.6`
+* Reduce intermediary allocations for AccurateRip::to_string, ::checksum_url
+* Miscellaneous code changes and lints
+
+
+
 ## [0.5.2](https://github.com/Blobfolio/cdtoc/releases/tag/v0.5.2) - 2024-11-07
 
 ### Changed
