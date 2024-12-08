@@ -2,6 +2,16 @@
 
 
 
+## [0.6.0](https://github.com/Blobfolio/cdtoc/releases/tag/v0.6.0) - TBD
+
+### Changed
+
+* Bump `brunch` to `0.8` (dev)
+* Bump `dactyl` to `0.9`
+* Bump MSRV to `1.83`
+
+
+
 ## [0.5.3](https://github.com/Blobfolio/cdtoc/releases/tag/v0.5.3) - 2024-11-28
 
 ### Changed
