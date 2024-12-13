@@ -2,7 +2,7 @@
 
 
 
-## [0.6.0](https://github.com/Blobfolio/cdtoc/releases/tag/v0.6.0) - TBD
+## [0.6.0](https://github.com/Blobfolio/cdtoc/releases/tag/v0.6.0) - 2024-12-13
 
 ### Changed
 
