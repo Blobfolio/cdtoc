@@ -105,7 +105,6 @@ The optional `serde` crate feature can be enabled to expose de/serialization imp
 )]
 
 #![expect(clippy::doc_markdown, reason = "This gets annoying with names like MusicBrainz.")]
-#![expect(clippy::module_name_repetitions, reason = "Repetition is preferred.")]
 
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
