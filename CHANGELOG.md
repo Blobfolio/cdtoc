@@ -2,6 +2,14 @@
 
 
 
+## [0.6.1](https://github.com/Blobfolio/cdtoc/releases/tag/v0.6.1) - 2025-01-09
+
+### Changed
+
+* Miscellaneous code changes and lints
+
+
+
 ## [0.6.0](https://github.com/Blobfolio/cdtoc/releases/tag/v0.6.0) - 2024-12-13
 
 ### Changed

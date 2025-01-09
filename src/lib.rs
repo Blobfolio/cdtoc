@@ -54,25 +54,6 @@ The optional `serde` crate feature can be enabled to expose de/serialization imp
 | [`Toc`] | `String` | |
 | [`Track`] | `Map` | |
 | [`TrackPosition`] | `String` | |
-
-
-
-## Installation
-
-Add `cdtoc` to your `dependencies` in `Cargo.toml`, like:
-
-```ignore,toml
-[dependencies]
-cdtoc = "0.5.*"
-```
-
-The disc ID helpers require additional dependencies, so if you aren't using them, be sure to disable the default features (adding back any you _do_ want) to skip the overhead.
-
-```ignore,toml
-[dependencies.cdtoc]
-version = "0.5.*"
-default-features = false
-```
 */
 
 #![deny(
@@ -124,7 +105,6 @@ default-features = false
 )]
 
 #![expect(clippy::doc_markdown, reason = "This gets annoying with names like MusicBrainz.")]
-#![expect(clippy::module_name_repetitions, reason = "Repetition is preferred.")]
 
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
