@@ -19,6 +19,6 @@ fn main() {
 	benches!(
 		inline:
 		Bench::new("Toc::ctdb_id").run(|| toc.ctdb_id()),
-		Bench::new("ShaB64::pretty_print").run(|| ctdb_id.pretty_print()),
+		Bench::new("ShaB64::to_string").run(|| ctdb_id.to_string()),
 	);
 }

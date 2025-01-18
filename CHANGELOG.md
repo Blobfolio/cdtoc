@@ -2,6 +2,20 @@
 
 
 
+## [0.7.0](https://github.com/Blobfolio/cdtoc/releases/tag/v0.7.0) - TBD
+
+### New
+
+* `Toc::ctdb_url`
+* `Toc::musicbrainz_url`
+
+### Removed
+
+* `AccurateRip::pretty_print`
+* `ShaB64::pretty_print`
+
+
+
 ## [0.6.1](https://github.com/Blobfolio/cdtoc/releases/tag/v0.6.1) - 2025-01-09
 
 ### Changed

@@ -37,10 +37,6 @@ impl Toc {
 	///     toc.musicbrainz_id().to_string(),
 	///     "nljDXdC8B_pDwbdY1vZJvdrAZI4-",
 	/// );
-	/// assert_eq!(
-	///     toc.musicbrainz_id().pretty_print(),
-	///     "nljDXdC8B_pDwbdY1vZJvdrAZI4-",
-	/// );
 	/// ```
 	pub fn musicbrainz_id(&self) -> ShaB64 {
 		use sha1::Digest;
@@ -98,6 +94,31 @@ impl Toc {
 		// Run it through base64 and we're done!
 		ShaB64::from(sha)
 	}
+
+	#[cfg_attr(docsrs, doc(cfg(feature = "musicbrainz")))]
+	#[must_use]
+	/// # MusicBrainz URL.
+	///
+	/// This URL can be visited in a web browser to view the details for the
+	/// disc (if it is present in the database).
+	///
+	/// ## Examples
+	///
+	/// ```
+	/// use cdtoc::Toc;
+	///
+	/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
+	/// assert_eq!(
+	///     toc.musicbrainz_url(),
+	///     "https://musicbrainz.org/cdtoc/nljDXdC8B_pDwbdY1vZJvdrAZI4-",
+	/// );
+	/// ```
+	pub fn musicbrainz_url(&self) -> String {
+		let mut out = String::with_capacity(58);
+		out.push_str("https://musicbrainz.org/cdtoc/");
+		self.musicbrainz_id().push_to_string(&mut out);
+		out
+	}
 }
 
 
@@ -137,7 +158,6 @@ mod tests {
 			let toc = Toc::from_cdtoc(t).expect("Invalid TOC");
 			let mb_id = toc.musicbrainz_id();
 			assert_eq!(mb_id.to_string(), id);
-			assert_eq!(mb_id.pretty_print(), id);
 
 			// Test decoding three ways.
 			assert_eq!(ShaB64::decode(id), Ok(mb_id));

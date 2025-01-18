@@ -100,11 +100,12 @@ impl Toc {
 
 	#[cfg_attr(docsrs, doc(cfg(feature = "ctdb")))]
 	#[must_use]
-	/// # CUETools Database Checksum URL.
+	/// # CUETools Database URL.
 	///
-	/// This returns the URL where you can download the checksums for the disc,
-	/// provided it is actually _in_ the CTDB. (If it isn't, their server will
-	/// return a `404` or empty XML document.)
+	/// This URL can be visited in a web browser to view the details for the
+	/// disc (if it is present in the database).
+	///
+	/// See also: [`Toc::ctdb_checksum_url`]
 	///
 	/// ## Examples
 	///
@@ -112,6 +113,37 @@ impl Toc {
 	/// use cdtoc::Toc;
 	///
 	/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
+	///
+	/// // Note: the CUETools website lacks SSL/TLS support.
+	/// assert_eq!(
+	///     toc.ctdb_url(),
+	///     "http://db.cuetools.net/?tocid=VukMWWItblELRM.CEFpXxw0FlME-",
+	/// );
+	/// ```
+	pub fn ctdb_url(&self) -> String {
+		let mut out = String::with_capacity(58);
+		out.push_str("http://db.cuetools.net/?tocid=");
+		self.ctdb_id().push_to_string(&mut out);
+		out
+	}
+
+	#[cfg_attr(docsrs, doc(cfg(feature = "ctdb")))]
+	#[must_use]
+	/// # CUETools Database Checksum URL.
+	///
+	/// This URL can be used to fetch XML-formatted checksums and metadata for
+	/// the disc (if it is present in the database).
+	///
+	/// See also: [`Toc::ctdb_url`]
+	///
+	/// ## Examples
+	///
+	/// ```
+	/// use cdtoc::Toc;
+	///
+	/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
+	///
+	/// // Note: the CUETools website lacks SSL/TLS support.
 	/// assert_eq!(
 	///     toc.ctdb_checksum_url(),
 	///     "http://db.cuetools.net/lookup2.php?version=3&ctdb=1&fuzzy=1&toc=0:11413:25024:45713:55220",
@@ -260,7 +292,6 @@ mod tests {
 			let toc = Toc::from_cdtoc(t).expect("Invalid TOC");
 			let ctdb_id = toc.ctdb_id();
 			assert_eq!(ctdb_id.to_string(), id);
-			assert_eq!(ctdb_id.pretty_print(), id);
 			assert_eq!(toc.ctdb_checksum_url(), lookup);
 
 			// Test decoding three ways.

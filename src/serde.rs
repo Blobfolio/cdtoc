@@ -74,13 +74,13 @@ macro_rules! serialize_with {
 
 
 #[cfg(feature = "accuraterip")] deserialize_str_with!(AccurateRip, decode);
-#[cfg(feature = "accuraterip")] serialize_with!(AccurateRip, pretty_print);
+#[cfg(feature = "accuraterip")] serialize_with!(AccurateRip, to_string);
 
 #[cfg(feature = "cddb")] deserialize_str_with!(Cddb, decode);
 #[cfg(feature = "cddb")] serialize_with!(Cddb, to_string);
 
 #[cfg(feature = "sha1")] deserialize_str_with!(ShaB64, decode);
-#[cfg(feature = "sha1")] serialize_with!(ShaB64, pretty_print);
+#[cfg(feature = "sha1")] serialize_with!(ShaB64, to_string);
 
 deserialize_str_with!(Toc, from_cdtoc);
 serialize_with!(Toc, to_string);
