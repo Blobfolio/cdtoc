@@ -2,10 +2,12 @@
 
 
 
-## [0.7.0](https://github.com/Blobfolio/cdtoc/releases/tag/v0.7.0) - TBD
+## [0.7.0](https://github.com/Blobfolio/cdtoc/releases/tag/v0.7.0) - 2025-02-20
 
 ### New
 
+* Bump MSRV `1.85`
+* Bump edition `2024`
 * `Toc::ctdb_url`
 * `Toc::musicbrainz_url`
 
