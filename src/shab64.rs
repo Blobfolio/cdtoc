@@ -21,18 +21,35 @@ use std::{
 /// This struct holds ID data for MusicBrainz and CTDB consisting of a binary
 /// sha1 hash encoded with an almost-but-not-quite standard base64 alphabet.
 ///
-/// String formatting is deferred until `ShaB64::to_string` or
-/// [`ShaB64::pretty_print`] are called, allowing for a slightly smaller and
-/// `copy`-friendly footprint.
+/// String formatting is deferred until [`fmt::Display`], allowing for a
+/// slightly smaller and `Copy`-friendly footprint.
 ///
 /// If you already have a stringified copy and want to get back to a `ShaB64`,
 /// you can use [`ShaB64::decode`] or its `FromStr` or `TryFrom<&str>` impls.
 pub struct ShaB64([u8; 20]);
 
 impl fmt::Display for ShaB64 {
-	#[inline]
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		f.pad(&self.pretty_print())
+		// The output will always be 28-bytes, ending with a dash.
+		let mut buf = [b'-'; 28];
+
+		// For all but the last chunk, it's a simple 3:4 ratio.
+		for (raw, dst) in self.0.chunks_exact(3).zip(buf.chunks_exact_mut(4)) {
+			dst[0] = base64_encode(raw[0] >> 2);
+			dst[1] = base64_encode(((raw[0] & 0b0000_0011) << 4) | (raw[1] >> 4));
+			dst[2] = base64_encode(((raw[1] & 0b0000_1111) << 2) | (raw[2] >> 6));
+			dst[3] = base64_encode(raw[2] & 0b0011_1111);
+		}
+
+		// The last byte (27) is always padding, but the three before it still
+		// need figuring.
+		buf[24] = base64_encode(self.0[18] >> 2);
+		buf[25] = base64_encode(((self.0[18] & 0b0000_0011) << 4) | (self.0[19] >> 4));
+		buf[26] = base64_encode((self.0[19] & 0b0000_1111) << 2);
+
+		std::str::from_utf8(buf.as_slice())
+			.map_err(|_| fmt::Error)
+			.and_then(|s| f.pad(s))
 	}
 }
 
@@ -74,9 +91,9 @@ impl ShaB64 {
 				let c = base64_decode(chunk[2])?;
 				let d = base64_decode(chunk[3])?;
 				i.copy_from_slice(&[
-					(a & 0b0011_1111) << 2 | b >> 4,
-					(b & 0b0000_1111) << 4 | c >> 2,
-					(c & 0b0000_0011) << 6 | d & 0b0011_1111,
+					((a & 0b0011_1111) << 2) | (b >> 4),
+					((b & 0b0000_1111) << 4) | (c >> 2),
+					((c & 0b0000_0011) << 6) | d & 0b0011_1111,
 				]);
 			}
 
@@ -84,8 +101,8 @@ impl ShaB64 {
 			let a = base64_decode(src[24])?;
 			let b = base64_decode(src[25])?;
 			let c = base64_decode(src[26])?;
-			out[18] = (a & 0b0011_1111) << 2 | b >> 4;
-			out[19] = (b & 0b0000_1111) << 4 | c >> 2;
+			out[18] = ((a & 0b0011_1111) << 2) | (b >> 4);
+			out[19] = ((b & 0b0000_1111) << 4) | (c >> 2);
 
 			// Done!
 			Ok(Self(out))
@@ -93,38 +110,28 @@ impl ShaB64 {
 		else { Err(TocError::ShaB64Decode) }
 	}
 
-	#[expect(unsafe_code, reason = "For performance.")]
-	#[must_use]
-	/// # Pretty Print.
+	#[inline]
+	/// # Push to String.
 	///
-	/// Return the value has a human-readable string, exactly like `ShaB64::to_string`,
-	/// but slightly faster. The result will always be 28-characters in length.
-	pub fn pretty_print(&self) -> String {
-		let mut out = Vec::with_capacity(28);
-
-		// Handle all the nice 3-byte chunks en masse.
+	/// Unpack and write `self` onto the end of a string without the use of
+	/// any intermediary buffers.
+	pub(crate) fn push_to_string(&self, out: &mut String) {
+		// For all but the last chunk, it's a simple 3:4 ratio.
 		for chunk in self.0.chunks_exact(3) {
-			out.push(base64_encode(chunk[0] >> 2));
-			out.push(base64_encode((chunk[0] & 0b0000_0011) << 4 | chunk[1] >> 4));
-			out.push(base64_encode((chunk[1] & 0b0000_1111) << 2 | chunk[2] >> 6));
-			out.push(base64_encode(chunk[2] & 0b0011_1111));
+			out.push(base64_encode(chunk[0] >> 2) as char);
+			out.push(base64_encode(((chunk[0] & 0b0000_0011) << 4) | (chunk[1] >> 4)) as char);
+			out.push(base64_encode(((chunk[1] & 0b0000_1111) << 2) | (chunk[2] >> 6)) as char);
+			out.push(base64_encode(chunk[2] & 0b0011_1111) as char);
 		}
 
-		// Handle the remainder manually.
-		out.push(base64_encode(self.0[18] >> 2));
-		out.push(base64_encode((self.0[18] & 0b0000_0011) << 4 | self.0[19] >> 4));
-		out.push(base64_encode((self.0[19] & 0b0000_1111) << 2));
+		// The last byte (27) is always padding, but the three before it still
+		// need figuring.
+		out.push(base64_encode(self.0[18] >> 2) as char);
+		out.push(base64_encode(((self.0[18] & 0b0000_0011) << 4) | (self.0[19] >> 4)) as char);
+		out.push(base64_encode((self.0[19] & 0b0000_1111) << 2) as char);
 
 		// And add one byte for padding.
-		out.push(b'-');
-
-		debug_assert!(
-			out.len() == 28 && out.is_ascii(),
-			"Bug: Sha/base64 ID is malformed."
-		);
-
-		// Safety: our alphabet is ASCII.
-		unsafe { String::from_utf8_unchecked(out) }
+		out.push('-');
 	}
 }
 

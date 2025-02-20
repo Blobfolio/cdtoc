@@ -2,6 +2,22 @@
 
 
 
+## [0.7.0](https://github.com/Blobfolio/cdtoc/releases/tag/v0.7.0) - 2025-02-20
+
+### New
+
+* Bump MSRV `1.85`
+* Bump edition `2024`
+* `Toc::ctdb_url`
+* `Toc::musicbrainz_url`
+
+### Removed
+
+* `AccurateRip::pretty_print`
+* `ShaB64::pretty_print`
+
+
+
 ## [0.6.1](https://github.com/Blobfolio/cdtoc/releases/tag/v0.6.1) - 2025-01-09
 
 ### Changed

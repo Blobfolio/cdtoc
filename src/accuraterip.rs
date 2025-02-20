@@ -404,50 +404,6 @@ impl AccurateRip {
 		if out.is_empty() { Err(TocError::NoDriveOffsets) }
 		else { Ok(out) }
 	}
-
-	#[expect(unsafe_code, reason = "For performance.")]
-	#[must_use]
-	/// # Pretty Print.
-	///
-	/// Return a String representation of the disc ID, same as `AccurateRip::to_string`,
-	/// but a little faster.
-	///
-	/// ## Examples
-	///
-	/// ```
-	/// use cdtoc::Toc;
-	///
-	/// let toc = Toc::from_cdtoc("D+96+4FFB+7F76+BB0A+EF38+12FB3+16134+1BCC4+1EC21+24A6A+272F9+299FA+2CCA6+30EE6").unwrap();
-	/// assert_eq!(
-	///     toc.accuraterip_id().pretty_print(),
-	///     "013-0015deca-00d9b921-9a0a6e0d",
-	/// );
-	/// assert_eq!(
-	///     toc.accuraterip_id().to_string(),
-	///     "013-0015deca-00d9b921-9a0a6e0d",
-	/// );
-	/// ```
-	pub fn pretty_print(&self) -> String {
-		let mut out: Vec<u8> = vec![
-			b'0', b'0', b'0',
-			b'-', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0',
-			b'-', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0',
-			b'-', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0',
-		];
-
-		// Length.
-		out[..3].copy_from_slice(dactyl::NiceU8::from(self.0[0]).as_bytes3());
-
-		// ID Parts.
-		faster_hex::hex_encode_fallback(&[self.0[4], self.0[3], self.0[2], self.0[1]], &mut out[4..12]);
-		faster_hex::hex_encode_fallback(&[self.0[8], self.0[7], self.0[6], self.0[5]], &mut out[13..21]);
-		faster_hex::hex_encode_fallback(&[self.0[12], self.0[11], self.0[10], self.0[9]], &mut out[22..]);
-
-		debug_assert!(out.is_ascii(), "Bug: AccurateRip ID is not ASCII?!");
-
-		// Safety: all bytes are ASCII.
-		unsafe { String::from_utf8_unchecked(out) }
-	}
 }
 
 impl AccurateRip {
@@ -585,7 +541,6 @@ mod tests {
 			let toc = Toc::from_cdtoc(t).expect("Invalid TOC");
 			let ar_id = toc.accuraterip_id();
 			assert_eq!(ar_id.to_string(), id);
-			assert_eq!(ar_id.pretty_print(), id);
 
 			// Test decoding three ways.
 			assert_eq!(AccurateRip::decode(id), Ok(ar_id));
