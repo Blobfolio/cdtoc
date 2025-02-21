@@ -6,8 +6,6 @@
 
 ### New
 
-* Bump MSRV `1.85`
-* Bump edition `2024`
 * `Toc::ctdb_url`
 * `Toc::musicbrainz_url`
 
