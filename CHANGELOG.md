@@ -2,6 +2,15 @@
 
 
 
+## [0.8.0](https://github.com/Blobfolio/cdtoc/releases/tag/v0.8.0) - TBD
+
+### Changed
+
+* Bump MSRV to `1.85`
+* Bump Rust edition to `2024`
+
+
+
 ## [0.7.0](https://github.com/Blobfolio/cdtoc/releases/tag/v0.7.0) - 2025-02-20
 
 ### New
