@@ -2,6 +2,18 @@
 
 
 
+## [0.8.0](https://github.com/Blobfolio/cdtoc/releases/tag/v0.8.0) - 2025-02-25
+
+### Changed
+
+* Bump `brunch` to `0.9` (dev)
+* Bump `dactyl` to `0.10`
+* Bump MSRV to `1.85`
+* Bump Rust edition to `2024`
+* Bump `trimothy` to 0.7
+
+
+
 ## [0.7.0](https://github.com/Blobfolio/cdtoc/releases/tag/v0.7.0) - 2025-02-20
 
 ### New
