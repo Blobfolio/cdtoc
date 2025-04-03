@@ -109,7 +109,7 @@ where u64: From<T> {
 	fn div_assign(&mut self, other: T) {
 		let other = u64::from(other);
 		if other == 0 { self.0 = 0; }
-		else { self.0 = self.0.wrapping_div(other) };
+		else { self.0 = self.0.wrapping_div(other); }
 	}
 }
 

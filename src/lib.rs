@@ -662,6 +662,7 @@ impl Toc {
 	pub fn audio_len(&self) -> usize { self.audio.len() }
 
 	#[must_use]
+	#[expect(clippy::missing_const_for_fn, reason = "False positive.")]
 	/// # Audio Sectors.
 	///
 	/// Return the starting positions of each audio track.
@@ -701,6 +702,7 @@ impl Toc {
 	}
 
 	#[must_use]
+	#[expect(clippy::missing_const_for_fn, reason = "False positive.")]
 	/// # Audio Tracks.
 	///
 	/// Return an iterator of [`Track`] details covering the whole album.
