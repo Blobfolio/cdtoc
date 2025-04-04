@@ -84,7 +84,7 @@ impl fmt::Display for AccurateRip {
 		let disc_id = self.encode();
 		std::str::from_utf8(disc_id.as_slice())
 			.map_err(|_| fmt::Error)
-			.and_then(|s| f.pad(s))
+			.and_then(|s| <str as fmt::Display>::fmt(s, f))
 	}
 }
 

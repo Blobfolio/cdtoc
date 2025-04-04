@@ -254,7 +254,7 @@ impl fmt::Display for Toc {
 		out.make_ascii_uppercase();
 		std::str::from_utf8(&out)
 			.map_err(|_| fmt::Error)
-			.and_then(|s| f.write_str(s))
+			.and_then(|s| <str as fmt::Display>::fmt(s, f))
 	}
 }
 
@@ -962,7 +962,9 @@ pub enum TocKind {
 
 impl fmt::Display for TocKind {
 	#[inline]
-	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { f.pad(self.as_str()) }
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		<str as fmt::Display>::fmt(self.as_str(), f)
+	}
 }
 
 impl TocKind {
