@@ -222,6 +222,7 @@ impl Duration {
 	/// by `588`, the number of samples-per-sector for a standard audio CD.
 	pub const fn from_cdda_samples(total_samples: u64) -> Result<Self, TocError> {
 		let out = total_samples.wrapping_div(SAMPLES_PER_SECTOR);
+		// TODO: use is_multiple_of once stable
 		if total_samples % SAMPLES_PER_SECTOR == 0 { Ok(Self(out)) }
 		else { Err(TocError::CDDASampleCount) }
 	}
