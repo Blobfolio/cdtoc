@@ -662,7 +662,6 @@ impl Toc {
 	pub fn audio_len(&self) -> usize { self.audio.len() }
 
 	#[must_use]
-	#[expect(clippy::missing_const_for_fn, reason = "False positive.")]
 	/// # Audio Sectors.
 	///
 	/// Return the starting positions of each audio track.
@@ -675,7 +674,7 @@ impl Toc {
 	/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
 	/// assert_eq!(toc.audio_sectors(), &[150, 11563, 25174, 45863]);
 	/// ```
-	pub fn audio_sectors(&self) -> &[u32] { &self.audio }
+	pub fn audio_sectors(&self) -> &[u32] { self.audio.as_slice() }
 
 	#[expect(clippy::cast_possible_truncation, reason = "False positive.")]
 	#[must_use]
@@ -702,12 +701,11 @@ impl Toc {
 	}
 
 	#[must_use]
-	#[expect(clippy::missing_const_for_fn, reason = "False positive.")]
 	/// # Audio Tracks.
 	///
 	/// Return an iterator of [`Track`] details covering the whole album.
 	pub fn audio_tracks(&self) -> Tracks<'_> {
-		Tracks::new(&self.audio, self.audio_leadout())
+		Tracks::new(self.audio.as_slice(), self.audio_leadout())
 	}
 
 	#[must_use]
