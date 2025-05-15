@@ -252,6 +252,7 @@ impl Track {
 ///
 /// It is the return value of [`Toc::audio_tracks`](crate::Toc::audio_tracks).
 pub struct Tracks<'a> {
+	#[expect(clippy::struct_field_names, reason = "They're tracks!")]
 	/// # All Tracks.
 	tracks: &'a [u32],
 

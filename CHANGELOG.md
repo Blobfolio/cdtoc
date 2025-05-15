@@ -2,6 +2,19 @@
 
 
 
+## [0.9.0](https://github.com/Blobfolio/cdtoc/releases/tag/v0.9.0) - 2025-05-15
+
+### Changed
+
+* Bump `brunch` to `0.10` (dev)
+* Bump MSRV to `1.87`
+* `Toc::audio_len` is now const
+* `Toc::audio_sectors` is now const
+* `Toc::audio_tracks` is now const
+* Miscellaneous code cleanup and lints
+
+
+
 ## [0.8.1](https://github.com/Blobfolio/cdtoc/releases/tag/v0.8.1) - 2025-04-03
 
 ### Changed

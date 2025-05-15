@@ -53,7 +53,7 @@ impl fmt::Display for Cddb {
 		faster_hex::hex_encode_fallback(self.0.to_be_bytes().as_slice(), &mut buf);
 		std::str::from_utf8(buf.as_slice())
 			.map_err(|_| fmt::Error)
-			.and_then(|s| f.pad(s))
+			.and_then(|s| <str as fmt::Display>::fmt(s, f))
 	}
 }
 

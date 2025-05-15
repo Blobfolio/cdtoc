@@ -254,7 +254,7 @@ impl fmt::Display for Toc {
 		out.make_ascii_uppercase();
 		std::str::from_utf8(&out)
 			.map_err(|_| fmt::Error)
-			.and_then(|s| f.write_str(s))
+			.and_then(|s| <str as fmt::Display>::fmt(s, f))
 	}
 }
 
@@ -659,10 +659,9 @@ impl Toc {
 	/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
 	/// assert_eq!(toc.audio_len(), 4);
 	/// ```
-	pub fn audio_len(&self) -> usize { self.audio.len() }
+	pub const fn audio_len(&self) -> usize { self.audio.len() }
 
 	#[must_use]
-	#[expect(clippy::missing_const_for_fn, reason = "False positive.")]
 	/// # Audio Sectors.
 	///
 	/// Return the starting positions of each audio track.
@@ -675,7 +674,7 @@ impl Toc {
 	/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
 	/// assert_eq!(toc.audio_sectors(), &[150, 11563, 25174, 45863]);
 	/// ```
-	pub fn audio_sectors(&self) -> &[u32] { &self.audio }
+	pub const fn audio_sectors(&self) -> &[u32] { self.audio.as_slice() }
 
 	#[expect(clippy::cast_possible_truncation, reason = "False positive.")]
 	#[must_use]
@@ -702,12 +701,11 @@ impl Toc {
 	}
 
 	#[must_use]
-	#[expect(clippy::missing_const_for_fn, reason = "False positive.")]
 	/// # Audio Tracks.
 	///
 	/// Return an iterator of [`Track`] details covering the whole album.
-	pub fn audio_tracks(&self) -> Tracks<'_> {
-		Tracks::new(&self.audio, self.audio_leadout())
+	pub const fn audio_tracks(&self) -> Tracks<'_> {
+		Tracks::new(self.audio.as_slice(), self.audio_leadout())
 	}
 
 	#[must_use]
@@ -962,7 +960,9 @@ pub enum TocKind {
 
 impl fmt::Display for TocKind {
 	#[inline]
-	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { f.pad(self.as_str()) }
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		<str as fmt::Display>::fmt(self.as_str(), f)
+	}
 }
 
 impl TocKind {
