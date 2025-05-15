@@ -659,7 +659,7 @@ impl Toc {
 	/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
 	/// assert_eq!(toc.audio_len(), 4);
 	/// ```
-	pub fn audio_len(&self) -> usize { self.audio.len() }
+	pub const fn audio_len(&self) -> usize { self.audio.len() }
 
 	#[must_use]
 	/// # Audio Sectors.
@@ -674,7 +674,7 @@ impl Toc {
 	/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
 	/// assert_eq!(toc.audio_sectors(), &[150, 11563, 25174, 45863]);
 	/// ```
-	pub fn audio_sectors(&self) -> &[u32] { self.audio.as_slice() }
+	pub const fn audio_sectors(&self) -> &[u32] { self.audio.as_slice() }
 
 	#[expect(clippy::cast_possible_truncation, reason = "False positive.")]
 	#[must_use]
@@ -704,7 +704,7 @@ impl Toc {
 	/// # Audio Tracks.
 	///
 	/// Return an iterator of [`Track`] details covering the whole album.
-	pub fn audio_tracks(&self) -> Tracks<'_> {
+	pub const fn audio_tracks(&self) -> Tracks<'_> {
 		Tracks::new(self.audio.as_slice(), self.audio_leadout())
 	}
 
