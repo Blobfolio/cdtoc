@@ -4,7 +4,7 @@
 [![changelog](https://img.shields.io/crates/v/cdtoc.svg?style=flat-square&label=changelog&color=9b59b6)](https://github.com/Blobfolio/cdtoc/blob/master/CHANGELOG.md)<br>
 [![crates.io](https://img.shields.io/crates/v/cdtoc.svg?style=flat-square&label=crates.io)](https://crates.io/crates/cdtoc)
 [![ci](https://img.shields.io/github/actions/workflow/status/Blobfolio/cdtoc/ci.yaml?label=ci&style=flat-square)](https://github.com/Blobfolio/cdtoc/actions)
-[![deps.rs](https://deps.rs/repo/github/blobfolio/cdtoc/status.svg?style=flat-square&label=deps.rs)](https://deps.rs/repo/github/blobfolio/cdtoc)<br>
+[![deps.rs](https://deps.rs/crate/cdtoc/latest/status.svg?style=flat-square&label=deps.rs)](https://deps.rs/crate/cdtoc/)<br>
 [![license](https://img.shields.io/badge/license-wtfpl-ff1493?style=flat-square)](https://en.wikipedia.org/wiki/WTFPL)
 [![contributions welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square&label=contributions)](https://github.com/Blobfolio/cdtoc/issues)
 
