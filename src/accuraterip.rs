@@ -71,7 +71,7 @@ pub struct AccurateRip([u8; 13]);
 
 impl AsRef<[u8]> for AccurateRip {
 	#[inline]
-	fn as_ref(&self) -> &[u8] { &self.0 }
+	fn as_ref(&self) -> &[u8] { self.0.as_slice() }
 }
 
 impl From<AccurateRip> for [u8; 13] {
