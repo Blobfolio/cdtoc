@@ -62,13 +62,13 @@ Add `cdtoc` to your `dependencies` in `Cargo.toml`, like:
 
 ```toml
 [dependencies]
-cdtoc = "0.8.*"
+cdtoc = "0.9.*"
 ```
 
 The disc ID helpers require additional dependencies, so if you aren't using them, be sure to disable the default features (adding back any you _do_ want) to skip the overhead.
 
 ```toml
 [dependencies.cdtoc]
-version = "0.8.*"
+version = "0.9.*"
 default-features = false
 ```

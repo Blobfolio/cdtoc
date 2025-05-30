@@ -1,16 +1,16 @@
 # Project Dependencies
     Package:   cdtoc
-    Version:   0.9.0
-    Generated: 2025-05-15 20:33:04 UTC
+    Version:   0.9.1
+    Generated: 2025-05-30 19:44:59 UTC
 
 | Package | Version | Author(s) | License |
 | ---- | ---- | ---- | ---- |
-| [**dactyl**](https://github.com/Blobfolio/dactyl) | 0.10.2 | [Josh Stoik](mailto:josh@blobfolio.com) | WTFPL |
+| [**dactyl**](https://github.com/Blobfolio/dactyl) | 0.11.0 | [Josh Stoik](mailto:josh@blobfolio.com) | WTFPL |
 | [**faster-hex**](https://github.com/NervosFoundation/faster-hex) | 0.10.0 | [zhangsoledad](mailto:787953403@qq.com) | MIT |
 | [**trimothy**](https://github.com/Blobfolio/trimothy) | 0.7.0 | [Josh Stoik](mailto:josh@blobfolio.com) | WTFPL |
 | [_block-buffer_](https://github.com/RustCrypto/utils) | 0.10.4 | RustCrypto Developers | MIT OR Apache-2.0 |
 | [_byteorder_](https://github.com/BurntSushi/byteorder) | 1.5.0 | [Andrew Gallant](mailto:jamslam@gmail.com) | Unlicense OR MIT |
-| [_cc_](https://github.com/rust-lang/cc-rs) ⚒️ | 1.2.22 | [Alex Crichton](mailto:alex@alexcrichton.com) | MIT OR Apache-2.0 |
+| [_cc_](https://github.com/rust-lang/cc-rs) ⚒️ | 1.2.25 | [Alex Crichton](mailto:alex@alexcrichton.com) | MIT OR Apache-2.0 |
 | [_cfg-if_](https://github.com/alexcrichton/cfg-if) | 1.0.0 | [Alex Crichton](mailto:alex@alexcrichton.com) | MIT OR Apache-2.0 |
 | [_cpufeatures_](https://github.com/RustCrypto/utils) | 0.2.17 | RustCrypto Developers | MIT OR Apache-2.0 |
 | [_crypto-common_](https://github.com/RustCrypto/traits) | 0.1.6 | RustCrypto Developers | MIT OR Apache-2.0 |
