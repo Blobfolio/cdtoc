@@ -588,7 +588,11 @@ impl Toc {
 	/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
 	/// assert_eq!(toc.audio_leadin(), 150);
 	/// ```
-	pub fn audio_leadin(&self) -> u32 { self.audio[0] }
+	pub const fn audio_leadin(&self) -> u32 {
+		if let [ out, .. ] = self.audio.as_slice() { *out }
+		// This isn't actually reachable.
+		else { 150 }
+	}
 
 	#[must_use]
 	/// # Normalized Audio Leadin.
@@ -605,7 +609,7 @@ impl Toc {
 	/// assert_eq!(toc.audio_leadin(), 150);
 	/// assert_eq!(toc.audio_leadin_normalized(), 0);
 	/// ```
-	pub fn audio_leadin_normalized(&self) -> u32 { self.audio[0] - 150 }
+	pub const fn audio_leadin_normalized(&self) -> u32 { self.audio_leadin() - 150 }
 
 	#[must_use]
 	/// # Audio Leadout.
@@ -807,7 +811,7 @@ impl Toc {
 	/// // Their ranges are normal, though.
 	/// assert_eq!(htoa.sector_range(), 150..9342);
 	/// ```
-	pub fn htoa(&self) -> Option<Track> {
+	pub const fn htoa(&self) -> Option<Track> {
 		let leadin = self.audio_leadin();
 		if leadin == 150 || matches!(self.kind, TocKind::DataFirst) { None }
 		else {
@@ -856,9 +860,9 @@ impl Toc {
 	/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
 	/// assert_eq!(toc.leadin(), 150);
 	/// ```
-	pub fn leadin(&self) -> u32 {
+	pub const fn leadin(&self) -> u32 {
 		if matches!(self.kind, TocKind::DataFirst) { self.data }
-		else { self.audio[0] }
+		else { self.audio_leadin() }
 	}
 
 	#[must_use]
@@ -876,9 +880,8 @@ impl Toc {
 	/// assert_eq!(toc.leadin(), 150);
 	/// assert_eq!(toc.leadin_normalized(), 0);
 	/// ```
-	pub fn leadin_normalized(&self) -> u32 {
-		if matches!(self.kind, TocKind::DataFirst) { self.data.saturating_sub(150) }
-		else { self.audio[0] - 150 }
+	pub const fn leadin_normalized(&self) -> u32 {
+		self.leadin().saturating_sub(150)
 	}
 
 	#[must_use]
@@ -930,8 +933,8 @@ impl Toc {
 	///     toc.audio_tracks().map(|t| t.duration()).sum(),
 	/// );
 	/// ```
-	pub fn duration(&self) -> Duration {
-		Duration::from(self.audio_leadout() - self.audio_leadin())
+	pub const fn duration(&self) -> Duration {
+		Duration((self.audio_leadout() - self.audio_leadin()) as u64)
 	}
 }
 
