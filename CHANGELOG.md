@@ -6,6 +6,7 @@
 
 ### Changed
 
+* Bump `dactyl` to `0.12`
 * `Duration::to_f64_lossy` is now const
 * `Duration::to_std_duration_lossy` is now const
 * `Toc::audio_leadin` is now const
