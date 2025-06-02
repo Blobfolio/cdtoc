@@ -386,14 +386,14 @@ impl Duration {
 	///     115.05333333333333,
 	/// );
 	/// ```
-	pub fn to_f64_lossy(self) -> f64 {
+	pub const fn to_f64_lossy(self) -> f64 {
 		// Most durations will probably fit within `u32`, which converts
 		// cleanly.
 		if self.0 <= 4_294_967_295 { self.0 as f64 / 75.0 }
 		// Otherwise let's try to do it in parts and hope for the best.
 		else {
 			let (s, f) = self.seconds_frames();
-			s as f64 + f64::from(f) / 75.0
+			s as f64 + ((f as f64) / 75.0)
 		}
 	}
 
@@ -417,18 +417,18 @@ impl Duration {
 	///     115_053_333_333,
 	/// );
 	/// ```
-	pub fn to_std_duration_lossy(self) -> time::Duration {
+	pub const fn to_std_duration_lossy(self) -> time::Duration {
 		// There are 1_000_000_000 nanoseconds per 75 sectors. Reducing this to
 		// 40_000_000:3 leaves less chance of temporary overflow.
-		self.0.checked_mul(40_000_000)
-			.map_or_else(
-				|| {
-					let (s, f) = self.seconds_frames();
-					time::Duration::from_secs(s) +
-					time::Duration::from_nanos((u64::from(f) * 40_000_000).wrapping_div(3))
-				},
-				|n| time::Duration::from_nanos(n.wrapping_div(3)),
+		if let Some(n) = self.0.checked_mul(40_000_000) {
+			time::Duration::from_nanos(n.wrapping_div(3))
+		}
+		else {
+			let (s, f) = self.seconds_frames();
+			time::Duration::from_secs(s).saturating_add(
+				time::Duration::from_nanos((f as u64 * 40_000_000).wrapping_div(3))
 			)
+		}
 	}
 
 	#[expect(clippy::many_single_char_names, reason = "Consistency is preferred.")]

@@ -2,6 +2,23 @@
 
 
 
+## [0.10.0](https://github.com/Blobfolio/cdtoc/releases/tag/v0.10.0) - 2025-06-01
+
+### Changed
+
+* Bump `dactyl` to `0.12`
+* Bump `trimothy` to `0.8`
+* `Duration::to_f64_lossy` is now const
+* `Duration::to_std_duration_lossy` is now const
+* `Toc::audio_leadin` is now const
+* `Toc::audio_leadin_normalized` is now const
+* `Toc::duration` is now const
+* `Toc::htoa` is now const
+* `Toc::leadin` is now const
+* `Toc::leadin_normalized` is now const
+
+
+
 ## [0.9.1](https://github.com/Blobfolio/cdtoc/releases/tag/v0.9.1) - 2025-05-30
 
 ### Changed
