@@ -57,6 +57,7 @@ impl Toc {
 
 		// Process the sector positions in batches of four to leverage SSE hex
 		// optimizations.
+		// TODO: use slice_as_chunks when stable.
 		let sectors = self.audio_sectors();
 		let len = sectors.len();
 		let rem = len % CHUNK_SIZE;

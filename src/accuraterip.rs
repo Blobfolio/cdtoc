@@ -308,6 +308,7 @@ impl AccurateRip {
 		let chunk_size = 13 + 9 * audio_len;
 		let mut out: Vec<BTreeMap<u32, u8>> = vec![BTreeMap::default(); audio_len];
 
+		// TODO: use slice_as_chunks when stable.
 		for chunk in bin.chunks_exact(chunk_size) {
 			// Verify the chunk begins with the disc ID, and get to the meat.
 			let chunk = chunk.strip_prefix(&self.0).ok_or(TocError::Checksums)?;
@@ -359,6 +360,7 @@ impl AccurateRip {
 		// Entries come in blocks of 69 bytes. The first two bytes hold the
 		// little-endian offset; the next 32 hold the vendor/model; the rest
 		// we can ignore!
+		// TODO: use slice_as_chunks when stable.
 		let mut out = BTreeMap::default();
 		for chunk in raw.chunks_exact(BLOCK_SIZE) {
 			// The offset is easy!

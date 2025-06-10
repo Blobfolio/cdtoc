@@ -54,6 +54,7 @@ impl Toc {
 
 		// Process the sector positions in batches of four to leverage SSE hex
 		// optimizations.
+		// TODO: use slice_as_chunks when stable.
 		for v in sectors.chunks_exact(CHUNK_SIZE) {
 			// Copy the values to the source buffer.
 			for (s_chunk, v) in src.chunks_exact_mut(4).zip(v.iter().map(|n| n - leadin)) {
