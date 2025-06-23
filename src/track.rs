@@ -297,6 +297,8 @@ impl ExactSizeIterator for Tracks<'_> {
 	fn len(&self) -> usize { self.tracks.len().saturating_sub(self.pos) }
 }
 
+impl std::iter::FusedIterator for Tracks<'_> {}
+
 impl<'a> Tracks<'a> {
 	/// # New.
 	pub(super) const fn new(tracks: &'a [u32], leadout: u32) -> Self {

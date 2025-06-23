@@ -2,6 +2,14 @@
 
 
 
+## [0.10.1](https://github.com/Blobfolio/cdtoc/releases/tag/v0.10.1) - TBD
+
+### Changed
+
+* Impl `FusedIterator` for `Tracks`
+
+
+
 ## [0.10.0](https://github.com/Blobfolio/cdtoc/releases/tag/v0.10.0) - 2025-06-01
 
 ### Changed
