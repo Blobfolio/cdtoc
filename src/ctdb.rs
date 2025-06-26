@@ -49,13 +49,11 @@ impl Toc {
 
 		// Split the leadin from the rest of the sectors.
 		let [leadin, sectors @ ..] = self.audio_sectors() else { unreachable!() };
-		let len = sectors.len();
-		let rem = len % CHUNK_SIZE;
 
 		// Process the sector positions in batches of four to leverage SSE hex
 		// optimizations.
-		// TODO: use slice_as_chunks when stable.
-		for v in sectors.chunks_exact(CHUNK_SIZE) {
+		let (chunks, rest) = sectors.as_chunks::<CHUNK_SIZE>();
+		for v in chunks {
 			// Copy the values to the source buffer.
 			for (s_chunk, v) in src.chunks_exact_mut(4).zip(v.iter().map(|n| n - leadin)) {
 				s_chunk.copy_from_slice(v.to_be_bytes().as_slice());
@@ -68,7 +66,7 @@ impl Toc {
 		}
 
 		// Handle the remaining sectors, if any, and the leadout.
-		if rem == 0 {
+		if rest.is_empty() {
 			let dst2 = &mut dst[..8];
 			faster_hex::hex_encode_fallback((self.audio_leadout() - leadin).to_be_bytes().as_slice(), dst2);
 			dst2.make_ascii_uppercase();
@@ -77,14 +75,14 @@ impl Toc {
 		else {
 			// Copy the values to the source buffer.
 			for (s_chunk, v) in src.chunks_exact_mut(4).zip(
-				sectors[len - rem..].iter().map(|n| n - leadin)
+				rest.iter().map(|n| n - leadin)
 					.chain(std::iter::once(self.audio_leadout() - leadin))
 			) {
 				s_chunk.copy_from_slice(v.to_be_bytes().as_slice());
 			}
 
 			// Encode and hash, en masse.
-			let src_to = rem * 4 + 4;
+			let src_to = rest.len() * 4 + 4;
 			let dst2 = &mut dst[..src_to * 2];
 			faster_hex::hex_encode(&src[..src_to], dst2).unwrap();
 			dst2.make_ascii_uppercase();
@@ -92,7 +90,7 @@ impl Toc {
 		}
 
 		// And padding for a total of 99 tracks.
-		let padding = 99 - len;
+		let padding = 99 - sectors.len();
 		if padding != 0 { sha.update(&crate::ZEROES[..padding * 8]); }
 
 		// Run it through base64 and we're done!

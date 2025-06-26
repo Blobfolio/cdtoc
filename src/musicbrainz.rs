@@ -57,11 +57,9 @@ impl Toc {
 
 		// Process the sector positions in batches of four to leverage SSE hex
 		// optimizations.
-		// TODO: use slice_as_chunks when stable.
 		let sectors = self.audio_sectors();
-		let len = sectors.len();
-		let rem = len % CHUNK_SIZE;
-		for v in sectors.chunks_exact(CHUNK_SIZE) {
+		let (chunks, rest) = sectors.as_chunks::<CHUNK_SIZE>();
+		for v in chunks {
 			// Copy the values to the source buffer.
 			for (s_chunk, v) in src.chunks_exact_mut(4).zip(v) {
 				s_chunk.copy_from_slice(v.to_be_bytes().as_slice());
@@ -74,14 +72,14 @@ impl Toc {
 		}
 
 		// Handle the remaining sectors, if any,
-		if rem != 0 {
+		if ! rest.is_empty() {
 			// Copy the values to the source buffer.
-			for (s_chunk, v) in src.chunks_exact_mut(4).zip(sectors[len - rem..].iter()) {
+			for (s_chunk, v) in src.chunks_exact_mut(4).zip(rest.iter()) {
 				s_chunk.copy_from_slice(v.to_be_bytes().as_slice());
 			}
 
 			// Encode and hash, en masse.
-			let src_to = rem * 4;
+			let src_to = rest.len() * 4;
 			let dst2 = &mut dst[..src_to * 2];
 			faster_hex::hex_encode_fallback(&src[..src_to], dst2);
 			dst2.make_ascii_uppercase();
