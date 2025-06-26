@@ -5,10 +5,8 @@
 use crate::TocError;
 use dactyl::{
 	NiceElapsed,
-	traits::{
-		IntDivFloat,
-		NiceInflection,
-	},
+	NiceFloat,
+	traits::NiceInflection,
 };
 use std::{
 	fmt,
@@ -260,7 +258,7 @@ impl Duration {
 			let (s, rem) = (total_samples.wrapping_div(sample_rate), total_samples % sample_rate);
 			if rem == 0 { Self(s * SECTORS_PER_SECOND) }
 			else {
-				let f = (rem * 75).div_float(sample_rate)
+				let f = NiceFloat::div_u64(rem * 75, sample_rate)
 					.map_or(0, |f| f.trunc() as u64);
 				Self(s * SECTORS_PER_SECOND + f)
 			}
