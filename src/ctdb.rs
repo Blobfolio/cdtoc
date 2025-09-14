@@ -132,31 +132,36 @@ impl Toc {
 	/// );
 	/// ```
 	pub fn ctdb_checksum_url(&self) -> String {
-		let mut url = "http://db.cuetools.net/lookup2.php?version=3&ctdb=1&fuzzy=1&toc=".to_owned();
-		let mut buf = itoa::Buffer::new();
+		// We can't efficiently precalculate the exact size, but the next
+		// power-of-two isn't too far away, so we might as well start there.
+		let mut url = String::with_capacity(128);
+		url.push_str("http://db.cuetools.net/lookup2.php?version=3&ctdb=1&fuzzy=1&toc=");
+
+		// Digit buffer.
+		let mut buf = U32DigitBuffer::DEFAULT;
 
 		// Leading data?
 		if matches!(self.kind, TocKind::DataFirst) {
 			url.push('-');
-			url.push_str(buf.format(self.data - 150));
+			for &c in buf.format(self.data - 150) { url.push(c); }
 			url.push(':');
 		}
 
 		// Each audio track relative to the first.
 		for v in &self.audio {
-			url.push_str(buf.format(v - 150));
+			for &c in buf.format(v - 150) { url.push(c); }
 			url.push(':');
 		}
 
 		// Trailing data?
 		if matches!(self.kind, TocKind::CDExtra) {
 			url.push('-');
-			url.push_str(buf.format(self.data - 150));
+			for &c in buf.format(self.data - 150) { url.push(c); }
 			url.push(':');
 		}
 
 		// And the leadout.
-		url.push_str(buf.format(self.leadout - 150));
+		for &c in buf.format(self.leadout - 150) { url.push(c); }
 
 		url
 	}
@@ -233,6 +238,40 @@ fn parse_attr<'a>(mut line: &'a str, attr: &'static str) -> Option<&'a str> {
 
 
 
+#[derive(Debug, Clone, Copy)]
+/// # Digit Buffer.
+///
+/// This buffer is used by `ctdb_checksum_url` to convert `u32` values to
+/// string. It doesn't do anything fancy, but helps reduce writes/allocations.
+struct U32DigitBuffer([char; 10]);
+
+impl U32DigitBuffer {
+	/// # Default Buffer.
+	const DEFAULT: Self = Self(['0'; 10]);
+
+	#[expect(clippy::cast_possible_truncation, reason = "False positive.")]
+	/// # Digitize a Number.
+	///
+	/// Return a slice containing each digit represented as an ASCII `char`.
+	const fn format(&mut self, mut num: u32) -> &[char] {
+		// Fill the buffer, right to left.
+		let mut len = 0;
+		while 9 < num {
+			len += 1;
+			self.0[10 - len] = ((num % 10) as u8 ^ b'0') as char;
+			num /= 10;
+		}
+		len += 1;
+		self.0[10 - len] = (num as u8 ^ b'0') as char;
+
+		// Split off and return the relevant part.
+		let (_, b) = self.0.split_at(10 - len);
+		b
+	}
+}
+
+
+
 #[cfg(test)]
 mod tests {
 	use super::*;
@@ -281,5 +320,15 @@ mod tests {
 			assert_eq!(ShaB64::try_from(id), Ok(ctdb_id));
 			assert_eq!(id.parse::<ShaB64>(), Ok(ctdb_id));
 		}
+	}
+
+	#[test]
+	fn t_digits() {
+		let mut buf = U32DigitBuffer::DEFAULT;
+		assert_eq!(buf.format(0), &['0']);
+		assert_eq!(buf.format(10), &['1', '0']);
+		assert_eq!(buf.format(432), &['4', '3', '2']);
+		assert_eq!(buf.format(50_000), &['5', '0', '0', '0', '0']);
+		assert_eq!(buf.format(u32::MAX), &['4', '2', '9', '4', '9', '6', '7', '2', '9', '5']);
 	}
 }
