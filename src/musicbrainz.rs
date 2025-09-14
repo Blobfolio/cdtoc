@@ -3,6 +3,7 @@
 */
 
 use crate::{
+	Hex,
 	ShaB64,
 	Toc,
 };
@@ -20,7 +21,6 @@ const CHUNK_SIZE: usize = 4;
 impl Toc {
 	#[cfg_attr(docsrs, doc(cfg(feature = "musicbrainz")))]
 	#[expect(clippy::cast_possible_truncation, reason = "False positive.")]
-	#[expect(clippy::missing_panics_doc, reason = "False positive.")]
 	#[must_use]
 	/// # MusicBrainz ID.
 	///
@@ -42,18 +42,14 @@ impl Toc {
 		use sha1::Digest;
 		let mut sha = sha1::Sha1::new();
 		let mut src = [b'0'; CHUNK_SIZE * 4]; // Four raw u32s.
-		let mut dst: [u8; CHUNK_SIZE * 8] = [
-			b'0', b'1', b'0', b'0', b'0', b'0', b'0', b'0',
-			b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0',
-			b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0',
-			b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0',
-		]; // Four hexed u32s.
+		let mut dst = [b'0'; CHUNK_SIZE * 8]; // Four hexed u32s.
 
-		// Start with "01", the audio track count, and leadout.
-		faster_hex::hex_encode_fallback(&[self.audio_len() as u8], &mut dst[2..4]);
-		faster_hex::hex_encode_fallback(self.audio_leadout().to_be_bytes().as_slice(), &mut dst[4..12]);
-		dst[2..12].make_ascii_uppercase();
-		sha.update(&dst[..12]);
+		// The first two bytes are constant.
+		sha.update(b"01");
+
+		// Audio track count and leadout.
+		sha.update(Hex::upper_encode_u8(self.audio_len() as u8));
+		sha.update(Hex::upper_encode_u32(self.audio_leadout()));
 
 		// Process the sector positions in batches of four to leverage SSE hex
 		// optimizations.
@@ -66,24 +62,13 @@ impl Toc {
 			}
 
 			// Encode and hash, en masse.
-			faster_hex::hex_encode(src.as_slice(), &mut dst).unwrap();
-			dst.make_ascii_uppercase();
+			Hex::upper_array(&src, &mut dst);
 			sha.update(dst.as_slice());
 		}
 
 		// Handle the remaining sectors, if any,
-		if ! rest.is_empty() {
-			// Copy the values to the source buffer.
-			for (s_chunk, v) in src.chunks_exact_mut(4).zip(rest.iter()) {
-				s_chunk.copy_from_slice(v.to_be_bytes().as_slice());
-			}
-
-			// Encode and hash, en masse.
-			let src_to = rest.len() * 4;
-			let dst2 = &mut dst[..src_to * 2];
-			faster_hex::hex_encode_fallback(&src[..src_to], dst2);
-			dst2.make_ascii_uppercase();
-			sha.update(dst2);
+		for v in rest {
+			sha.update(Hex::upper_encode_u32(*v));
 		}
 
 		// Pad with zeroes.

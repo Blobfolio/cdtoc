@@ -111,6 +111,7 @@ The optional `serde` crate feature can be enabled to expose de/serialization imp
 
 
 mod error;
+mod hex;
 mod time;
 mod track;
 #[cfg(feature = "accuraterip")] mod accuraterip;
@@ -132,6 +133,7 @@ pub use track::{
 #[cfg(feature = "sha1")] pub use shab64::ShaB64;
 
 use dactyl::traits::HexToUnsigned;
+use hex::Hex;
 use std::fmt;
 
 
@@ -210,28 +212,30 @@ pub struct Toc {
 impl fmt::Display for Toc {
 	#[expect(clippy::cast_possible_truncation, reason = "False positive.")]
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		use trimothy::TrimSliceMatches;
+		/// # Trim Leading Zeroes.
+		const fn trim_leading_zeroes(mut src: &[u8]) -> &[u8] {
+			while let [b'0', rest @ ..] = src { src = rest; }
+			src
+		}
 
 		let mut out = Vec::with_capacity(128);
-		let mut buf = [b'0'; 8];
 
 		// Audio track count.
 		let audio_len = self.audio.len() as u8;
-		faster_hex::hex_encode_fallback(&[audio_len], &mut buf[..2]);
+		let buf = Hex::upper_encode_u8(audio_len);
 		if 16 <= audio_len { out.push(buf[0]); }
 		out.push(buf[1]);
 
 		/// # Helper: Add Track to Buffer.
 		macro_rules! push {
 			($v:expr) => (
-				faster_hex::hex_encode_fallback($v.to_be_bytes().as_slice(), &mut buf);
 				out.push(b'+');
-				out.extend_from_slice(buf.trim_start_matches(b'0'));
+				out.extend_from_slice(trim_leading_zeroes(&Hex::upper_encode_u32($v)));
 			);
 		}
 
 		// The sectors.
-		for v in &self.audio { push!(v); }
+		for v in &self.audio { push!(*v); }
 
 		// And finally some combination of data and leadout.
 		match self.kind {
@@ -244,14 +248,12 @@ impl fmt::Display for Toc {
 				push!(self.leadout);
 
 				// Handle this manually since there's the weird X marker.
-				faster_hex::hex_encode_fallback(self.data.to_be_bytes().as_slice(), &mut buf);
 				out.push(b'+');
 				out.push(b'X');
-				out.extend_from_slice(buf.trim_start_matches(b'0'));
+				out.extend_from_slice(trim_leading_zeroes(&Hex::upper_encode_u32(self.data)));
 			},
 		}
 
-		out.make_ascii_uppercase();
 		std::str::from_utf8(&out)
 			.map_err(|_| fmt::Error)
 			.and_then(|s| <str as fmt::Display>::fmt(s, f))

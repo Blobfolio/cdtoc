@@ -3,6 +3,7 @@
 */
 
 use crate::{
+	Hex,
 	ShaB64,
 	Toc,
 	TocError,
@@ -23,7 +24,6 @@ const CHUNK_SIZE: usize = 4;
 
 impl Toc {
 	#[cfg_attr(docsrs, doc(cfg(feature = "ctdb")))]
-	#[expect(clippy::missing_panics_doc, reason = "Panic is unreachable.")]
 	#[must_use]
 	/// # CUETools Database ID.
 	///
@@ -60,34 +60,17 @@ impl Toc {
 			}
 
 			// Encode and hash, en masse.
-			faster_hex::hex_encode(src.as_slice(), &mut dst).unwrap();
-			dst.make_ascii_uppercase();
+			Hex::upper_array(&src, &mut dst);
 			sha.update(dst.as_slice());
 		}
 
-		// Handle the remaining sectors, if any, and the leadout.
-		if rest.is_empty() {
-			let dst2 = &mut dst[..8];
-			faster_hex::hex_encode_fallback((self.audio_leadout() - leadin).to_be_bytes().as_slice(), dst2);
-			dst2.make_ascii_uppercase();
-			sha.update(dst2);
+		// Handle the remaining sectors, if any.
+		for v in rest.iter().map(|n| n - leadin) {
+			sha.update(Hex::upper_encode_u32(v));
 		}
-		else {
-			// Copy the values to the source buffer.
-			for (s_chunk, v) in src.chunks_exact_mut(4).zip(
-				rest.iter().map(|n| n - leadin)
-					.chain(std::iter::once(self.audio_leadout() - leadin))
-			) {
-				s_chunk.copy_from_slice(v.to_be_bytes().as_slice());
-			}
 
-			// Encode and hash, en masse.
-			let src_to = rest.len() * 4 + 4;
-			let dst2 = &mut dst[..src_to * 2];
-			faster_hex::hex_encode(&src[..src_to], dst2).unwrap();
-			dst2.make_ascii_uppercase();
-			sha.update(dst2);
-		}
+		// Last but not least, the leadout.
+		sha.update(Hex::upper_encode_u32(self.audio_leadout() - leadin));
 
 		// And padding for a total of 99 tracks.
 		let padding = 99 - sectors.len();
