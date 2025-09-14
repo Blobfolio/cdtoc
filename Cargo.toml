@@ -57,7 +57,7 @@ accuraterip = [ "cddb" ]
 asm = [ "sha1/asm" ]
 
 # Enable CDDB ID calculations.
-cddb = [ "itoa" ]
+cddb = []
 
 # Enable CUETools Database ID calculations.
 ctdb = [ "itoa", "sha1" ]
