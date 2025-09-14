@@ -3,7 +3,7 @@
 */
 
 use crate::{
-	Hex,
+	hex,
 	Toc,
 	TocError,
 };
@@ -50,7 +50,7 @@ impl Eq for Cddb {}
 
 impl fmt::Display for Cddb {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		let out = Hex::lower_encode_u32(self.0);
+		let out = hex::lower_encode_u32(self.0);
 		std::str::from_utf8(out.as_slice())
 			.map_err(|_| fmt::Error)
 			.and_then(|s| <str as fmt::Display>::fmt(s, f))

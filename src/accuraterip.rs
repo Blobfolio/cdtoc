@@ -4,7 +4,7 @@
 
 use crate::{
 	Cddb,
-	Hex,
+	hex,
 	Toc,
 	TocError,
 };
@@ -425,20 +425,20 @@ impl AccurateRip {
 		disc_id[..3].copy_from_slice(dactyl::NiceU8::from(self.0[0]).as_bytes3());
 
 		// ID Parts.
-		[disc_id[4],  disc_id[5]] =  Hex::lower_encode_u8(self.0[4]);
-		[disc_id[6],  disc_id[7]] =  Hex::lower_encode_u8(self.0[3]);
-		[disc_id[8],  disc_id[9]] =  Hex::lower_encode_u8(self.0[2]);
-		[disc_id[10], disc_id[11]] = Hex::lower_encode_u8(self.0[1]);
+		[disc_id[4],  disc_id[5]] =  hex::lower_encode_u8(self.0[4]);
+		[disc_id[6],  disc_id[7]] =  hex::lower_encode_u8(self.0[3]);
+		[disc_id[8],  disc_id[9]] =  hex::lower_encode_u8(self.0[2]);
+		[disc_id[10], disc_id[11]] = hex::lower_encode_u8(self.0[1]);
 
-		[disc_id[13], disc_id[14]] = Hex::lower_encode_u8(self.0[8]);
-		[disc_id[15], disc_id[16]] = Hex::lower_encode_u8(self.0[7]);
-		[disc_id[17], disc_id[18]] = Hex::lower_encode_u8(self.0[6]);
-		[disc_id[19], disc_id[20]] = Hex::lower_encode_u8(self.0[5]);
+		[disc_id[13], disc_id[14]] = hex::lower_encode_u8(self.0[8]);
+		[disc_id[15], disc_id[16]] = hex::lower_encode_u8(self.0[7]);
+		[disc_id[17], disc_id[18]] = hex::lower_encode_u8(self.0[6]);
+		[disc_id[19], disc_id[20]] = hex::lower_encode_u8(self.0[5]);
 
-		[disc_id[22], disc_id[23]] = Hex::lower_encode_u8(self.0[12]);
-		[disc_id[24], disc_id[25]] = Hex::lower_encode_u8(self.0[11]);
-		[disc_id[26], disc_id[27]] = Hex::lower_encode_u8(self.0[10]);
-		[disc_id[28], disc_id[29]] = Hex::lower_encode_u8(self.0[9]);
+		[disc_id[22], disc_id[23]] = hex::lower_encode_u8(self.0[12]);
+		[disc_id[24], disc_id[25]] = hex::lower_encode_u8(self.0[11]);
+		[disc_id[26], disc_id[27]] = hex::lower_encode_u8(self.0[10]);
+		[disc_id[28], disc_id[29]] = hex::lower_encode_u8(self.0[9]);
 
 		disc_id
 	}

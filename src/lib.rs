@@ -133,18 +133,16 @@ pub use track::{
 #[cfg(feature = "sha1")] pub use shab64::ShaB64;
 
 use dactyl::traits::HexToUnsigned;
-use hex::Hex;
 use std::fmt;
 
 
 
-#[cfg(any(feature = "musicbrainz", feature = "ctdb"))]
-/// # Lotsa Zeroes.
+#[cfg(any(feature = "ctdb", feature = "musicbrainz"))]
+/// # Track Zeroes.
 ///
-/// MusicBrainz and CTDB take a sha1 hash of 100 hex-encoded tracks, most of
-/// which, most of the time, are just zero-padding. Slicing what we need out of
-/// a prebuilt static is much faster than pushing zeroes on-the-fly.
-static ZEROES: [u8; 792] = [b'0'; 792];
+/// The CTDB and Musicbrainz IDs hash one hundred tracks' worth of hexified
+/// sector values, eight bytes each. This serves as the default.
+const TRACK_ZEROES: [[u8; 8]; 100] = [[b'0'; 8]; 100];
 
 
 
@@ -222,7 +220,7 @@ impl fmt::Display for Toc {
 
 		// Audio track count.
 		let audio_len = self.audio.len() as u8;
-		let buf = Hex::upper_encode_u8(audio_len);
+		let buf = hex::upper_encode_u8(audio_len);
 		if 16 <= audio_len { out.push(buf[0]); }
 		out.push(buf[1]);
 
@@ -230,7 +228,7 @@ impl fmt::Display for Toc {
 		macro_rules! push {
 			($v:expr) => (
 				out.push(b'+');
-				out.extend_from_slice(trim_leading_zeroes(&Hex::upper_encode_u32($v)));
+				out.extend_from_slice(trim_leading_zeroes(&hex::upper_encode_u32($v)));
 			);
 		}
 
@@ -250,7 +248,7 @@ impl fmt::Display for Toc {
 				// Handle this manually since there's the weird X marker.
 				out.push(b'+');
 				out.push(b'X');
-				out.extend_from_slice(trim_leading_zeroes(&Hex::upper_encode_u32(self.data)));
+				out.extend_from_slice(trim_leading_zeroes(&hex::upper_encode_u32(self.data)));
 			},
 		}
 

@@ -3,7 +3,7 @@
 */
 
 use crate::{
-	Hex,
+	hex,
 	ShaB64,
 	Toc,
 	TocError,
@@ -11,14 +11,6 @@ use crate::{
 };
 use dactyl::traits::HexToUnsigned;
 use std::collections::BTreeMap;
-
-
-
-/// # Stereo Sample Chunk Size.
-///
-/// Each CDDA sample has a 16-bit left and 16-bit right value; combined they're
-/// four bytes.
-const CHUNK_SIZE: usize = 4;
 
 
 
@@ -43,40 +35,22 @@ impl Toc {
 	/// ```
 	pub fn ctdb_id(&self) -> ShaB64 {
 		use sha1::Digest;
-		let mut sha = sha1::Sha1::new();
-		let mut src = [b'0'; CHUNK_SIZE * 4]; // Four raw u32s.
-		let mut dst = [b'0'; CHUNK_SIZE * 8]; // Four hexed u32s.
 
 		// Split the leadin from the rest of the sectors.
 		let [leadin, sectors @ ..] = self.audio_sectors() else { unreachable!() };
 
-		// Process the sector positions in batches of four to leverage SSE hex
-		// optimizations.
-		let (chunks, rest) = sectors.as_chunks::<CHUNK_SIZE>();
-		for v in chunks {
-			// Copy the values to the source buffer.
-			for (s_chunk, v) in src.chunks_exact_mut(4).zip(v.iter().map(|n| n - leadin)) {
-				s_chunk.copy_from_slice(v.to_be_bytes().as_slice());
-			}
+		// Start with a whole lotta ASCII zeroes.
+		let mut buf = crate::TRACK_ZEROES;
 
-			// Encode and hash, en masse.
-			Hex::upper_array(&src, &mut dst);
-			sha.update(dst.as_slice());
+		// Overwrite the first few entries with the audio and leadout sectors,
+		// relative to the leadin.
+		for (k, v) in sectors.iter().copied().chain(std::iter::once(self.audio_leadout())).enumerate() {
+			buf[k] = hex::upper_encode_u32(v - leadin);
 		}
 
-		// Handle the remaining sectors, if any.
-		for v in rest.iter().map(|n| n - leadin) {
-			sha.update(Hex::upper_encode_u32(v));
-		}
-
-		// Last but not least, the leadout.
-		sha.update(Hex::upper_encode_u32(self.audio_leadout() - leadin));
-
-		// And padding for a total of 99 tracks.
-		let padding = 99 - sectors.len();
-		if padding != 0 { sha.update(&crate::ZEROES[..padding * 8]); }
-
-		// Run it through base64 and we're done!
+		// SHA and done!
+		let mut sha = sha1::Sha1::new();
+		sha.update(buf.as_flattened());
 		ShaB64::from(sha)
 	}
 
