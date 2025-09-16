@@ -2,6 +2,19 @@
 
 
 
+## [0.12.0](https://github.com/Blobfolio/cdtoc/releases/tag/v0.12.0) - TBD
+
+### Changed
+
+* Remove `faster-hex` dependency
+* Remove `itoa` dependency
+* Remove `trimothy` dependency
+* Replace `serde` with `serde_core` dependency
+* Various minor performance improvements
+* Miscellaneous code cleanup and lints
+
+
+
 ## [0.11.0](https://github.com/Blobfolio/cdtoc/releases/tag/v0.11.0) - 2025-06-26
 
 ### Changed

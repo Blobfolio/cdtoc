@@ -11,7 +11,7 @@ use crate::{
 #[cfg(feature = "accuraterip")] use crate::AccurateRip;
 #[cfg(feature = "cddb")] use crate::Cddb;
 #[cfg(feature = "sha1")] use crate::ShaB64;
-use serde::{
+use serde_core::{
 	de,
 	Deserialize,
 	ser::{
