@@ -1,6 +1,6 @@
 [package]
 name = "cdtoc"
-version = "0.11.0"
+version = "0.11.1"
 authors = ["Josh Stoik <josh@blobfolio.com>"]
 edition = "2024"
 rust-version = "1.88"
@@ -32,18 +32,8 @@ serde_json = "1.0.*"
 
 [dependencies]
 dactyl = "0.13.*"
-trimothy = "0.9.*"
 
-[dependencies.faster-hex]
-version = "0.10.*"
-default-features = false
-features = [ "std" ]
-
-[dependencies.itoa]
-version = "1.0.*"
-optional = true
-
-[dependencies.serde]
+[dependencies.serde_core]
 version = "1.0.*"
 optional = true
 
@@ -63,16 +53,16 @@ accuraterip = [ "cddb" ]
 asm = [ "sha1/asm" ]
 
 # Enable CDDB ID calculations.
-cddb = [ "itoa" ]
+cddb = []
 
 # Enable CUETools Database ID calculations.
-ctdb = [ "itoa", "sha1" ]
+ctdb = [ "sha1" ]
 
 # Enable MusicBrainz ID calculations.
 musicbrainz = [ "sha1" ]
 
 # Enable de/serialization support for most types.
-serde = [ "dep:serde" ]
+serde = [ "dep:serde_core" ]
 
 [[bench]]
 name = "accuraterip"

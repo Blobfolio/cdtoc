@@ -124,7 +124,7 @@ impl ShaB64 {
 			out.push(base64_encode(chunk[2] & 0b0011_1111) as char);
 		}
 
-		// The last byte (27) is always padding, but the three before it still
+		// The last byte (27) is always padding, but the two before it still
 		// need figuring.
 		out.push(base64_encode(self.0[18] >> 2) as char);
 		out.push(base64_encode(((self.0[18] & 0b0000_0011) << 4) | (self.0[19] >> 4)) as char);

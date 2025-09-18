@@ -3,6 +3,7 @@
 */
 
 use crate::{
+	hex,
 	Toc,
 	TocError,
 };
@@ -49,9 +50,8 @@ impl Eq for Cddb {}
 
 impl fmt::Display for Cddb {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		let mut buf = [b'0'; 8];
-		faster_hex::hex_encode_fallback(self.0.to_be_bytes().as_slice(), &mut buf);
-		std::str::from_utf8(buf.as_slice())
+		let out = hex::lower_encode_u32(self.0);
+		std::str::from_utf8(out.as_slice())
 			.map_err(|_| fmt::Error)
 			.and_then(|s| <str as fmt::Display>::fmt(s, f))
 	}
@@ -81,23 +81,29 @@ impl From<Cddb> for u32 {
 impl From<&Toc> for Cddb {
 	#[expect(clippy::cast_possible_truncation, reason = "False positive.")]
 	fn from(src: &Toc) -> Self {
-		let mut len = src.audio_len();
-		let mut a: u32 = 0;
-
-		// Add the audio positions.
-		let mut buf = itoa::Buffer::new();
-		for v in src.audio_sectors() {
-			for b in buf.format(v.wrapping_div(75)).bytes() {
-				a += u32::from(b ^ b'0');
+		/// # Sum Digits.
+		///
+		/// Add up each individual digit of `num`, returning the total.
+		const fn sum_digits(mut num: u32) -> u32 {
+			let mut total = 0;
+			while 9 < num {
+				total += num % 10;
+				num /= 10;
 			}
+			total + num
 		}
 
-		// Add the data position.
+		let mut len = src.audio_len();
+
+		// Add up all the digits of all the audio sectors.
+		let mut a: u32 = src.audio_sectors()
+			.iter()
+			.fold(0, |a, b| a + sum_digits(b.wrapping_div(75)));
+
+		// Add the data position, if any.
 		if let Some(v) = src.data_sector() {
 			len += 1;
-			for b in buf.format(v.wrapping_div(75)).bytes() {
-				a += u32::from(b ^ b'0');
-			}
+			a += sum_digits(v.wrapping_div(75));
 		}
 
 		// The three parts we need.

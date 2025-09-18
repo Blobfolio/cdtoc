@@ -111,6 +111,7 @@ The optional `serde` crate feature can be enabled to expose de/serialization imp
 
 
 mod error;
+mod hex;
 mod time;
 mod track;
 #[cfg(feature = "accuraterip")] mod accuraterip;
@@ -136,13 +137,12 @@ use std::fmt;
 
 
 
-#[cfg(any(feature = "musicbrainz", feature = "ctdb"))]
-/// # Lotsa Zeroes.
+#[cfg(any(feature = "ctdb", feature = "musicbrainz"))]
+/// # Track Zeroes.
 ///
-/// MusicBrainz and CTDB take a sha1 hash of 100 hex-encoded tracks, most of
-/// which, most of the time, are just zero-padding. Slicing what we need out of
-/// a prebuilt static is much faster than pushing zeroes on-the-fly.
-static ZEROES: [u8; 792] = [b'0'; 792];
+/// The CTDB and Musicbrainz IDs hash one hundred tracks' worth of hexified
+/// sector values, eight bytes each. This serves as the default.
+const TRACK_ZEROES: [[u8; 8]; 100] = [[b'0'; 8]; 100];
 
 
 
@@ -210,28 +210,30 @@ pub struct Toc {
 impl fmt::Display for Toc {
 	#[expect(clippy::cast_possible_truncation, reason = "False positive.")]
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		use trimothy::TrimSliceMatches;
+		/// # Trim Leading Zeroes.
+		const fn trim_leading_zeroes(mut src: &[u8]) -> &[u8] {
+			while let [b'0', rest @ ..] = src { src = rest; }
+			src
+		}
 
 		let mut out = Vec::with_capacity(128);
-		let mut buf = [b'0'; 8];
 
 		// Audio track count.
 		let audio_len = self.audio.len() as u8;
-		faster_hex::hex_encode_fallback(&[audio_len], &mut buf[..2]);
+		let buf = hex::upper_encode_u8(audio_len);
 		if 16 <= audio_len { out.push(buf[0]); }
 		out.push(buf[1]);
 
 		/// # Helper: Add Track to Buffer.
 		macro_rules! push {
 			($v:expr) => (
-				faster_hex::hex_encode_fallback($v.to_be_bytes().as_slice(), &mut buf);
 				out.push(b'+');
-				out.extend_from_slice(buf.trim_start_matches(b'0'));
+				out.extend_from_slice(trim_leading_zeroes(&hex::upper_encode_u32($v)));
 			);
 		}
 
 		// The sectors.
-		for v in &self.audio { push!(v); }
+		for v in &self.audio { push!(*v); }
 
 		// And finally some combination of data and leadout.
 		match self.kind {
@@ -244,14 +246,12 @@ impl fmt::Display for Toc {
 				push!(self.leadout);
 
 				// Handle this manually since there's the weird X marker.
-				faster_hex::hex_encode_fallback(self.data.to_be_bytes().as_slice(), &mut buf);
 				out.push(b'+');
 				out.push(b'X');
-				out.extend_from_slice(buf.trim_start_matches(b'0'));
+				out.extend_from_slice(trim_leading_zeroes(&hex::upper_encode_u32(self.data)));
 			},
 		}
 
-		out.make_ascii_uppercase();
 		std::str::from_utf8(&out)
 			.map_err(|_| fmt::Error)
 			.and_then(|s| <str as fmt::Display>::fmt(s, f))

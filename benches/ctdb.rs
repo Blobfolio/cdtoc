@@ -20,5 +20,6 @@ fn main() {
 		inline:
 		Bench::new("Toc::ctdb_id").run(|| toc.ctdb_id()),
 		Bench::new("ShaB64::to_string").run(|| ctdb_id.to_string()),
+		Bench::new("Toc::ctdb_checksum_url").run(|| toc.ctdb_checksum_url()),
 	);
 }

@@ -3,6 +3,7 @@
 */
 
 use crate::{
+	hex,
 	ShaB64,
 	Toc,
 	TocError,
@@ -13,17 +14,8 @@ use std::collections::BTreeMap;
 
 
 
-/// # Stereo Sample Chunk Size.
-///
-/// Each CDDA sample has a 16-bit left and 16-bit right value; combined they're
-/// four bytes.
-const CHUNK_SIZE: usize = 4;
-
-
-
 impl Toc {
 	#[cfg_attr(docsrs, doc(cfg(feature = "ctdb")))]
-	#[expect(clippy::missing_panics_doc, reason = "Panic is unreachable.")]
 	#[must_use]
 	/// # CUETools Database ID.
 	///
@@ -43,57 +35,22 @@ impl Toc {
 	/// ```
 	pub fn ctdb_id(&self) -> ShaB64 {
 		use sha1::Digest;
-		let mut sha = sha1::Sha1::new();
-		let mut src = [b'0'; CHUNK_SIZE * 4]; // Four raw u32s.
-		let mut dst = [b'0'; CHUNK_SIZE * 8]; // Four hexed u32s.
 
 		// Split the leadin from the rest of the sectors.
 		let [leadin, sectors @ ..] = self.audio_sectors() else { unreachable!() };
 
-		// Process the sector positions in batches of four to leverage SSE hex
-		// optimizations.
-		let (chunks, rest) = sectors.as_chunks::<CHUNK_SIZE>();
-		for v in chunks {
-			// Copy the values to the source buffer.
-			for (s_chunk, v) in src.chunks_exact_mut(4).zip(v.iter().map(|n| n - leadin)) {
-				s_chunk.copy_from_slice(v.to_be_bytes().as_slice());
-			}
+		// Start with a whole lotta ASCII zeroes.
+		let mut buf = crate::TRACK_ZEROES;
 
-			// Encode and hash, en masse.
-			faster_hex::hex_encode(src.as_slice(), &mut dst).unwrap();
-			dst.make_ascii_uppercase();
-			sha.update(dst.as_slice());
+		// Overwrite the first few entries with the audio and leadout sectors,
+		// relative to the leadin.
+		for (k, v) in sectors.iter().copied().chain(std::iter::once(self.audio_leadout())).enumerate() {
+			buf[k] = hex::upper_encode_u32(v - leadin);
 		}
 
-		// Handle the remaining sectors, if any, and the leadout.
-		if rest.is_empty() {
-			let dst2 = &mut dst[..8];
-			faster_hex::hex_encode_fallback((self.audio_leadout() - leadin).to_be_bytes().as_slice(), dst2);
-			dst2.make_ascii_uppercase();
-			sha.update(dst2);
-		}
-		else {
-			// Copy the values to the source buffer.
-			for (s_chunk, v) in src.chunks_exact_mut(4).zip(
-				rest.iter().map(|n| n - leadin)
-					.chain(std::iter::once(self.audio_leadout() - leadin))
-			) {
-				s_chunk.copy_from_slice(v.to_be_bytes().as_slice());
-			}
-
-			// Encode and hash, en masse.
-			let src_to = rest.len() * 4 + 4;
-			let dst2 = &mut dst[..src_to * 2];
-			faster_hex::hex_encode(&src[..src_to], dst2).unwrap();
-			dst2.make_ascii_uppercase();
-			sha.update(dst2);
-		}
-
-		// And padding for a total of 99 tracks.
-		let padding = 99 - sectors.len();
-		if padding != 0 { sha.update(&crate::ZEROES[..padding * 8]); }
-
-		// Run it through base64 and we're done!
+		// SHA and done!
+		let mut sha = sha1::Sha1::new();
+		sha.update(buf.as_flattened());
 		ShaB64::from(sha)
 	}
 
@@ -149,31 +106,36 @@ impl Toc {
 	/// );
 	/// ```
 	pub fn ctdb_checksum_url(&self) -> String {
-		let mut url = "http://db.cuetools.net/lookup2.php?version=3&ctdb=1&fuzzy=1&toc=".to_owned();
-		let mut buf = itoa::Buffer::new();
+		// We can't efficiently precalculate the exact size, but the next
+		// power-of-two isn't too far away, so we might as well start there.
+		let mut url = String::with_capacity(128);
+		url.push_str("http://db.cuetools.net/lookup2.php?version=3&ctdb=1&fuzzy=1&toc=");
+
+		// Digit buffer.
+		let mut buf = U32DigitBuffer::DEFAULT;
 
 		// Leading data?
 		if matches!(self.kind, TocKind::DataFirst) {
 			url.push('-');
-			url.push_str(buf.format(self.data - 150));
+			for &c in buf.format(self.data - 150) { url.push(c); }
 			url.push(':');
 		}
 
 		// Each audio track relative to the first.
 		for v in &self.audio {
-			url.push_str(buf.format(v - 150));
+			for &c in buf.format(v - 150) { url.push(c); }
 			url.push(':');
 		}
 
 		// Trailing data?
 		if matches!(self.kind, TocKind::CDExtra) {
 			url.push('-');
-			url.push_str(buf.format(self.data - 150));
+			for &c in buf.format(self.data - 150) { url.push(c); }
 			url.push(':');
 		}
 
 		// And the leadout.
-		url.push_str(buf.format(self.leadout - 150));
+		for &c in buf.format(self.leadout - 150) { url.push(c); }
 
 		url
 	}
@@ -250,6 +212,40 @@ fn parse_attr<'a>(mut line: &'a str, attr: &'static str) -> Option<&'a str> {
 
 
 
+#[derive(Debug, Clone, Copy)]
+/// # Digit Buffer.
+///
+/// This buffer is used by `ctdb_checksum_url` to convert `u32` values to
+/// string. It doesn't do anything fancy, but helps reduce writes/allocations.
+struct U32DigitBuffer([char; 10]);
+
+impl U32DigitBuffer {
+	/// # Default Buffer.
+	const DEFAULT: Self = Self(['0'; 10]);
+
+	#[expect(clippy::cast_possible_truncation, reason = "False positive.")]
+	/// # Digitize a Number.
+	///
+	/// Return a slice containing each digit represented as an ASCII `char`.
+	const fn format(&mut self, mut num: u32) -> &[char] {
+		// Fill the buffer, right to left.
+		let mut len = 0;
+		while 9 < num {
+			len += 1;
+			self.0[10 - len] = ((num % 10) as u8 ^ b'0') as char;
+			num /= 10;
+		}
+		len += 1;
+		self.0[10 - len] = (num as u8 ^ b'0') as char;
+
+		// Split off and return the relevant part.
+		let (_, b) = self.0.split_at(10 - len);
+		b
+	}
+}
+
+
+
 #[cfg(test)]
 mod tests {
 	use super::*;
@@ -298,5 +294,15 @@ mod tests {
 			assert_eq!(ShaB64::try_from(id), Ok(ctdb_id));
 			assert_eq!(id.parse::<ShaB64>(), Ok(ctdb_id));
 		}
+	}
+
+	#[test]
+	fn t_digits() {
+		let mut buf = U32DigitBuffer::DEFAULT;
+		assert_eq!(buf.format(0), &['0']);
+		assert_eq!(buf.format(10), &['1', '0']);
+		assert_eq!(buf.format(432), &['4', '3', '2']);
+		assert_eq!(buf.format(50_000), &['5', '0', '0', '0', '0']);
+		assert_eq!(buf.format(u32::MAX), &['4', '2', '9', '4', '9', '6', '7', '2', '9', '5']);
 	}
 }
