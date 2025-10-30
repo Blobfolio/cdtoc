@@ -337,6 +337,7 @@ pub enum TrackPosition {
 	Only,
 }
 
+/// # Helper: Position Tuple.
 macro_rules! pos_tuple {
 	($($ty:ty),+) => ($(
 		impl From<($ty, $ty)> for TrackPosition {
