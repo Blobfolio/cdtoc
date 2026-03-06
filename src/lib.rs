@@ -77,6 +77,7 @@ The optional `serde` crate feature can be enabled to expose de/serialization imp
 	clippy::format_push_string,
 	clippy::get_unwrap,
 	clippy::impl_trait_in_params,
+	clippy::implicit_clone,
 	clippy::lossy_float_literal,
 	clippy::missing_assert_message,
 	clippy::missing_docs_in_private_items,
@@ -86,7 +87,6 @@ The optional `serde` crate feature can be enabled to expose de/serialization imp
 	clippy::rest_pat_in_fully_bound_structs,
 	clippy::semicolon_inside_block,
 	clippy::str_to_string,
-	clippy::string_to_string,
 	clippy::todo,
 	clippy::undocumented_unsafe_blocks,
 	clippy::unneeded_field_pattern,
@@ -386,7 +386,7 @@ impl Toc {
 
 		// Audio is out of order?
 		if
-			(1 < audio_len && audio.windows(2).any(|pair| pair[1] <= pair[0])) ||
+			(1 < audio_len && audio.array_windows().any(|[a, b]| a >= b)) ||
 			leadout <= audio[audio_len - 1]
 		{
 			return Err(TocError::SectorOrder);
