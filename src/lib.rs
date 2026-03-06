@@ -386,7 +386,7 @@ impl Toc {
 
 		// Audio is out of order?
 		if
-			(1 < audio_len && audio.windows(2).any(|pair| pair[1] <= pair[0])) ||
+			(1 < audio_len && audio.array_windows().any(|[a, b]| a >= b)) ||
 			leadout <= audio[audio_len - 1]
 		{
 			return Err(TocError::SectorOrder);
