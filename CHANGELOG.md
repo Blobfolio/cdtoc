@@ -2,6 +2,15 @@
 
 
 
+## [0.13.0](https://github.com/Blobfolio/cdtoc/releases/tag/v0.13.0) - 2026-03-27
+
+### Changed
+
+* Bump `sha1` to `0.11`
+  * Remove passthrough `sha1/asm` crate feature (no longer supported upstream)
+
+
+
 ## [0.12.0](https://github.com/Blobfolio/cdtoc/releases/tag/v0.12.0) - 2026-03-05
 
 ### Changed
