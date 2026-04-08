@@ -1,7 +1,7 @@
 # Project Dependencies
     Package:   cdtoc
-    Version:   0.13.0
-    Generated: 2026-03-27 18:43:15 UTC
+    Version:   0.13.1
+    Generated: 2026-04-08 01:56:30 UTC
 
 | Package | Version | Author(s) | License |
 | ---- | ---- | ---- | ---- |
@@ -12,8 +12,8 @@
 | [_cpufeatures_](https://github.com/RustCrypto/utils) | 0.3.0 | RustCrypto Developers | MIT OR Apache-2.0 |
 | [_crypto-common_](https://github.com/RustCrypto/traits) | 0.2.1 | RustCrypto Developers | MIT OR Apache-2.0 |
 | [_digest_](https://github.com/RustCrypto/traits) | 0.11.2 | RustCrypto Developers | MIT OR Apache-2.0 |
-| [_hybrid-array_](https://github.com/RustCrypto/hybrid-array) | 0.4.8 | RustCrypto Developers | MIT OR Apache-2.0 |
-| [_libc_](https://github.com/rust-lang/libc) | 0.2.183 | The Rust Project Developers | MIT OR Apache-2.0 |
+| [_hybrid-array_](https://github.com/RustCrypto/hybrid-array) | 0.4.10 | RustCrypto Developers | MIT OR Apache-2.0 |
+| [_libc_](https://github.com/rust-lang/libc) | 0.2.184 | The Rust Project Developers | MIT OR Apache-2.0 |
 | [_proc-macro2_](https://github.com/dtolnay/proc-macro2) ⚒️ | 1.0.106 | [David Tolnay](mailto:dtolnay@gmail.com) and [Alex Crichton](mailto:alex@alexcrichton.com) | MIT OR Apache-2.0 |
 | [_quote_](https://github.com/dtolnay/quote) ⚒️ | 1.0.45 | [David Tolnay](mailto:dtolnay@gmail.com) | MIT OR Apache-2.0 |
 | [**_serde_core_**](https://github.com/serde-rs/serde) | 1.0.228 | [Erick Tryzelaar](mailto:erick.tryzelaar@gmail.com) and [David Tolnay](mailto:dtolnay@gmail.com) | MIT OR Apache-2.0 |

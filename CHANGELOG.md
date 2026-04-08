@@ -2,6 +2,14 @@
 
 
 
+## [0.13.1](https://github.com/Blobfolio/cdtoc/releases/tag/v0.13.1) - 2026-04-07
+
+### Changed
+
+* Update CUETools URLs to new domain (`db.cue.tools`)
+
+
+
 ## [0.13.0](https://github.com/Blobfolio/cdtoc/releases/tag/v0.13.0) - 2026-03-27
 
 ### Changed
