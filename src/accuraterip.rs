@@ -43,7 +43,7 @@ const DRIVE_OFFSET_OFFSET_RNG: Range<i16> = -2940..2941;
 #[derive(Debug, Clone, Copy, Eq, Hash, PartialEq)]
 /// # AccurateRip ID.
 ///
-/// This struct holds an [AccurateRip](http://accuraterip.com/) ID.
+/// This struct holds an [AccurateRip](https://accuraterip.com/) ID.
 ///
 /// Values of this type are returned by [`Toc::accuraterip_id`].
 ///
@@ -139,7 +139,7 @@ impl AccurateRip {
 	///
 	/// The method [`AccurateRip::parse_drive_offsets`] can be used to parse
 	/// the raw data into a Rustful structure.
-	pub const DRIVE_OFFSET_URL: &'static str = "http://www.accuraterip.com/accuraterip/DriveOffsets.bin";
+	pub const DRIVE_OFFSET_URL: &'static str = "https://www.accuraterip.com/accuraterip/DriveOffsets.bin";
 }
 
 impl AccurateRip {
@@ -180,7 +180,7 @@ impl AccurateRip {
 	/// let ar_id = toc.accuraterip_id();
 	/// assert_eq!(
 	///     ar_id.checksum_url(),
-	///     "http://www.accuraterip.com/accuraterip/a/9/8/dBAR-004-0002189a-00087f33-1f02e004.bin",
+	///     "https://www.accuraterip.com/accuraterip/a/9/8/dBAR-004-0002189a-00087f33-1f02e004.bin",
 	/// );
 	/// ```
 	pub fn checksum_url(&self) -> String {
@@ -188,8 +188,8 @@ impl AccurateRip {
 		let disc_id = self.encode();
 		debug_assert!(disc_id.is_ascii(), "Bug: AccurateRip ID is not ASCII?!");
 
-		let mut out = String::with_capacity(84);
-		out.push_str("http://www.accuraterip.com/accuraterip/");
+		let mut out = String::with_capacity(85);
+		out.push_str("https://www.accuraterip.com/accuraterip/");
 		out.push(char::from(disc_id[11]));
 		out.push('/');
 		out.push(char::from(disc_id[10]));
@@ -451,7 +451,7 @@ impl Toc {
 	#[must_use]
 	/// # AccurateRip ID.
 	///
-	/// This returns the [AccurateRip](http://accuraterip.com/) ID
+	/// This returns the [AccurateRip](https://accuraterip.com/) ID
 	/// corresponding to the table of contents.
 	///
 	/// ## Examples
@@ -493,7 +493,7 @@ impl Toc {
 	/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
 	/// assert_eq!(
 	///     toc.accuraterip_checksum_url(),
-	///     "http://www.accuraterip.com/accuraterip/a/9/8/dBAR-004-0002189a-00087f33-1f02e004.bin",
+	///     "https://www.accuraterip.com/accuraterip/a/9/8/dBAR-004-0002189a-00087f33-1f02e004.bin",
 	/// );
 	/// ```
 	pub fn accuraterip_checksum_url(&self) -> String {

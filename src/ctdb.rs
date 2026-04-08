@@ -19,7 +19,7 @@ impl Toc {
 	#[must_use]
 	/// # CUETools Database ID.
 	///
-	/// This returns the [CUETools Database](http://cue.tools/wiki/CUETools_Database) ID
+	/// This returns the [CUETools Database](https://cue.tools/wiki/CUETools_Database) ID
 	/// corresponding to the table of contents.
 	///
 	/// ## Examples
