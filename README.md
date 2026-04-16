@@ -12,7 +12,7 @@
 
 CDTOC is a simple Rust library for parsing and working with audio CD tables of contents, namely in the form of [CDTOC-style](https://forum.dbpoweramp.com/showthread.php?16705-FLAC-amp-Ogg-Vorbis-Storage-of-CDTOC&s=3ca0c65ee58fc45489103bb1c39bfac0&p=76686&viewfull=1#post76686) metadata values.
 
-By default it can also generate disc IDs for services like [AccurateRip](http://accuraterip.com/), [CDDB](https://en.wikipedia.org/wiki/CDDB), [CUETools Database](http://cue.tools/wiki/CUETools_Database), and [MusicBrainz](https://musicbrainz.org/), but you can disable the corresponding crate feature(s) — `accuraterip`, `cddb`, `ctdb`, and `musicbrainz` respectively — to shrink the dependency tree if you don't need that functionality.
+By default it can also generate disc IDs for services like [AccurateRip](https://accuraterip.com/), [CDDB](https://en.wikipedia.org/wiki/CDDB), [CUETools Database](https://cue.tools/wiki/CUETools_Database), and [MusicBrainz](https://musicbrainz.org/), but you can disable the corresponding crate feature(s) — `accuraterip`, `cddb`, `ctdb`, and `musicbrainz` respectively — to shrink the dependency tree if you don't need that functionality.
 
 
 

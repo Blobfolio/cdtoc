@@ -2,6 +2,15 @@
 
 
 
+## [0.13.2](https://github.com/Blobfolio/cdtoc/releases/tag/v0.13.2) - 2026-04-16
+
+### Changed
+
+* Use https for AccurateRip URLs
+* Update links in docs
+
+
+
 ## [0.13.1](https://github.com/Blobfolio/cdtoc/releases/tag/v0.13.1) - 2026-04-07
 
 ### Changed
