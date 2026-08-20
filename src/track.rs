@@ -3,7 +3,7 @@
 */
 
 use crate::Duration;
-use std::ops::Range;
+use std::range::legacy::Range;
 
 
 

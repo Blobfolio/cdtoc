@@ -15,7 +15,7 @@ use dactyl::traits::{
 use std::{
 	collections::BTreeMap,
 	fmt,
-	ops::Range,
+	range::legacy::Range,
 	str::FromStr,
 };
 
