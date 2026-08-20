@@ -314,7 +314,8 @@ impl AccurateRip {
 			let chunk = chunk.strip_prefix(&self.0).ok_or(TocError::Checksums)?;
 			// Update the list for each track, combining them if for some
 			// reason the same value appears twice.
-			for (k, v) in chunk.chunks_exact(9).enumerate() {
+			let (chunk, _) = chunk.as_chunks::<9>();
+			for (k, v) in chunk.iter().enumerate() {
 				let crc = u32::from_le_bytes([v[1], v[2], v[3], v[4]]);
 				if crc != 0 {
 					let e = out[k].entry(crc).or_insert(0);
@@ -361,7 +362,8 @@ impl AccurateRip {
 		// little-endian offset; the next 32 hold the vendor/model; the rest
 		// we can ignore!
 		let mut out = BTreeMap::default();
-		for chunk in raw.chunks_exact(BLOCK_SIZE) {
+		let (chunks, _) = raw.as_chunks::<BLOCK_SIZE>();
+		for chunk in chunks {
 			// The offset is easy!
 			let offset = i16::from_le_bytes([chunk[0], chunk[1]]);
 
@@ -414,12 +416,7 @@ impl AccurateRip {
 	/// Format the AccurateRip ID for display, returning the bytes as a
 	/// fixed-length array.
 	fn encode(&self) -> [u8; 30] {
-		let mut disc_id: [u8; 30] = [
-			b'0', b'0', b'0',
-			b'-', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0',
-			b'-', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0',
-			b'-', b'0', b'0', b'0', b'0', b'0', b'0', b'0', b'0',
-		];
+		let mut disc_id: [u8; 30] = *b"000-00000000-00000000-00000000";
 
 		// Length.
 		disc_id[..3].copy_from_slice(dactyl::NiceU8::from(self.0[0]).as_bytes3());
