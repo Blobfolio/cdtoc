@@ -2,6 +2,15 @@
 
 
 
+## [0.14.0](https://github.com/Blobfolio/cdtoc/releases/tag/v0.14.0) - 2026-08-20
+
+### Changed
+
+* Bump MSRV to `1.98`
+* Miscellaneous code cleanup and lints
+
+
+
 ## [0.13.2](https://github.com/Blobfolio/cdtoc/releases/tag/v0.13.2) - 2026-04-16
 
 ### Changed

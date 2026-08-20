@@ -34,7 +34,9 @@ impl fmt::Display for ShaB64 {
 		let mut buf = [b'-'; 28];
 
 		// For all but the last chunk, it's a simple 3:4 ratio.
-		for (raw, dst) in self.0.chunks_exact(3).zip(buf.chunks_exact_mut(4)) {
+		let (lhs, _) = self.0.as_chunks::<3>();
+		let (rhs, _) = buf.as_chunks_mut::<4>();
+		for (raw, dst) in lhs.iter().zip(rhs) {
 			dst[0] = base64_encode(raw[0] >> 2);
 			dst[1] = base64_encode(((raw[0] & 0b0000_0011) << 4) | (raw[1] >> 4));
 			dst[2] = base64_encode(((raw[1] & 0b0000_1111) << 2) | (raw[2] >> 6));
@@ -85,7 +87,9 @@ impl ShaB64 {
 			let mut out = [0_u8; 20];
 
 			// Handle all the nice four-byte chunks en masse.
-			for (i, chunk) in out.chunks_exact_mut(3).zip(src.chunks_exact(4)) {
+			let (lhs, _) = out.as_chunks_mut::<3>();
+			let (rhs, _) = src.as_chunks::<4>();
+			for (i, chunk) in lhs.iter_mut().zip(rhs) {
 				let a = base64_decode(chunk[0])?;
 				let b = base64_decode(chunk[1])?;
 				let c = base64_decode(chunk[2])?;
@@ -117,7 +121,8 @@ impl ShaB64 {
 	/// any intermediary buffers.
 	pub(crate) fn push_to_string(&self, out: &mut String) {
 		// For all but the last chunk, it's a simple 3:4 ratio.
-		for chunk in self.0.chunks_exact(3) {
+		let (chunks, _) = self.0.as_chunks::<3>();
+		for chunk in chunks {
 			out.push(base64_encode(chunk[0] >> 2) as char);
 			out.push(base64_encode(((chunk[0] & 0b0000_0011) << 4) | (chunk[1] >> 4)) as char);
 			out.push(base64_encode(((chunk[1] & 0b0000_1111) << 2) | (chunk[2] >> 6)) as char);
