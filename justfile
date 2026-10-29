@@ -21,6 +21,8 @@ pkg_name    := "CDTOC"
 cargo_dir   := "/tmp/" + pkg_id + "-cargo"
 doc_dir     := justfile_directory() + "/doc"
 
+export RUSTFLAGS := "-Dwarnings"
+
 
 
 # Bench it!
