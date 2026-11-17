@@ -14,6 +14,7 @@ exclude = [
 	".gitignore",
 	".righteous-sandbox.json",
 	"doc",
+	"skel",
 	"justfile",
 ]
 
