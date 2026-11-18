@@ -358,6 +358,48 @@ pos_tuple!(u8, u16, u32, u64, usize);
 
 impl TrackPosition {
 	#[must_use]
+	/// # New.
+	///
+	/// Create a position for a given track given the total number of tracks
+	/// on the album.
+	///
+	/// ## Examples
+	///
+	/// ```
+	/// use cdtoc::TrackPosition;
+	///
+	/// assert_eq!(TrackPosition::new(1, 3), TrackPosition::First);
+	/// assert_eq!(TrackPosition::new(2, 3), TrackPosition::Middle);
+	/// assert_eq!(TrackPosition::new(3, 3), TrackPosition::Last);
+	///
+	/// // Single-track discs get their own designation.
+	/// assert_eq!(TrackPosition::new(1, 1), TrackPosition::Only);
+	///
+	/// // HTOA tracks are qualified as "invalid".
+	/// assert_eq!(TrackPosition::new(0, 10), TrackPosition::Invalid);
+	///
+	/// // Invalid tracks are also invalid. Haha.
+	/// assert_eq!(TrackPosition::new(12, 10), TrackPosition::Invalid);
+	///
+	/// // You can also use `From` if that feels more natural.
+	/// for i in 0..10_u8 {
+	///     assert_eq!(
+	///         TrackPosition::new(i, 10),
+	///         TrackPosition::from((i, 10_u8)),
+	///     );
+	/// }
+	/// ```
+	pub const fn new(track: u8, total: u8) -> Self {
+		if track == 0 || total < track { Self::Invalid }
+		else if track == 1 {
+			if total == 1 { Self::Only }
+			else { Self::First }
+		}
+		else if track == total { Self::Last }
+		else { Self::Middle }
+	}
+
+	#[must_use]
 	/// # Is Valid?
 	///
 	/// Returns `true` if the position is anything other than [`TrackPosition::Invalid`].
