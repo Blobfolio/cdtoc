@@ -128,7 +128,11 @@ pub use track::{
 	Tracks,
 	TrackPosition,
 };
-#[cfg(feature = "accuraterip")] pub use accuraterip::AccurateRip;
+#[cfg(feature = "accuraterip")]
+pub use accuraterip::{
+	AccurateRip,
+	AccurateRipTrackChecksums,
+};
 #[cfg(feature = "cddb")] pub use cddb::Cddb;
 #[cfg(feature = "ctdb")]
 pub use ctdb::{

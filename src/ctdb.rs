@@ -25,7 +25,7 @@ use std::{
 #[cfg_attr(docsrs, doc(cfg(feature = "ctdb")))]
 /// # CTDB Track Checksums.
 ///
-/// A map matching CRC32 checksums to their cumulative confidence.
+/// A map matching CRC32 track checksums to their cumulative confidence.
 pub type CtdbTrackChecksums = BTreeMap<u32, NonZeroU16>;
 
 
