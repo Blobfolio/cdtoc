@@ -10,7 +10,324 @@ use crate::{
 	TocKind,
 };
 use dactyl::traits::HexToUnsigned;
-use std::collections::BTreeMap;
+use std::{
+	collections::BTreeMap,
+	fmt::NumBuffer,
+};
+
+
+
+#[cfg_attr(docsrs, doc(cfg(feature = "ctdb")))]
+#[derive(Debug, Clone, Eq, PartialEq)]
+/// # CUETools Database Lookup.
+///
+/// This struct holds the entry details from a [CUETools Database](https://cue.tools/wiki/CUETools_Database)
+/// lookup. (Album metadata is not included.)
+pub struct CtdbLookup {
+	/// # Entries.
+	entries: Vec<CtdbLookupEntry>,
+}
+
+impl CtdbLookup {
+	#[cfg_attr(docsrs, doc(cfg(feature = "ctdb")))]
+	#[must_use]
+	/// # Entries.
+	///
+	/// Return a slice of the lookup entries.
+	pub const fn entries(&self) -> &[CtdbLookupEntry] { self.entries.as_slice() }
+}
+
+
+
+#[cfg_attr(docsrs, doc(cfg(feature = "ctdb")))]
+#[derive(Debug, Clone, Eq, PartialEq)]
+/// # CUETools Database Lookup Entry.
+///
+/// This struct holds the details for a single entry in a [CUETools Database](https://cue.tools/wiki/CUETools_Database)
+/// lookup.
+pub struct CtdbLookupEntry {
+	/// # Confidence.
+	confidence: NonZeroU16,
+
+	/// # ID.
+	id: u64,
+
+	/// # Has Parity?
+	has_parity: bool,
+
+	/// # Parity.
+	parity: CtdbParitySettings,
+
+	/// # Track CRCs.
+	///
+	/// This holds a CRC32 for each track on the album, indexed by track number
+	/// (`n-1`).
+	track_crcs: Vec<u32>,
+}
+
+impl CtdbLookupEntry {
+	#[cfg_attr(docsrs, doc(cfg(feature = "ctdb")))]
+	#[must_use]
+	/// # Confidence.
+	///
+	/// Return the "confidence" associated with all checksums in the entry.
+	pub const fn confidence(&self) -> NonZeroU16 { self.confidence }
+
+	#[cfg_attr(docsrs, doc(cfg(feature = "ctdb")))]
+	#[must_use]
+	/// # Track Checksum.
+	///
+	/// Return the checksum corresponding to a specific track. Returns `None`
+	/// if out of range.
+	pub const fn track_crc(&self, track: u8) -> Option<u32> {
+		let slice = self.track_crcs();
+		if let Some(idx) = track.checked_sub(1) && (idx as usize) < slice.len() {
+			Some(slice[idx as usize])
+		}
+		else { None }
+	}
+
+	#[cfg_attr(docsrs, doc(cfg(feature = "ctdb")))]
+	#[must_use]
+	/// # Track Checksums.
+	///
+	/// Return a slice containing the checksum for each track, indexed by track
+	/// number (`n-1`).
+	///
+	/// Note that CTDB does not check HTOA tracks.
+	pub const fn track_crcs(&self) -> &[u32] { self.track_crcs.as_slice() }
+}
+
+
+
+#[cfg_attr(docsrs, doc(cfg(feature = "ctdb")))]
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+/// # CUETools Parity.
+///
+/// This struct holds the parity size, stride, and syndrdome data for a single
+/// [CUETools Database](https://cue.tools/wiki/CUETools_Database) lookup entry.
+pub enum CtdbParitySettings {
+	/// # Npar 8.
+	Npar8(CtdbParitySettingsInner<8>),
+
+	/// # Npar 16.
+	Npar16(CtdbParitySettingsInner<16>),
+}
+
+impl CtdbParitySettings {
+	#[must_use]
+	/// # New.
+	const fn new(
+		npar: NonZeroU8,
+		stride: NonZeroU16,
+		syndrome: &str,
+	) -> Option<Self> {
+		// Eight.
+		if npar.get() == 8 {
+			if let Some(syndrome) = CtdbParitySettingsInner::<8>::decode_syndrome(syndrome) {
+				return Some(Self::Npar8(CtdbParitySettingsInner {
+					stride,
+					syndrome,
+				}));
+			}
+		}
+
+		// Sixteen.
+		else if
+			npar.get() == 16 &&
+			let Some(syndrome) = CtdbParitySettingsInner::<16>::decode_syndrome(syndrome)
+		{
+			return Some(Self::Npar16(CtdbParitySettingsInner {
+				stride,
+				syndrome,
+			}));
+		}
+
+		// Dunno!
+		None
+	}
+}
+
+impl CtdbParitySettings {
+	#[must_use]
+	/// # Parity Size.
+	///
+	/// Return the number of parity bytes.
+	pub const fn npar(&self) -> NonZeroU8 {
+		match self {
+			Self::Npar8(_) => const { NonZeroU8::new(8).unwrap() },
+			Self::Npar16(_) => const { NonZeroU8::new(16).unwrap() },
+		}
+	}
+
+	#[must_use]
+	/// # Parity Stride.
+	///
+	/// Return the parity stride.
+	pub const fn stride(&self) -> NonZeroU16 {
+		match self {
+			Self::Npar8(v) => v.stride(),
+			Self::Npar16(v) => v.stride(),
+		}
+	}
+
+	#[must_use]
+	/// # Syndrome.
+	///
+	/// Return the syndrome as a slice.
+	///
+	/// Note: the length will always match `self.npar()`.
+	pub const fn syndrome(&self) -> &[u16] {
+		match self {
+			Self::Npar8(v) => v.syndrome.as_slice(),
+			Self::Npar16(v) => v.syndrome.as_slice(),
+		}
+	}
+}
+
+
+
+#[cfg_attr(docsrs, doc(cfg(feature = "ctdb")))]
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+/// # CUETools Parity (Inner).
+///
+/// This struct holds the parity size, stride, and syndrdome data for a single
+/// [CUETools Database](https://cue.tools/wiki/CUETools_Database) lookup entry.
+pub struct CtdbParitySettingsInner<const N: usize> {
+	/// # Stride.
+	stride: NonZeroU16,
+
+	/// # Syndrome.
+	syndrome: [u16; N],
+}
+
+impl<const N: usize> CtdbParitySettingsInner<N> {
+	#[must_use]
+	/// # Parity Stride.
+	///
+	/// Return the parity stride.
+	pub const fn stride(&self) -> NonZeroU16 { self.stride }
+}
+
+impl CtdbParitySettingsInner<8> {
+	/// # Syndrome From Base64.
+	const fn decode_syndrome(raw: &str) -> Option<[u16; 8]> {
+		let [ raw @ .., b'=', b'=' ] = raw.as_bytes() else { return None; };
+		let Some(raw) = raw.as_array::<22>() else { return None; };
+		let Some(raw) = unmap_syndrome_base64(raw) else { return None; };
+
+		Some([
+			u16::from_le_bytes([
+				((raw[0] & 0b0011_1111) << 2) | (raw[1] >> 4),
+				((raw[1] & 0b0000_1111) << 4) | (raw[2] >> 2),
+			]),
+			u16::from_le_bytes([
+				((raw[2] & 0b0000_0011) << 6) | raw[3] & 0b0011_1111,
+				((raw[4] & 0b0011_1111) << 2) | (raw[5] >> 4),
+			]),
+			u16::from_le_bytes([
+				((raw[5] & 0b0000_1111) << 4) | (raw[6] >> 2),
+				((raw[6] & 0b0000_0011) << 6) | raw[7] & 0b0011_1111,
+			]),
+			u16::from_le_bytes([
+				((raw[8] & 0b0011_1111) << 2) | (raw[9] >> 4),
+				((raw[9] & 0b0000_1111) << 4) | (raw[10] >> 2),
+			]),
+			u16::from_le_bytes([
+				((raw[10] & 0b0000_0011) << 6) | raw[11] & 0b0011_1111,
+				((raw[12] & 0b0011_1111) << 2) | (raw[13] >> 4),
+			]),
+			u16::from_le_bytes([
+				((raw[13] & 0b0000_1111) << 4) | (raw[14] >> 2),
+				((raw[14] & 0b0000_0011) << 6) | raw[15] & 0b0011_1111,
+			]),
+			u16::from_le_bytes([
+				((raw[16] & 0b0011_1111) << 2) | (raw[17] >> 4),
+				((raw[17] & 0b0000_1111) << 4) | (raw[18] >> 2),
+			]),
+			u16::from_le_bytes([
+				((raw[18] & 0b0000_0011) << 6) | raw[19] & 0b0011_1111,
+				((raw[20] & 0b0011_1111) << 2) | (raw[21] >> 4),
+			]),
+		])
+	}
+}
+
+impl CtdbParitySettingsInner<16> {
+	/// # Syndrome From Base64.
+	const fn decode_syndrome(raw: &str) -> Option<[u16; 16]> {
+		let [ raw @ .., b'=' ] = raw.as_bytes() else { return None; };
+		let Some(raw) = raw.as_array::<43>() else { return None; };
+		let Some(raw) = unmap_syndrome_base64(raw) else { return None; };
+
+		Some([
+			u16::from_le_bytes([
+				((raw[0] & 0b0011_1111) << 2) | (raw[1] >> 4),
+				((raw[1] & 0b0000_1111) << 4) | (raw[2] >> 2),
+			]),
+			u16::from_le_bytes([
+				((raw[2] & 0b0000_0011) << 6) | raw[3] & 0b0011_1111,
+				((raw[4] & 0b0011_1111) << 2) | (raw[5] >> 4),
+			]),
+			u16::from_le_bytes([
+				((raw[5] & 0b0000_1111) << 4) | (raw[6] >> 2),
+				((raw[6] & 0b0000_0011) << 6) | raw[7] & 0b0011_1111,
+			]),
+			u16::from_le_bytes([
+				((raw[8] & 0b0011_1111) << 2) | (raw[9] >> 4),
+				((raw[9] & 0b0000_1111) << 4) | (raw[10] >> 2),
+			]),
+			u16::from_le_bytes([
+				((raw[10] & 0b0000_0011) << 6) | raw[11] & 0b0011_1111,
+				((raw[12] & 0b0011_1111) << 2) | (raw[13] >> 4),
+			]),
+			u16::from_le_bytes([
+				((raw[13] & 0b0000_1111) << 4) | (raw[14] >> 2),
+				((raw[14] & 0b0000_0011) << 6) | raw[15] & 0b0011_1111,
+			]),
+			u16::from_le_bytes([
+				((raw[16] & 0b0011_1111) << 2) | (raw[17] >> 4),
+				((raw[17] & 0b0000_1111) << 4) | (raw[18] >> 2),
+			]),
+			u16::from_le_bytes([
+				((raw[18] & 0b0000_0011) << 6) | raw[19] & 0b0011_1111,
+				((raw[20] & 0b0011_1111) << 2) | (raw[21] >> 4),
+			]),
+			u16::from_le_bytes([
+				((raw[21] & 0b0000_1111) << 4) | (raw[22] >> 2),
+				((raw[22] & 0b0000_0011) << 6) | raw[23] & 0b0011_1111,
+			]),
+			u16::from_le_bytes([
+				((raw[24] & 0b0011_1111) << 2) | (raw[25] >> 4),
+				((raw[25] & 0b0000_1111) << 4) | (raw[26] >> 2),
+			]),
+			u16::from_le_bytes([
+				((raw[26] & 0b0000_0011) << 6) | raw[27] & 0b0011_1111,
+				((raw[28] & 0b0011_1111) << 2) | (raw[29] >> 4),
+			]),
+			u16::from_le_bytes([
+				((raw[29] & 0b0000_1111) << 4) | (raw[30] >> 2),
+				((raw[30] & 0b0000_0011) << 6) | raw[31] & 0b0011_1111,
+			]),
+			u16::from_le_bytes([
+				((raw[32] & 0b0011_1111) << 2) | (raw[33] >> 4),
+				((raw[33] & 0b0000_1111) << 4) | (raw[34] >> 2),
+			]),
+			u16::from_le_bytes([
+				((raw[34] & 0b0000_0011) << 6) | raw[35] & 0b0011_1111,
+				((raw[36] & 0b0011_1111) << 2) | (raw[37] >> 4),
+			]),
+			u16::from_le_bytes([
+				((raw[37] & 0b0000_1111) << 4) | (raw[38] >> 2),
+				((raw[38] & 0b0000_0011) << 6) | raw[39] & 0b0011_1111,
+			]),
+			u16::from_le_bytes([
+				((raw[40] & 0b0011_1111) << 2) | (raw[41] >> 4),
+				((raw[41] & 0b0000_1111) << 4) | (raw[42] >> 2),
+			]),
+		])
+	}
+}
 
 
 
@@ -112,30 +429,30 @@ impl Toc {
 		url.push_str("https://db.cue.tools/lookup2.php?version=3&ctdb=1&fuzzy=1&toc=");
 
 		// Digit buffer.
-		let mut buf = U32DigitBuffer::DEFAULT;
+		let mut buf = NumBuffer::<u32>::new();
 
 		// Leading data?
 		if matches!(self.kind, TocKind::DataFirst) {
 			url.push('-');
-			for &c in buf.format(self.data - 150) { url.push(c); }
+			url.push_str((self.data - 150).format_into(&mut buf));
 			url.push(':');
 		}
 
 		// Each audio track relative to the first.
 		for v in &self.audio {
-			for &c in buf.format(v - 150) { url.push(c); }
+			url.push_str((v - 150).format_into(&mut buf));
 			url.push(':');
 		}
 
 		// Trailing data?
 		if matches!(self.kind, TocKind::CDExtra) {
 			url.push('-');
-			for &c in buf.format(self.data - 150) { url.push(c); }
+			url.push_str((self.data - 150).format_into(&mut buf));
 			url.push(':');
 		}
 
 		// And the leadout.
-		for &c in buf.format(self.leadout - 150) { url.push(c); }
+		url.push_str((self.leadout - 150).format_into(&mut buf));
 
 		url
 	}
@@ -212,40 +529,6 @@ fn parse_attr<'a>(mut line: &'a str, attr: &'static str) -> Option<&'a str> {
 
 
 
-#[derive(Debug, Clone, Copy)]
-/// # Digit Buffer.
-///
-/// This buffer is used by `ctdb_checksum_url` to convert `u32` values to
-/// string. It doesn't do anything fancy, but helps reduce writes/allocations.
-struct U32DigitBuffer([char; 10]);
-
-impl U32DigitBuffer {
-	/// # Default Buffer.
-	const DEFAULT: Self = Self(['0'; 10]);
-
-	#[expect(clippy::cast_possible_truncation, reason = "False positive.")]
-	/// # Digitize a Number.
-	///
-	/// Return a slice containing each digit represented as an ASCII `char`.
-	const fn format(&mut self, mut num: u32) -> &[char] {
-		// Fill the buffer, right to left.
-		let mut len = 0;
-		while 9 < num {
-			len += 1;
-			self.0[10 - len] = ((num % 10) as u8 ^ b'0') as char;
-			num /= 10;
-		}
-		len += 1;
-		self.0[10 - len] = (num as u8 ^ b'0') as char;
-
-		// Split off and return the relevant part.
-		let (_, b) = self.0.split_at(10 - len);
-		b
-	}
-}
-
-
-
 #[cfg(test)]
 mod tests {
 	use super::*;
@@ -295,16 +578,6 @@ mod tests {
 			assert_eq!(ShaB64::try_from(id), Ok(ctdb_id));
 			assert_eq!(id.parse::<ShaB64>(), Ok(ctdb_id));
 		}
-	}
-
-	#[test]
-	fn t_digits() {
-		let mut buf = U32DigitBuffer::DEFAULT;
-		assert_eq!(buf.format(0), &['0']);
-		assert_eq!(buf.format(10), &['1', '0']);
-		assert_eq!(buf.format(432), &['4', '3', '2']);
-		assert_eq!(buf.format(50_000), &['5', '0', '0', '0', '0']);
-		assert_eq!(buf.format(u32::MAX), &['4', '2', '9', '4', '9', '6', '7', '2', '9', '5']);
 	}
 
 	#[test]
