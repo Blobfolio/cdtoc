@@ -710,18 +710,19 @@ impl Toc {
 	///
 	/// Return the details of a given audio track on the disc, or `None` if the
 	/// track number is out of range.
-	pub fn audio_track(&self, num: usize) -> Option<Track> {
+	pub const fn audio_track(&self, num: usize) -> Option<Track> {
 		let len = self.audio_len();
-		if num == 0 || len < num { None }
+		if num == 0 || len < num || 255 < len { None }
 		else {
-			let from = self.audio[num - 1];
+			let slice = self.audio.as_slice();
+			let from = slice[num - 1];
 			let to =
-				if num < len { self.audio[num] }
+				if num < len { slice[num] }
 				else { self.audio_leadout() };
 
 			Some(Track {
 				num: num as u8,
-				pos: TrackPosition::from((num, len)),
+				pos: TrackPosition::new(num as u8, len as u8),
 				from,
 				to,
 			})
