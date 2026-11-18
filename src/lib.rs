@@ -130,6 +130,14 @@ pub use track::{
 };
 #[cfg(feature = "accuraterip")] pub use accuraterip::AccurateRip;
 #[cfg(feature = "cddb")] pub use cddb::Cddb;
+#[cfg(feature = "ctdb")]
+pub use ctdb::{
+	CtdbLookup,
+	CtdbLookupEntry,
+	CtdbParitySettings,
+	CtdbParitySettingsSized,
+	CtdbTrackChecksums,
+};
 #[cfg(feature = "sha1")] pub use shab64::ShaB64;
 
 use dactyl::traits::HexToUnsigned;
