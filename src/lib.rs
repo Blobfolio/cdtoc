@@ -137,6 +137,12 @@ use std::fmt;
 
 
 
+/// # CD-Extra Data Track Offset.
+///
+/// The effective audio leadout is this many sectors before the start of the
+/// data track. You know, for reasons…
+const CDEXTRA_DATA_OFFSET: u32 = 11_400;
+
 #[cfg(any(feature = "ctdb", feature = "musicbrainz"))]
 /// # Track Zeroes.
 ///
@@ -347,7 +353,7 @@ impl Toc {
 	/// for each audio track, data track (if any), and the leadout.
 	///
 	/// If a data track is supplied, it must fall between the last audio track
-	/// and leadout, or come before either.
+	/// and leadout, or start before the first audio track.
 	///
 	/// ## Examples
 	///
@@ -396,7 +402,11 @@ impl Toc {
 		let kind =
 			if let Some(d) = data {
 				if d < audio[0] { TocKind::DataFirst }
-				else if audio[audio_len - 1] < d && d < leadout {
+				else if
+					CDEXTRA_DATA_OFFSET < d &&
+					audio[audio_len - 1] < d - CDEXTRA_DATA_OFFSET &&
+					d < leadout
+				{
 					TocKind::CDExtra
 				}
 				else { return Err(TocError::SectorOrder); }
@@ -534,6 +544,9 @@ impl Toc {
 				let len = self.audio.len();
 				if len == 1 { return Err(TocError::NoAudio); }
 				self.data = self.audio.remove(len - 1);
+				if self.data <= self.audio[self.audio.len() - 1] + CDEXTRA_DATA_OFFSET {
+					return Err(TocError::SectorOrder);
+				}
 			},
 			// The first "audio" track is really data.
 			(TocKind::Audio, TocKind::DataFirst) => {
@@ -563,6 +576,9 @@ impl Toc {
 				// replace with the last.
 				self.audio.insert(0, self.data);
 				self.data = self.audio.remove(self.audio.len() - 1);
+				if self.data <= self.audio[self.audio.len() - 1] + CDEXTRA_DATA_OFFSET {
+					return Err(TocError::SectorOrder);
+				}
 			},
 			// Noop.
 			_ => return Ok(()),
@@ -628,7 +644,7 @@ impl Toc {
 	/// ```
 	pub const fn audio_leadout(&self) -> u32 {
 		if matches!(self.kind, TocKind::CDExtra) {
-			self.data.saturating_sub(11_400)
+			self.data - CDEXTRA_DATA_OFFSET
 		}
 		else { self.leadout }
 	}
