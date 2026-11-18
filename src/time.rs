@@ -251,15 +251,18 @@ impl Duration {
 	///     "00:02:59+68",
 	/// );
 	/// ```
-	pub fn from_samples(sample_rate: u32,  total_samples: u64) -> Self {
-		if sample_rate == 0 || total_samples == 0 { Self::default() }
+	pub const fn from_samples(sample_rate: u32,  total_samples: u64) -> Self {
+		if sample_rate == 0 || total_samples == 0 { Self(0) }
 		else {
-			let sample_rate = u64::from(sample_rate);
+			let sample_rate = sample_rate as u64;
 			let (s, rem) = (total_samples.wrapping_div(sample_rate), total_samples % sample_rate);
 			if rem == 0 { Self(s * SECTORS_PER_SECOND) }
 			else {
-				let f = NiceFloat::div_u64(rem * 75, sample_rate)
-					.map_or(0, |f| f.trunc() as u64);
+				let f =
+					if let Ok(f) = NiceFloat::div_u64(rem * 75, sample_rate) {
+						f.trunc() as u64
+					}
+					else { 0 };
 				Self(s * SECTORS_PER_SECOND + f)
 			}
 		}
