@@ -194,7 +194,7 @@ impl CtdbLookupEntry {
 		// Expected things.
 		let mut id = None;
 		let mut confidence = None;
-		let mut has_parity = None;
+		let mut has_parity = false;
 		let mut npar = None;
 		let mut stride = None;
 		let mut syndrome = None;
@@ -206,13 +206,7 @@ impl CtdbLookupEntry {
 			match k {
 				"id" => { id = v.parse::<u64>().ok(); },
 				"confidence" => { confidence = v.parse::<NonZeroU16>().ok(); },
-				"hasparity" => {
-					// This should end with the ID.
-					let v = v.strip_prefix("http://p.cuetools.net/")
-						.or_else(|| v.strip_prefix("http://p.cuetools.net/"))
-						.and_then(|v| v.parse::<u64>().ok())?;
-					has_parity.replace(v);
-				},
+				"hasparity" => { has_parity = true; },
 				"npar" => { npar = v.parse::<NonZeroU8>().ok(); },
 				"stride" => { stride = v.parse::<NonZeroU16>().ok(); },
 				"syndrome" => { syndrome.replace(v); },
@@ -233,7 +227,6 @@ impl CtdbLookupEntry {
 		let id = id?;
 		let confidence = confidence?;
 		let npar = npar?;
-		let has_parity = Some(id) == has_parity;
 		let stride = stride?;
 		let syndrome = syndrome?;
 		let parity_settings = CtdbParitySettings::new(npar, stride, syndrome)?;
