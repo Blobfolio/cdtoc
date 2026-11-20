@@ -94,6 +94,10 @@ pub enum TocError {
 	/// # CDDB Decode.
 	CddbDecode,
 
+	#[cfg(feature = "ctdb")]
+	/// # CTDB Lookup Parse.
+	CtdbLookup,
+
 	#[cfg(feature = "sha1")]
 	/// # SHA1/Base64 Decode.
 	ShaB64Decode,
@@ -119,6 +123,7 @@ impl fmt::Display for TocError {
 			#[cfg(feature = "accuraterip")] Self::NoDriveOffsets => "No drive offsets were found.",
 
 			#[cfg(feature = "cddb")] Self::CddbDecode => "Invalid CDDB ID string.",
+			#[cfg(feature = "ctdb")] Self::CtdbLookup => "Unable to parse CTDB lookup.",
 			#[cfg(feature = "sha1")] Self::ShaB64Decode => "Invalid sha/base64 ID string.",
 		})
 	}

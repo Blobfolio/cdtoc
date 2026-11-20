@@ -15,6 +15,7 @@ use dactyl::traits::{
 use std::{
 	collections::BTreeMap,
 	fmt,
+	num::NonZeroU8,
 	range::legacy::Range,
 	str::FromStr,
 };
@@ -36,6 +37,14 @@ const DRIVE_OFFSET_MODEL_MAX: usize = 16;
 /// Offsets won't work if they exceed the ignorable range baked into
 /// AccurateRip's checksum algorithm.
 const DRIVE_OFFSET_OFFSET_RNG: Range<i16> = -2940..2941;
+
+
+
+#[cfg_attr(docsrs, doc(cfg(feature = "accuraterip")))]
+/// # AccurateRip Track Checksums.
+///
+/// A map matching track checksums to their cumulative confidence.
+pub type AccurateRipTrackChecksums = BTreeMap<u32, NonZeroU8>;
 
 
 
@@ -302,12 +311,14 @@ impl AccurateRip {
 	///
 	/// This will return an error if parsing is unsuccessful, or the result is
 	/// empty.
-	pub fn parse_checksums(&self, bin: &[u8]) -> Result<Vec<BTreeMap<u32, u8>>, TocError> {
+	pub fn parse_checksums(&self, bin: &[u8]) -> Result<Vec<AccurateRipTrackChecksums>, TocError> {
+		use std::collections::btree_map::Entry;
+
 		// We're expecting 0+ sections containing a 13-byte disc ID and a
 		// 9-byte checksum for each track.
 		let audio_len = self.audio_len() as usize;
 		let chunk_size = 13 + 9 * audio_len;
-		let mut out: Vec<BTreeMap<u32, u8>> = vec![BTreeMap::default(); audio_len];
+		let mut out: Vec<AccurateRipTrackChecksums> = vec![BTreeMap::default(); audio_len];
 
 		for chunk in bin.chunks_exact(chunk_size) {
 			// Verify the chunk begins with the disc ID, and get to the meat.
@@ -317,9 +328,14 @@ impl AccurateRip {
 			let (chunk, _) = chunk.as_chunks::<9>();
 			for (k, v) in chunk.iter().enumerate() {
 				let crc = u32::from_le_bytes([v[1], v[2], v[3], v[4]]);
-				if crc != 0 {
-					let e = out[k].entry(crc).or_insert(0);
-					*e = e.saturating_add(v[0]);
+				if crc != 0 && let Some(confidence) = NonZeroU8::new(v[0]) {
+					match out[k].entry(crc) {
+						Entry::Vacant(e) => { e.insert(confidence); },
+						Entry::Occupied(mut e) => {
+							let e = e.get_mut();
+							*e = e.saturating_add(confidence.get());
+						},
+					}
 				}
 			}
 		}
@@ -509,7 +525,7 @@ impl Toc {
 	///
 	/// This will return an error if parsing is unsuccessful, or the result is
 	/// empty.
-	pub fn accuraterip_parse_checksums(&self, bin: &[u8]) -> Result<Vec<BTreeMap<u32, u8>>, TocError> {
+	pub fn accuraterip_parse_checksums(&self, bin: &[u8]) -> Result<Vec<AccurateRipTrackChecksums>, TocError> {
 		self.accuraterip_id().parse_checksums(bin)
 	}
 }
@@ -519,6 +535,7 @@ impl Toc {
 #[cfg(test)]
 mod tests {
 	use super::*;
+	use std::path::PathBuf;
 
 	/// # Test Drive Offset Bin.
 	const OFFSET_BIN: &[u8] = &[155, 2, 80, 73, 79, 78, 69, 69, 82, 32, 32, 45, 32, 66, 68, 45, 82, 87, 32, 32, 32, 66, 68, 82, 45, 88, 49, 50, 0, 0, 0, 0, 0, 0, 0, 75, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 155, 2, 80, 73, 79, 78, 69, 69, 82, 32, 32, 45, 32, 66, 68, 45, 82, 87, 32, 32, 32, 66, 68, 82, 45, 88, 49, 50, 85, 0, 0, 0, 0, 0, 0, 201, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 155, 2, 80, 73, 79, 78, 69, 69, 82, 32, 32, 45, 32, 66, 68, 45, 82, 87, 32, 32, 32, 66, 68, 82, 45, 88, 49, 51, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 155, 2, 80, 73, 79, 78, 69, 69, 82, 32, 32, 45, 32, 66, 68, 45, 82, 87, 32, 32, 32, 66, 68, 82, 45, 88, 49, 51, 85, 0, 0, 0, 0, 0, 0, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -570,5 +587,34 @@ mod tests {
 		let offset = parsed.get(&("PIONEER", "BD-RW   BDR-X13U"))
 			.expect("Unable to find BDR-X13U offset.");
 		assert_eq!(*offset, 667);
+	}
+
+	#[test]
+	fn t_accuraterip_parse_checksums() {
+		let bin = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("skel/ar.bin");
+		let bin = std::fs::read(&bin).expect("Unable to read AccurateRip bin.");
+
+		let toc = Toc::from_cdtoc("F+96+4173+8BDF+C8C7+11443+15E6B+192F6+1DB52+21D82+26CD7+2B227+3084B+35C25+39A3F+3D63F+449EF+4E4AB").expect("Invalid TOC");
+		let parsed = toc.accuraterip_parse_checksums(&bin).expect("Unable to parse checksums");
+		let expected = vec![
+			AccurateRipTrackChecksums::from([(2032967417, NonZeroU8::new(49).unwrap()), (3577993198, NonZeroU8::new(2).unwrap()), (4262023883, NonZeroU8::new(98).unwrap())]),
+			AccurateRipTrackChecksums::from([(3153528502, NonZeroU8::new(97).unwrap()), (3471645763, NonZeroU8::new(2).unwrap()), (3630021663, NonZeroU8::new(48).unwrap())]),
+			AccurateRipTrackChecksums::from([(3225961493, NonZeroU8::new(2).unwrap()), (3545875076, NonZeroU8::new(48).unwrap()), (3821704029, NonZeroU8::new(96).unwrap())]),
+			AccurateRipTrackChecksums::from([(1841558483, NonZeroU8::new(97).unwrap()), (2767101789, NonZeroU8::new(44).unwrap()), (4243026821, NonZeroU8::new(2).unwrap())]),
+			AccurateRipTrackChecksums::from([(1436097598, NonZeroU8::new(2).unwrap()), (2670208939, NonZeroU8::new(44).unwrap()), (3383738060, NonZeroU8::new(99).unwrap())]),
+			AccurateRipTrackChecksums::from([(823137523, NonZeroU8::new(44).unwrap()), (3852931985, NonZeroU8::new(97).unwrap()), (4015766312, NonZeroU8::new(2).unwrap())]),
+			AccurateRipTrackChecksums::from([(1381973883, NonZeroU8::new(97).unwrap()), (2675833527, NonZeroU8::new(2).unwrap()), (2888878651, NonZeroU8::new(43).unwrap())]),
+			AccurateRipTrackChecksums::from([(1069875569, NonZeroU8::new(45).unwrap()), (1325983201, NonZeroU8::new(99).unwrap()), (3092187093, NonZeroU8::new(2).unwrap())]),
+			AccurateRipTrackChecksums::from([(515086977, NonZeroU8::new(99).unwrap()), (3069055781, NonZeroU8::new(2).unwrap()), (4085794977, NonZeroU8::new(44).unwrap())]),
+			AccurateRipTrackChecksums::from([(200006004, NonZeroU8::new(2).unwrap()), (494336528, NonZeroU8::new(47).unwrap()), (1447127262, NonZeroU8::new(99).unwrap())]),
+			AccurateRipTrackChecksums::from([(1856082621, NonZeroU8::new(43).unwrap()), (3002678251, NonZeroU8::new(2).unwrap()), (4195017713, NonZeroU8::new(98).unwrap())]),
+			AccurateRipTrackChecksums::from([(940447519, NonZeroU8::new(2).unwrap()), (1768090665, NonZeroU8::new(96).unwrap()), (2252978539, NonZeroU8::new(43).unwrap())]),
+			AccurateRipTrackChecksums::from([(472789713, NonZeroU8::new(96).unwrap()), (1061197335, NonZeroU8::new(2).unwrap()), (2160106404, NonZeroU8::new(42).unwrap())]),
+			AccurateRipTrackChecksums::from([(1883690331, NonZeroU8::new(41).unwrap()), (3224970027, NonZeroU8::new(92).unwrap())]),
+			AccurateRipTrackChecksums::from([(1188788611, NonZeroU8::new(94).unwrap()), (2666974109, NonZeroU8::new(41).unwrap())]),
+		];
+
+		assert_eq!(toc.audio_len(), parsed.len());
+		assert_eq!(expected, parsed);
 	}
 }

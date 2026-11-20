@@ -128,14 +128,32 @@ pub use track::{
 	Tracks,
 	TrackPosition,
 };
-#[cfg(feature = "accuraterip")] pub use accuraterip::AccurateRip;
+#[cfg(feature = "accuraterip")]
+pub use accuraterip::{
+	AccurateRip,
+	AccurateRipTrackChecksums,
+};
 #[cfg(feature = "cddb")] pub use cddb::Cddb;
+#[cfg(feature = "ctdb")]
+pub use ctdb::{
+	CtdbLookup,
+	CtdbLookupEntry,
+	CtdbParitySettings,
+	CtdbParitySettingsSized,
+	CtdbTrackChecksums,
+};
 #[cfg(feature = "sha1")] pub use shab64::ShaB64;
 
 use dactyl::traits::HexToUnsigned;
 use std::fmt;
 
 
+
+/// # CD-Extra Data Track Offset.
+///
+/// The effective audio leadout is this many sectors before the start of the
+/// data track. You know, for reasons…
+const CDEXTRA_DATA_OFFSET: u32 = 11_400;
 
 #[cfg(any(feature = "ctdb", feature = "musicbrainz"))]
 /// # Track Zeroes.
@@ -347,7 +365,7 @@ impl Toc {
 	/// for each audio track, data track (if any), and the leadout.
 	///
 	/// If a data track is supplied, it must fall between the last audio track
-	/// and leadout, or come before either.
+	/// and leadout, or start before the first audio track.
 	///
 	/// ## Examples
 	///
@@ -396,7 +414,11 @@ impl Toc {
 		let kind =
 			if let Some(d) = data {
 				if d < audio[0] { TocKind::DataFirst }
-				else if audio[audio_len - 1] < d && d < leadout {
+				else if
+					CDEXTRA_DATA_OFFSET < d &&
+					audio[audio_len - 1] < d - CDEXTRA_DATA_OFFSET &&
+					d < leadout
+				{
 					TocKind::CDExtra
 				}
 				else { return Err(TocError::SectorOrder); }
@@ -534,6 +556,9 @@ impl Toc {
 				let len = self.audio.len();
 				if len == 1 { return Err(TocError::NoAudio); }
 				self.data = self.audio.remove(len - 1);
+				if self.data <= self.audio[self.audio.len() - 1] + CDEXTRA_DATA_OFFSET {
+					return Err(TocError::SectorOrder);
+				}
 			},
 			// The first "audio" track is really data.
 			(TocKind::Audio, TocKind::DataFirst) => {
@@ -563,6 +588,9 @@ impl Toc {
 				// replace with the last.
 				self.audio.insert(0, self.data);
 				self.data = self.audio.remove(self.audio.len() - 1);
+				if self.data <= self.audio[self.audio.len() - 1] + CDEXTRA_DATA_OFFSET {
+					return Err(TocError::SectorOrder);
+				}
 			},
 			// Noop.
 			_ => return Ok(()),
@@ -628,7 +656,7 @@ impl Toc {
 	/// ```
 	pub const fn audio_leadout(&self) -> u32 {
 		if matches!(self.kind, TocKind::CDExtra) {
-			self.data.saturating_sub(11_400)
+			self.data - CDEXTRA_DATA_OFFSET
 		}
 		else { self.leadout }
 	}
@@ -686,18 +714,19 @@ impl Toc {
 	///
 	/// Return the details of a given audio track on the disc, or `None` if the
 	/// track number is out of range.
-	pub fn audio_track(&self, num: usize) -> Option<Track> {
+	pub const fn audio_track(&self, num: usize) -> Option<Track> {
 		let len = self.audio_len();
-		if num == 0 || len < num { None }
+		if num == 0 || len < num || 255 < len { None }
 		else {
-			let from = self.audio[num - 1];
+			let slice = self.audio.as_slice();
+			let from = slice[num - 1];
 			let to =
-				if num < len { self.audio[num] }
+				if num < len { slice[num] }
 				else { self.audio_leadout() };
 
 			Some(Track {
 				num: num as u8,
-				pos: TrackPosition::from((num, len)),
+				pos: TrackPosition::new(num as u8, len as u8),
 				from,
 				to,
 			})
@@ -1001,6 +1030,77 @@ impl TocKind {
 	pub const fn has_data(self) -> bool {
 		matches!(self, Self::CDExtra | Self::DataFirst)
 	}
+}
+
+
+
+#[expect(clippy::cast_possible_truncation, reason = "False positive.")]
+#[must_use]
+/// # LBA to MSF.
+///
+/// Convert a logical block address (sectors) to minutes, seconds, and frames.
+///
+/// See [`msf_to_lba`] for the reverse operation.
+///
+/// ## Examples
+///
+/// ```
+/// use cdtoc::{lba_to_msf, msf_to_lba, Toc};
+///
+/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
+/// let track = toc.audio_track(2).unwrap();
+///
+/// let rng = track.sector_range();
+/// assert_eq!(lba_to_msf(rng.start), (2, 34, 13));
+/// assert_eq!(lba_to_msf(rng.end),   (5, 35, 49));
+///
+/// // And back again!
+/// assert_eq!(msf_to_lba(2, 34, 13), rng.start);
+/// assert_eq!(msf_to_lba(5, 35, 49), rng.end);
+/// ```
+pub const fn lba_to_msf(sectors: u32) -> (u32, u8, u8) {
+	// 75 sectors per second.
+	let mut s = sectors.wrapping_div(75);
+	let f = sectors - s * 75;
+
+	// 60 seconds per minute.
+	let m = s.wrapping_div(60);
+	s -= m * 60;
+
+	(m, s as u8, f as u8)
+}
+
+#[must_use]
+/// # MSF to LBA.
+///
+/// Convert minutes, seconds, and frames to a logical block address (sectors).
+///
+/// See [`lba_to_msf`] for the reverse operation.
+///
+/// ## Examples
+///
+/// ```
+/// use cdtoc::{lba_to_msf, msf_to_lba, Toc};
+///
+/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
+/// let track = toc.audio_track(2).unwrap();
+///
+/// let rng = track.sector_range();
+/// assert_eq!(lba_to_msf(rng.start), (2, 34, 13));
+/// assert_eq!(lba_to_msf(rng.end),   (5, 35, 49));
+///
+/// // And back again!
+/// assert_eq!(msf_to_lba(2, 34, 13), rng.start);
+/// assert_eq!(msf_to_lba(5, 35, 49), rng.end);
+///
+/// // Impossibly large values will saturate to `u32::MAX`.
+/// assert_eq!(msf_to_lba(u32::MAX, u8::MAX, u8::MAX), u32::MAX);
+/// ```
+pub const fn msf_to_lba(m: u32, s: u8, f: u8) -> u32 {
+	m.saturating_mul(60)    // Minutes to seconds.
+		.saturating_add(s as u32)
+		.saturating_mul(75) // Seconds to sectors.
+		.saturating_add(f as u32)
 }
 
 

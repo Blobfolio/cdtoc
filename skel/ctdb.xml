@@ -1,0 +1,107 @@
+<ctdb xmlns="http://db.cuetools.net/ns/mmd-1.0#" xmlns:ext="http://db.cuetools.net/ns/ext-1.0#">
+ <entry confidence="322" crc32="b4d23c4c" hasparity="http://p.cuetools.net/66312" id="66312" npar="16" stride="5880" syndrome="P7wQVtwc6E1hkDMhoSti83FUPPUo4BoWh0Kypqj+EOM=" toc="0:16605:35657:51249:70573:89557:103008:121532:138476:158785:176529:198581:220047:235945:251305:-280921:320533" trackcrcs="4c6d94b1 bd133f68 2257c2e5 c76f2f32 accb72ec 409a6c7b 7a549620 06846dd1 d4765f63 88ca22a9 520e506c d548a07d bf186523 0d38d26e 118cf73e"/>
+ <entry confidence="3" crc32="b4d23c4c" hasparity="http://p.cuetools.net/290640" id="290640" npar="8" stride="5880" syndrome="P7wQVtwc6E1hkDMhoSti8w==" toc="0:16605:35657:51249:70573:89557:103008:121532:138476:158785:176529:198581:220047:235945:251305:269521" trackcrcs="4c6d94b1 bd133f68 2257c2e5 c76f2f32 accb72ec 409a6c7b 7a549620 06846dd1 d4765f63 88ca22a9 520e506c d548a07d bf186523 0d38d26e 118cf73e"/>
+ <entry confidence="1" crc32="5f2a26d0" id="2602341" npar="16" stride="5880" syndrome="P7wQVtwc6E1hkDMhoSti83FUPPUo4BoWh0Kypqj+EOM=" toc="0:16605:35657:51249:70573:89557:103008:121532:138476:158785:176529:198581:220047:235945:251305:-280921:320533" trackcrcs="4c6d94b1 bd133f68 2257c2e5 c76f2f32 accb72ec 409a6c7b 53ad5ddf 06846dd1 d4765f63 88ca22a9 520e506c d548a07d bf186523 0d38d26e 118cf73e"/>
+ <entry confidence="1" crc32="83bd8637" id="2903776" npar="16" stride="5880" syndrome="P7wQVtwc6E1hkDMhoSti83FUPPUo4BoWh0Kypqj+EOM=" toc="0:16605:35657:51249:70573:89557:103008:121532:138476:158785:176529:198581:220047:235945:251305:-280921:320533" trackcrcs="4c6d94b1 bd133f68 2257c2e5 c76f2f32 accb72ec 409a6c7b 7a549620 06846dd1 d4765f63 88ca22a9 520e506c d548a07d b8b81c95 0d38d26e 118cf73e"/>
+ <entry confidence="1" crc32="690ffc6a" id="3331009" npar="16" stride="5880" syndrome="P7wQVtwc6E1hkDMhoSti83FUPPUo4BoWh0Kypqj+EOM=" toc="0:16605:35657:51249:70573:89557:103008:121532:138476:158785:176529:198581:220047:235945:251305:-280921:320533" trackcrcs="4c6d94b1 bd133f68 2257c2e5 c76f2f32 accb72ec 409a6c7b 7a549620 06846dd1 d4765f63 88ca22a9 520e506c d548a07d bf186523 0d38d26e cc513718"/>
+ <entry confidence="1" crc32="145e671c" id="3776119" npar="16" stride="5880" syndrome="P7wQVtwc6E1hkDMhoSti83FUPPUo4BoWh0Kypqj+EOM=" toc="0:16605:35657:51249:70573:89557:103008:121532:138476:158785:176529:198581:220047:235945:251305:-280921:320533" trackcrcs="4c6d94b1 bd133f68 2257c2e5 c76f2f32 accb72ec 409a6c7b 7a549620 06846dd1 d4765f63 88ca22a9 48eacc3b d548a07d bf186523 0d38d26e 118cf73e"/>
+ <entry confidence="1" crc32="2f61de1f" id="4380524" npar="16" stride="5880" syndrome="P7wQVtwc6E1hkDMhoSti83FUPPUo4BoWh0Kypqj+EOM=" toc="0:16605:35657:51249:70573:89557:103008:121532:138476:158785:176529:198581:220047:235945:251305:-280921:320533" trackcrcs="4c6d94b1 bd133f68 2257c2e5 c76f2f32 accb72ec 409a6c7b 7a549620 06846dd1 d4765f63 88ca22a9 c746bc74 d548a07d bf186523 0d38d26e 118cf73e"/>
+ <entry confidence="1" crc32="5d894ad7" id="5545338" npar="16" stride="5880" syndrome="P7wQVtwc6E1hkDMhoSti83FUPPUo4BoWh0Kypqj+EOM=" toc="0:16605:35657:51249:70573:89557:103008:121532:138476:158785:176529:198581:220047:235945:251305:-280921:320533" trackcrcs="4c6d94b1 bd133f68 2257c2e5 c76f2f32 accb72ec 409a6c7b 7a549620 06846dd1 d4765f63 88ca22a9 520e506c d548a07d bf186523 2271b2b4 7ccaa7eb"/>
+ <entry confidence="1" crc32="587643ce" id="6341125" npar="16" stride="5880" syndrome="t0qBHaQ0QKb7OuEYw9KDVdzwA7JghLdhYwm4gjPuyKc=" toc="0:16605:35657:51249:70573:89557:103008:121532:138476:158785:176529:198581:220047:235945:251305:-280921:320533" trackcrcs="cca8a7ea d108985c 47b41b7e d08bb6c8 6fa021c3 684c4045 e1e78d38 ffd97252 e47f1b05 c0e50e63 9f78f9c6 d828ec93 8ef36fe9 43fa2bc7 71c6a456"/>
+ <entry confidence="1" crc32="7d0a071d" id="6429741" npar="16" stride="5880" syndrome="lvgDDCDufhN/vUMouKewUhup3xhexqSXJWL8MQAe1h8=" toc="0:16605:35657:51249:70573:89557:103008:121532:138476:158785:176529:198581:220047:235945:251305:-280921:320533" trackcrcs="4c6d94b1 bd133f68 2257c2e5 c76f2f32 accb72ec 409a6c7b 7a549620 041c7586 0a931516 aea4c242 d1486c84 ddeb18fc e7e5b2bb a51e7af2 8d95a981"/>
+ <entry confidence="1" crc32="f14028ba" id="6568392" npar="16" stride="5880" syndrome="n8+cxkRYqZ0xsamIoueR1wr3d4syrj1z9h+Z14iWMOg=" toc="0:16605:35657:51249:70573:89557:103008:121532:138476:158785:176529:198581:220047:235945:251305:-280921:320533" trackcrcs="4c6d94b1 bd133f68 2257c2e5 40eb0a39 accb72ec 409a6c7b 7a549620 06846dd1 d4765f63 88ca22a9 520e506c d548a07d bf186523 cf0a945f 480716b5"/>
+ <entry confidence="1" crc32="f7706b3b" id="6665708" npar="16" stride="5880" syndrome="P7wQVtwc6E1hkDMhoSti83FUPPUo4BoWh0Kypqj+EOM=" toc="0:16605:35657:51249:70573:89557:103008:121532:138476:158785:176529:198581:220047:235945:251305:-280921:320533" trackcrcs="4c6d94b1 bd133f68 2257c2e5 c76f2f32 accb72ec 409a6c7b 7a549620 06846dd1 d4765f63 88ca22a9 e517b7ef 24bbd729 bf186523 0d38d26e 118cf73e"/>
+ <entry confidence="1" crc32="9772f0a2" id="6930393" npar="16" stride="5880" syndrome="P7wQVtwc6E1hkDMhoSti83FUPPUo4BoWh0Kypqj+EOM=" toc="0:16605:35657:51249:70573:89557:103008:121532:138476:158785:176529:198581:220047:235945:251305:-280921:320533" trackcrcs="4c6d94b1 3d0cc18a 727ed49c c76f2f32 accb72ec 409a6c7b 7a549620 06846dd1 d4765f63 88ca22a9 520e506c d548a07d bf186523 0d38d26e 118cf73e"/>
+ <entry confidence="1" crc32="42d82cf5" id="8066093" npar="16" stride="5880" syndrome="P7wQVtwc6E1hkDMhoSti83FUPPUo4BoWh0Kypqj+EOM=" toc="0:16605:35657:51249:70573:89557:103008:121532:138476:158785:176529:198581:220047:235945:251305:-280921:320533" trackcrcs="4c6d94b1 5609179d 2257c2e5 c76f2f32 accb72ec 409a6c7b 7a549620 06846dd1 d4765f63 88ca22a9 520e506c d548a07d bf186523 0d38d26e 118cf73e"/>
+ <entry confidence="1" crc32="4409290e" hasparity="http://p.cuetools.net/8245803" id="8245803" npar="8" stride="5880" syndrome="VFPENkYOUNuqAhpO7sKxyw==" toc="0:16605:35657:51249:70573:89557:103008:121532:138476:158785:176529:198581:220047:235945:251305:-280921:320532" trackcrcs="2d7ec3d7 9a4a3d5b 43008b1a 85b764dc 5925eb09 ec2583b7 1de64618 252cd8ca 80191812 af39effd 294cfd44 4c6391ae 7e12fd1d 017e7e3d ec85884b"/>
+ <entry confidence="1" crc32="0cb6d6e5" id="8272112" npar="16" stride="5880" syndrome="P7wQVtwc6E1hkDMhoSti83FUPPUo4BoWh0Kypqj+EOM=" toc="0:16605:35657:51249:70573:89557:103008:121532:138476:158785:176529:198581:220047:235945:251305:-280921:320533" trackcrcs="4c6d94b1 bd133f68 2257c2e5 40d4d6f2 accb72ec 409a6c7b 7a549620 06846dd1 d4765f63 88ca22a9 520e506c d548a07d bf186523 0d38d26e 118cf73e"/>
+ <entry confidence="1" crc32="a6326677" id="9002716" npar="16" stride="5880" syndrome="A2tbpONfuaJ+v/kcP4QTllmTBc4ustObHdjtQ5mIfHo=" toc="0:16605:35657:51249:70573:89557:103008:121532:138476:158785:176529:198581:220047:235945:251305:269521" trackcrcs="dc89c1be 1096fa0a f7067d4d e88ca58d 4e53d096 785cd75e e4518545 4fe8398b c52ff630 c9dcf949 8d11591a 05286ef1 99931c94 ffa6a6d6 b54006d8"/>
+ <entry confidence="1" crc32="d03d7c47" id="9100982" npar="16" stride="5880" syndrome="P7wQVtwc6E1hkDMhoSti83FUPPUo4BoWh0Kypqj+EOM=" toc="0:16605:35657:51249:70573:89557:103008:121532:138476:158785:176529:198581:220047:235945:251305:-280921:320533" trackcrcs="c234ddd5 9b8bbb91 2257c2e5 c76f2f32 accb72ec 409a6c7b 7a549620 06846dd1 d4765f63 920e0dcd 0b2dda18 d548a07d c6f48458 0d38d26e 118cf73e"/>
+ <entry confidence="1" crc32="a074f2cd" id="9598239" npar="16" stride="5880" syndrome="P7wQVtwc6E1hkDMhoSti83FUPPUo4BoWh0Kypqj+EOM=" toc="0:16605:35657:51249:70573:89557:103008:121532:138476:158785:176529:198581:220047:235945:251305:-280921:320533" trackcrcs="4c6d94b1 bd133f68 2257c2e5 c76f2f32 accb72ec 409a6c7b dcb58150 275d067f d4765f63 88ca22a9 520e506c d548a07d bf186523 0d38d26e 118cf73e"/>
+ <entry confidence="1" crc32="7f6ce25d" id="9609857" npar="16" stride="5880" syndrome="Xr3+hCaJF1cAx1ITKsiNv3HlZSgtcejkJVeQk4XwOf8=" toc="0:16605:35657:51249:70573:89557:103008:121532:138476:158785:176529:198581:220047:235945:251305:-280921:320533" trackcrcs="499d2bc4 bd133f68 2257c2e5 c76f2f32 3ebc8d1f 409a6c7b 7a549620 06846dd1 d4765f63 88ca22a9 520e506c c4db42c8 ba0c9f43 0d38d26e 173ed556"/>
+ <entry confidence="1" crc32="e9f0f03a" id="10794495" npar="16" stride="5880" syndrome="P7wQVtwc6E1hkDMhoSti83FUPPUo4BoWh0Kypqj+EOM=" toc="0:16605:35657:51249:70573:89557:103008:121532:138476:158785:176529:198581:220047:235945:251305:-280921:320533" trackcrcs="4c6d94b1 bd133f68 2257c2e5 c76f2f32 accb72ec 409a6c7b 7a549620 06846dd1 d4765f63 88ca22a9 520e506c 83dab42d bf186523 0d38d26e 5562b465"/>
+ <entry confidence="1" crc32="7a513c3d" id="10809080" npar="16" stride="5880" syndrome="OUwA3u1bAigAskl8T4nCmDIbOH8L2Ss7Pk4OKgdaK4g=" toc="0:16605:35657:51249:70573:89557:103008:121532:138476:158785:176529:198581:220047:235945:251305:-280921:320533" trackcrcs="4c6d94b1 bd133f68 2257c2e5 c76f2f32 accb72ec 409a6c7b 7a549620 06846dd1 761e9d00 bb6b0166 520e506c d548a07d bf186523 0d38d26e 118cf73e"/>
+ <entry confidence="1" crc32="0e33bdc1" id="10976566" npar="16" stride="5880" syndrome="P7wQVtwc6E1hkDMhoSti83FUPPUo4BoWh0Kypqj+EOM=" toc="0:16605:35657:51249:70573:89557:103008:121532:138476:158785:176529:198581:220047:235945:251305:-280921:320533" trackcrcs="4c6d94b1 bd133f68 2257c2e5 c76f2f32 c033cb1d 409a6c7b 7a549620 06846dd1 d4765f63 88ca22a9 80524f73 d548a07d bf186523 29555836 118cf73e"/>
+ <entry confidence="1" crc32="cd1c8f1f" id="11085674" npar="16" stride="5880" syndrome="P7wQVtwc6E1hkDMhoSti83FUPPUo4BoWh0Kypqj+EOM=" toc="0:16605:35657:51249:70573:89557:103008:121532:138476:158785:176529:198581:220047:235945:251305:-280921:320533" trackcrcs="4c6d94b1 bd133f68 2257c2e5 c76f2f32 43075bc4 409a6c7b 7a549620 06846dd1 d4765f63 88ca22a9 520e506c 00c25148 bf186523 0d38d26e 118cf73e"/>
+ <entry confidence="1" crc32="96d34638" id="11087050" npar="16" stride="5880" syndrome="P7wQVtwc6E1hkDMhoSti83FUPPUo4BoWh0Kypqj+EOM=" toc="0:16605:35657:51249:70573:89557:103008:121532:138476:158785:176529:198581:220047:235945:251305:-280921:320533" trackcrcs="4c6d94b1 bd133f68 2257c2e5 c76f2f32 8de5b925 409a6c7b 7a549620 06846dd1 d4765f63 88ca22a9 520e506c 7f4ada1e bf186523 0d38d26e 118cf73e"/>
+ <entry confidence="1" crc32="94cf0a1d" id="11186864" npar="16" stride="5880" syndrome="P7wQVtwc6E1hkDMhoSti83FUPPUo4BoWh0Kypqj+EOM=" toc="0:16605:35657:51249:70573:89557:103008:121532:138476:158785:176529:198581:220047:235945:251305:-280921:320533" trackcrcs="bbe769ff bd133f68 2257c2e5 c76f2f32 accb72ec 409a6c7b 7a549620 06846dd1 d4765f63 88ca22a9 520e506c d548a07d bf186523 0d38d26e 118cf73e"/>
+ <entry confidence="1" crc32="aa0bdf56" id="11761302" npar="16" stride="5880" syndrome="P7wQVtwc6E1hkDMhoSti83FUPPUo4BoWh0Kypqj+EOM=" toc="0:16605:35657:51249:70573:89557:103008:121532:138476:158785:176529:198581:220047:235945:251305:-280921:320533" trackcrcs="4c6d94b1 bd133f68 2257c2e5 c76f2f32 accb72ec 409a6c7b 7a549620 06846dd1 d4765f63 88ca22a9 520e506c d548a07d 27a211bd 5772dc47 94772648"/>
+ <entry confidence="1" crc32="cb06445d" id="11787333" npar="16" stride="5880" syndrome="P7wQVtwc6E1hkDMhoSti83FUPPUo4BoWh0Kypqj+EOM=" toc="0:16605:35657:51249:70573:89557:103008:121532:138476:158785:176529:198581:220047:235945:251305:-280921:320533" trackcrcs="4c6d94b1 bd133f68 2257c2e5 c76f2f32 accb72ec 409a6c7b 7a549620 06846dd1 d4765f63 88ca22a9 520e506c f50377a9 bf186523 0d38d26e 118cf73e"/>
+ <entry confidence="1" crc32="7826f1c2" id="11944141" npar="16" stride="5880" syndrome="KbxP/MErqH3QyrFLDdGGzBykVk2M/WAc/BoTcJPGDPY=" toc="0:16605:35657:51249:70573:89557:103008:121532:138476:158785:176529:198581:220047:235945:251305:-280921:320533" trackcrcs="4c6d94b1 bd133f68 2257c2e5 c76f2f32 accb72ec 409a6c7b 7a549620 06846dd1 d4765f63 88ca22a9 520e506c d548a07d bf186523 f2598e0d bdf88811"/>
+ <entry confidence="1" crc32="1851bcd6" id="12732263" npar="16" stride="5880" syndrome="HgZ9tYMndEgdKEdJCa+xcY7AWhjThuIZGY/ZFRL3ZE4=" toc="0:16605:35657:51249:70573:89557:103008:121532:138476:158785:176529:198581:220047:235945:251305:-280921:320533" trackcrcs="35801e9e 4bbcc368 7370d2eb 9c0f76b5 20207479 51af6101 6c668345 324f44f7 14a14239 f1f6963f 2efe96bb 6c0dff11 db5fee1e b729296b a7ba7bf8"/>
+ <entry confidence="1" crc32="a23cfd6a" id="12979735" npar="16" stride="5880" syndrome="+nUoPu1CqruaXFI1jH0fzMExYJqc1Z4Fa5quUFNQUU0=" toc="0:16605:35657:51249:70573:89557:103008:121532:138476:158785:176529:198581:220047:235945:251305:-280921:320533" trackcrcs="4c6d94b1 0f289800 04b5d414 b0f022b0 accb72ec 7c10df7e 85212213 06846dd1 d4765f63 88ca22a9 520e506c fe3690e5 e191d1e1 3b664d57 636c1eec"/>
+ <entry confidence="1" crc32="2cbf9c16" id="13007570" npar="16" stride="5880" syndrome="JyTclG/Y6cTzsHHAB4CGG+B2eh51MK+RHnDtvaS+SMI=" toc="0:16605:35657:51249:70573:89557:103008:121532:138476:158785:176529:198581:220047:235945:251305:-280921:320533" trackcrcs="4c6d94b1 bd133f68 2257c2e5 e5dfe4a8 0b917fd7 66390444 b2e3c8de cdfadc8d 5e11ca96 a592254b b8a37c29 a3a48572 906643d8 3ec2ad7e f48f826d"/>
+ <entry confidence="1" crc32="c968e9f3" id="13071456" npar="16" stride="5880" syndrome="TbV9TqxtVzkT3TM8DiaIAKygLuJRy3CR6mbgJKKhUdM=" toc="0:16605:35657:51249:70573:89557:103008:121532:138476:158785:176529:198581:220047:235945:251305:-280921:320533" trackcrcs="ccad70c6 00bd146a bfbe876d c76f2f32 accb72ec 409a6c7b 7a549620 c8bde932 40e6df86 88ca22a9 5b044e28 28cd3ef4 6030cd41 579fdfc0 d4dc749f"/>
+ <entry confidence="1" crc32="650cf250" id="13090275" npar="16" stride="5880" syndrome="P7wQVtwc6E1hkDMhoSti83FUPPUo4BoWh0Kypqj+EOM=" toc="0:16605:35657:51249:70573:89557:103008:121532:138476:158785:176529:198581:220047:235945:251305:-280921:320533" trackcrcs="4c6d94b1 bd133f68 2257c2e5 c76f2f32 accb72ec 409a6c7b 7a549620 06846dd1 d4765f63 a67a7f14 520e506c d548a07d 4bf962f2 0d38d26e 118cf73e"/>
+ <metadata album="Survivor" artist="Destiny’s Child" barcode="074646106327" disccount="1" discname="" discnumber="1" id="efb2e63e-5869-4e13-8f06-eba96314ba20" infourl="https://www.amazon.com/gp/product/B00005B5ZU" source="musicbrainz" year="2001">
+  <track name="Independent Women, Part I"/>
+  <track name="Survivor"/>
+  <track name="Bootylicious"/>
+  <track name="Nasty Girl"/>
+  <track name="Fancy"/>
+  <track name="Apple Pie à la Mode"/>
+  <track name="Sexy Daddy"/>
+  <track name="Independent Women, Part II"/>
+  <track name="Happy Face"/>
+  <track name="Emotion"/>
+  <track name="Dangerously in Love"/>
+  <track name="Brown Eyes"/>
+  <track name="The Story of Beauty"/>
+  <track name="Gospel Medley (dedicated to Andretta Tillman): You’ve Been So Good / Now Behold the Lamb / Jesus Loves Me / Total Praise"/>
+  <track name="Outro (DC‐3) Thank You"/>
+  <label catno="CK 61063" name="Columbia"/>
+  <release country="US" date="2001-05-01"/>
+  <coverart primary="1" uri="http://coverartarchive.org/release/efb2e63e-5869-4e13-8f06-eba96314ba20/45762379897.jpg" uri150="http://coverartarchive.org/release/efb2e63e-5869-4e13-8f06-eba96314ba20/45762379897-250.jpg"/>
+  <coverart primary="1" uri="http://coverartarchive.org/release/efb2e63e-5869-4e13-8f06-eba96314ba20/36496023153.jpg" uri150="http://coverartarchive.org/release/efb2e63e-5869-4e13-8f06-eba96314ba20/36496023153-250.jpg"/>
+  <coverart primary="0" uri="http://coverartarchive.org/release/efb2e63e-5869-4e13-8f06-eba96314ba20/36496023815.jpg" uri150="http://coverartarchive.org/release/efb2e63e-5869-4e13-8f06-eba96314ba20/36496023815-250.jpg"/>
+  <coverart primary="0" uri="http://coverartarchive.org/release/efb2e63e-5869-4e13-8f06-eba96314ba20/45762381870.jpg" uri150="http://coverartarchive.org/release/efb2e63e-5869-4e13-8f06-eba96314ba20/45762381870-250.jpg"/>
+  <coverart primary="1" uri="http://coverartarchive.org/release/efb2e63e-5869-4e13-8f06-eba96314ba20/38752794805.jpg" uri150="http://coverartarchive.org/release/efb2e63e-5869-4e13-8f06-eba96314ba20/38752794805-250.jpg"/>
+  <coverart primary="0" uri="http://coverartarchive.org/release/efb2e63e-5869-4e13-8f06-eba96314ba20/45762386160.jpg" uri150="http://coverartarchive.org/release/efb2e63e-5869-4e13-8f06-eba96314ba20/45762386160-250.jpg"/>
+  <coverart primary="0" uri="http://coverartarchive.org/release/efb2e63e-5869-4e13-8f06-eba96314ba20/36496024173.jpg" uri150="http://coverartarchive.org/release/efb2e63e-5869-4e13-8f06-eba96314ba20/36496024173-250.jpg"/>
+  <coverart primary="0" uri="http://coverartarchive.org/release/efb2e63e-5869-4e13-8f06-eba96314ba20/36496024667.jpg" uri150="http://coverartarchive.org/release/efb2e63e-5869-4e13-8f06-eba96314ba20/36496024667-250.jpg"/>
+  <coverart primary="0" uri="http://coverartarchive.org/release/efb2e63e-5869-4e13-8f06-eba96314ba20/36496025119.jpg" uri150="http://coverartarchive.org/release/efb2e63e-5869-4e13-8f06-eba96314ba20/36496025119-250.jpg"/>
+  <coverart primary="0" uri="http://coverartarchive.org/release/efb2e63e-5869-4e13-8f06-eba96314ba20/36496025427.jpg" uri150="http://coverartarchive.org/release/efb2e63e-5869-4e13-8f06-eba96314ba20/36496025427-250.jpg"/>
+  <coverart primary="0" uri="http://coverartarchive.org/release/efb2e63e-5869-4e13-8f06-eba96314ba20/45762386777.jpg" uri150="http://coverartarchive.org/release/efb2e63e-5869-4e13-8f06-eba96314ba20/45762386777-250.jpg"/>
+  <coverart primary="1" uri="http://coverartarchive.org/release/efb2e63e-5869-4e13-8f06-eba96314ba20/45762378793.jpg" uri150="http://coverartarchive.org/release/efb2e63e-5869-4e13-8f06-eba96314ba20/45762378793-250.jpg"/>
+  <coverart primary="0" uri="http://coverartarchive.org/release/efb2e63e-5869-4e13-8f06-eba96314ba20/45762380797.jpg" uri150="http://coverartarchive.org/release/efb2e63e-5869-4e13-8f06-eba96314ba20/45762380797-250.jpg"/>
+  <coverart primary="0" uri="http://coverartarchive.org/release/efb2e63e-5869-4e13-8f06-eba96314ba20/45762383195.jpg" uri150="http://coverartarchive.org/release/efb2e63e-5869-4e13-8f06-eba96314ba20/45762383195-250.jpg"/>
+  <coverart primary="0" uri="http://coverartarchive.org/release/efb2e63e-5869-4e13-8f06-eba96314ba20/45762384085.jpg" uri150="http://coverartarchive.org/release/efb2e63e-5869-4e13-8f06-eba96314ba20/45762384085-250.jpg"/>
+  <coverart primary="0" uri="http://coverartarchive.org/release/efb2e63e-5869-4e13-8f06-eba96314ba20/45762384998.jpg" uri150="http://coverartarchive.org/release/efb2e63e-5869-4e13-8f06-eba96314ba20/45762384998-250.jpg"/>
+ </metadata>
+ <metadata album="Survivor" artist="Destiny's Child" genre="R&amp;B" id="misc/f310b110" relevance="100" source="freedb" year="2001">
+  <track name="Independent Women Part I"/>
+  <track name="Survivor"/>
+  <track name="Bootylicious"/>
+  <track name="Nasty Girl"/>
+  <track name="Fancy"/>
+  <track name="Apple Pie À La Mode"/>
+  <track name="Sexy Daddy"/>
+  <track name="Independent Women Part II"/>
+  <track name="Happy Face"/>
+  <track name="Emotion"/>
+  <track name="Dangerously In Love"/>
+  <track name="Brown Eyes"/>
+  <track name="The Story Of Beauty"/>
+  <track name="Gospel Medley (You've Been So Good, Now Behold The Lamb, Jesus Loves Me, Total Prise)"/>
+  <track name="Outro (DC-3) Thank You"/>
+  <track name="DATA"/>
+ </metadata>
+ <metadata album="Survivor" artist="Destiny's Child" genre="Urban Cross" id="misc/f410b110" relevance="100" source="freedb" year="2001">
+  <track name="Independent Woman Part 1"/>
+  <track name="Survivor"/>
+  <track name="Bootylicious"/>
+  <track name="Nasty Girl"/>
+  <track name="Fancy"/>
+  <track name="Apple Pie A La Mode"/>
+  <track name="Sexy Daddy"/>
+  <track name="Independent Woman Part 2"/>
+  <track name="Happy Face"/>
+  <track name="Emotion"/>
+  <track name="Dangerously In Love"/>
+  <track name="Brown Eyes"/>
+  <track name="The Story Of Beauty"/>
+  <track name="Gospel Medley"/>
+  <track name="Outro (DC-3) Thank You"/>
+  <track name="Data Track"/>
+ </metadata>
+</ctdb>

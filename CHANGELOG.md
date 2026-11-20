@@ -1,6 +1,39 @@
 # Changelog
 
 
+## [0.15.0](https://github.com/Blobfolio/cdtoc/releases/tag/v0.15.0) - 2026-11-19
+
+### New
+
+* `AccurateRipTrackChecksums` (type alias)
+* `CtdbLookup`
+* `CtdbLookupEntry`
+* `CtdbParitySettings`
+* `CtdbParitySettingsSized`
+* `CtdbTrackChecksums` (type alias)
+* `lba_to_msf`
+* `msf_to_lba`
+* `Toc::ctdb_lookup_url`
+* `TrackPosition::new`
+
+### Changed
+
+* `Duration::from_samples` is now const
+* `Toc::audio_track` is now const
+* `Toc::ctdb_checksum_url` is now an alias of `Toc::ctdb_lookup_url`
+* Improved documentation
+* Improved unit test coverage
+* Miscellaneous code cleanup and lints
+
+### Fixed
+
+* CD-Extra data track position overlap checks now factor the audio leadout offset
+
+### Breaking
+
+* AccurateRip and CTDB checksum confidences now use `NonZero*` types
+
+
 ## [0.14.1](https://github.com/Blobfolio/cdtoc/releases/tag/v0.14.1) - 2026-10-01
 
 ### Changed
