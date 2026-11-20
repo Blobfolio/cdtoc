@@ -310,7 +310,7 @@ impl CtdbLookupEntry {
 
 #[cfg_attr(docsrs, doc(cfg(feature = "ctdb")))]
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
-/// # CUETools Parity.
+/// # CUETools Parity Settings.
 ///
 /// This struct holds the parity size, stride, and syndrome data for a single
 /// [CUETools Database](https://cue.tools/wiki/CUETools_Database) lookup entry.
@@ -409,7 +409,7 @@ impl CtdbParitySettings {
 
 #[cfg_attr(docsrs, doc(cfg(feature = "ctdb")))]
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
-/// # CUETools Parity (Inner).
+/// # CUETools Parity Settings (Sized).
 ///
 /// This holds the size-specific data embedded by the variants of the
 /// [`CtdbParitySettings`] enum.

@@ -40,8 +40,8 @@ const DRIVE_OFFSET_OFFSET_RNG: Range<i16> = -2940..2941;
 
 
 
-#[cfg_attr(docsrs, doc(cfg(feature = "ctdb")))]
-/// # CTDB Track Checksums.
+#[cfg_attr(docsrs, doc(cfg(feature = "accuraterip")))]
+/// # AccurateRip Track Checksums.
 ///
 /// A map matching track checksums to their cumulative confidence.
 pub type AccurateRipTrackChecksums = BTreeMap<u32, NonZeroU8>;

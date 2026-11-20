@@ -363,8 +363,7 @@ impl TrackPosition {
 	#[must_use]
 	/// # New.
 	///
-	/// Create a position for a given track given the total number of tracks
-	/// on the album.
+	/// Create a position from a track number and total track count.
 	///
 	/// ## Examples
 	///
