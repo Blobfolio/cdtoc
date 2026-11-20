@@ -18,6 +18,7 @@
 
 ### Changed
 
+* Bump MSRV to `1.99`
 * `Duration::from_samples` is now const
 * `Toc::audio_track` is now const
 * `Toc::ctdb_checksum_url` is now an alias of `Toc::ctdb_lookup_url`
