@@ -2,7 +2,10 @@
 # CDTOC: Track
 */
 
-use crate::Duration;
+use crate::{
+	Duration,
+	lba_to_msf,
+};
 use std::range::legacy::Range;
 
 
@@ -458,22 +461,4 @@ impl TrackPosition {
 			Self::Only => "Only",
 		}
 	}
-}
-
-
-
-#[expect(clippy::cast_possible_truncation, reason = "False positive.")]
-/// # LBA to MSF.
-///
-/// Convert a logical block address (sectors) to minutes, seconds, and frames.
-const fn lba_to_msf(sectors: u32) -> (u32, u8, u8) {
-	// 75 sectors per second.
-	let mut s = sectors.wrapping_div(75);
-	let f = sectors - s * 75;
-
-	// 60 seconds per minute.
-	let m = s.wrapping_div(60);
-	s -= m * 60;
-
-	(m, s as u8, f as u8)
 }

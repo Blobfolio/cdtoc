@@ -1034,6 +1034,77 @@ impl TocKind {
 
 
 
+#[expect(clippy::cast_possible_truncation, reason = "False positive.")]
+#[must_use]
+/// # LBA to MSF.
+///
+/// Convert a logical block address (sectors) to minutes, seconds, and frames.
+///
+/// See [`msf_to_lba`] for the reverse operation.
+///
+/// ## Examples
+///
+/// ```
+/// use cdtoc::{lba_to_msf, msf_to_lba, Toc};
+///
+/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
+/// let track = toc.audio_track(2).unwrap();
+///
+/// let rng = track.sector_range();
+/// assert_eq!(lba_to_msf(rng.start), (2, 34, 13));
+/// assert_eq!(lba_to_msf(rng.end),   (5, 35, 49));
+///
+/// // And back again!
+/// assert_eq!(msf_to_lba(2, 34, 13), rng.start);
+/// assert_eq!(msf_to_lba(5, 35, 49), rng.end);
+/// ```
+pub const fn lba_to_msf(sectors: u32) -> (u32, u8, u8) {
+	// 75 sectors per second.
+	let mut s = sectors.wrapping_div(75);
+	let f = sectors - s * 75;
+
+	// 60 seconds per minute.
+	let m = s.wrapping_div(60);
+	s -= m * 60;
+
+	(m, s as u8, f as u8)
+}
+
+#[must_use]
+/// # MSF to LBA.
+///
+/// Convert minutes, seconds, and frames to a logical block address (sectors).
+///
+/// See [`lba_to_msf`] for the reverse operation.
+///
+/// ## Examples
+///
+/// ```
+/// use cdtoc::{lba_to_msf, msf_to_lba, Toc};
+///
+/// let toc = Toc::from_cdtoc("4+96+2D2B+6256+B327+D84A").unwrap();
+/// let track = toc.audio_track(2).unwrap();
+///
+/// let rng = track.sector_range();
+/// assert_eq!(lba_to_msf(rng.start), (2, 34, 13));
+/// assert_eq!(lba_to_msf(rng.end),   (5, 35, 49));
+///
+/// // And back again!
+/// assert_eq!(msf_to_lba(2, 34, 13), rng.start);
+/// assert_eq!(msf_to_lba(5, 35, 49), rng.end);
+///
+/// // Impossibly large values will saturate to `u32::MAX`.
+/// assert_eq!(msf_to_lba(u32::MAX, u8::MAX, u8::MAX), u32::MAX);
+/// ```
+pub const fn msf_to_lba(m: u32, s: u8, f: u8) -> u32 {
+	m.saturating_mul(60)    // Minutes to seconds.
+		.saturating_add(s as u32)
+		.saturating_mul(75) // Seconds to sectors.
+		.saturating_add(f as u32)
+}
+
+
+
 /// # Parse CDTOC Metadata.
 ///
 /// This parses the audio track count and sector positions from a CDTOC-style
